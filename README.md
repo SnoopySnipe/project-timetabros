@@ -4,7 +4,7 @@
 - Alex Wong
 - Jeffrey So
 
-Users submit their weekly schedule to the application. Users may add friends which may be through the recommendation system either through common friends or through similar schedule. Users may also form groups and the application will then generate one collective schedule using all members' individual schedules. Users may also create events and invite others to this event; all schedules the users are involved in will reflect this change. There will be privacy settings involving events and schedules.
+Users submit their weekly schedule to the application. Users may add friends which may be through the recommendation system either through common friends or through similar schedules. Users may also form groups and the application will then generate one collective schedule using all members' individual schedules. Users may also create events and invite others to this event; all schedules the users are involved in will reflect this change. There will be privacy settings involving who can view your events and schedules.
 
 ## Technologies
 
@@ -15,15 +15,15 @@ Users submit their weekly schedule to the application. Users may add friends whi
 
 - Users can publish their schedules which can be changed at any time
 - Users can add in temporary items to their schedules (with an expiry date)
-- Users can add friends through recommendations by either common friends or similar schedules
+- Users can add friends manually (such as friend code) or through recommendations by either common friends or similar schedules
 - Users can create groups which will have a group schedule
 - Users can create events and invite friends to it
 - Privacy settings for who can view your schedule and events
 
 ## Final version features
 
-- Use Cobalt API to let users input courses they plan to take and make it easier to fill in their schedule and possibly optimize their schedules with other users (for example: so that they can spend the most time together)
-- Users receive notifications whenever a friend makes a change to their schedule (this can be adjusted with notification settings whether they must have a common group, or receive no notifications at all, etc.)
+- Use Cobalt API to let users input courses they plan to take and make it easier to fill in their schedule as well as possibly optimize their schedules with other users (for example: so that they can spend the most time together)
+- Users receive notifications whenever a friend makes a change to their schedule (this can be adjusted with notification settings for example: whether they must have group in common, or receive no notifications at all, etc.)
 - Provide support for sharing their schedule to other social media networks
 
 ## Top 5 technical challenges
