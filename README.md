@@ -2,7 +2,7 @@
 
 - Andrew Leung | leunga56 | 1003289498
 - Alex Wong
-- Jeffrey So
+- Jeffrey So | sojeffr4 | 1003197104
 
 The goal of TimetaBros is to form new connections as well as strengthen existing connections between users through their schedules.
 
