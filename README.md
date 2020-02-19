@@ -1,10 +1,10 @@
 # TimetaBros
 
-- Andrew Leung
+- Andrew Leung | leunga56 | 1003289498
 - Alex Wong
 - Jeffrey So
 
-Users submit their weekly schedule to the application. Users may add friends which may be through the recommendation system either through common friends or through similar schedules. Users may also form groups and the application will then generate one collective schedule using all members' individual schedules. Users may also create events and invite others to this event; all schedules the users are involved in will reflect this change. There will be privacy settings involving who can view your events and schedules.
+The goal of TimetaBros is to form new connections as well as strengthen existing connections between users through their schedules.
 
 ## Technologies
 
@@ -13,11 +13,11 @@ Users submit their weekly schedule to the application. Users may add friends whi
 
 ## Beta version features
 
-- Users can publish their schedules which can be changed at any time
+- Users can publish their weekly schedules which can be changed at any time
 - Users can add in temporary items to their schedules (with an expiry date)
-- Users can add friends manually (such as friend code) or through recommendations by either common friends or similar schedules
-- Users can create groups which will have a group schedule
-- Users can create events and invite friends to it
+- Users can add friends manually or through recommendations by either common friends or similar schedules
+- Users can create groups which will generate one collective schedule using all members' individual schedules
+- Users can create events and invite friends to it; all schedules the users are involved in will reflect this change
 - Privacy settings for who can view your schedule and events
 
 ## Final version features
