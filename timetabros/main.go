@@ -4,6 +4,7 @@ import (
     "context"
     "log"
     "encoding/json"
+    "encoding/gob"
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
@@ -14,12 +15,13 @@ import (
 
     //"github.com/gin-gonic/contrib/static"
     "github.com/gin-gonic/gin"
+    "github.com/gorilla/sessions"
+    "github.com/gorilla/securecookie"
 
     "golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
-    _id primitive.ObjectID `json:"_id"`
     Username string `json:"username" binding:"required"`
     Firstname string `json:"firstname" binding:"required"`
     Lastname string `json:"lastname" binding:"required"`
@@ -29,11 +31,10 @@ type User struct {
 }
 
 type PendingUser struct {
-    _id primitive.ObjectID `json:"_id"`
     Userid primitive.ObjectID
 }
 
-type Data struct {
+type LoginCredentials struct {
     Username string `json:"username"`
     Password string `json:"password"`
 }
@@ -55,6 +56,8 @@ func main() {
 
     // setup api routers
     router := gin.Default()
+    var store = sessions.NewCookieStore([]byte(securecookie.GenerateRandomKey(32)))
+    gob.Register(&primitive.ObjectID{})
     //router.Use(static.Serve("/", static.LocalFile("./frontend", true)))
     api := router.Group("/api") 
     api.GET("/", func(c *gin.Context) {
@@ -66,7 +69,7 @@ func main() {
 
 
     // define api routes
-    // TODO sanitize inputs and check for authenticated
+    // TODO sanitize inputs and check for authenticated and refactor functions and support email login
 
     // signup api
     router.POST("/signup", func(c *gin.Context) {
@@ -173,7 +176,7 @@ func main() {
             c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
         }
-        data := &Data{}
+        data := &LoginCredentials{}
         err = json.Unmarshal(byte_data, data)
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -192,6 +195,11 @@ func main() {
             c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
 			return
         }
+        user_raw, err := users.FindOne(context.TODO(), bson.M{"username": username}).DecodeBytes()
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+        }
         // compare passwords
         err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
         if err != nil {
@@ -203,13 +211,53 @@ func main() {
             c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
 			return
         }
-        log.Println(user)
+        // get session
+        session, err := store.Get(c.Request, "session")
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+        }
+        // write user id to session
+        session.Values["_id"] = user_raw.Lookup("_id").ObjectID()
+        err = session.Save(c.Request, c.Writer)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+        }
+        // send response
         c.JSON(http.StatusOK, gin.H{
-            "_id": user._id,
+            "_id": user_raw.Lookup("_id").ObjectID(),
             "username": user.Username,
             "firstname": user.Firstname,
             "lastname": user.Lastname,
             "email": user.Email,
+        })
+    })
+
+    // signout api
+    router.GET("/signout", func(c *gin.Context) {
+        // get session
+        session, err := store.Get(c.Request, "session")
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+        }
+        /*if session.Values["_id"] == nil {
+            c.JSON(http.StatusOK, gin.H{
+                "message": "Already signed out",
+            })
+            return
+        }*/
+        // remove user id from session
+        session.Values["_id"] = nil
+        err = session.Save(c.Request, c.Writer)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+        }
+        // send response
+        c.JSON(http.StatusOK, gin.H{
+            "message": "Successfully signed out",
         })
     })
 
