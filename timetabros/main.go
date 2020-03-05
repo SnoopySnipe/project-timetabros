@@ -61,6 +61,8 @@ func main() {
     router.GET("/signout", SignOut)
 
     api.POST("/event_items", CreateEventItem)
+    api.GET("/event_items/:id", GetEventItemDetails)
+    api.PATCH("/event_items/:id", UpdateEventItemDetails)
 
 
 

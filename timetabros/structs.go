@@ -21,7 +21,7 @@ type PendingUser struct {
 
 type LoginCredentials struct {
     Username string `json:"username"`
-    Password string `json:"password"`
+    Password string `json:"password" binding:"required"`
     Email string `json:"email"`
 }
 
