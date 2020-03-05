@@ -1,5 +1,6 @@
 import React from 'react';
 import clsx from 'clsx';
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { makeStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
@@ -10,9 +11,24 @@ import List from '@material-ui/core/List';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
-import { sideNavList } from './SideNavList';
+import Typography from '@material-ui/core/Typography';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListSubheader from '@material-ui/core/ListSubheader';
+import Schedule from '@material-ui/icons/Schedule';
+import People from '@material-ui/icons/People';
+import ListItem from '@material-ui/core/ListItem';
+import Profile from './Profile';
+import Friends from './Friends';
+import { Container } from '@material-ui/core';
 const drawerWidth = 240;
 const useStyles = makeStyles(theme => ({
+  root: {
+    display: 'flex',
+  },
+  toolbar: {
+    paddingRight: 24, // keep right padding when drawer closed
+  },
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
     transition: theme.transitions.create(['width', 'margin'], {
@@ -29,6 +45,8 @@ const useStyles = makeStyles(theme => ({
     }),
   },
   drawerPaper: {
+    position: 'relative',
+    whiteSpace: 'nowrap',
     width: drawerWidth,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
@@ -41,7 +59,10 @@ const useStyles = makeStyles(theme => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    width: theme.spacing(7)
+    width: theme.spacing(7),
+    [theme.breakpoints.up('sm')]: {
+      width: theme.spacing(9),
+    },
   },
   menuButton: {
     marginRight: 36,
@@ -56,46 +77,92 @@ const useStyles = makeStyles(theme => ({
     padding: '0 8px',
     ...theme.mixins.toolbar,
   },
-}))
+  content: {
+    flexGrow: 1,
+    height: '100vh',
+    overflow: 'auto',
+  },
+  title: {
+    flexGrow: 1,
+  },
+  container: {
+    paddingTop: theme.spacing(4),
+    paddingBottom: theme.spacing(4),
+  },
+  appBarSpacer: theme.mixins.toolbar,
+}));
 export default function SideNav() {
   const classes = useStyles();
-  const [drawerOpen, setDrawerOpen] = React.useState(true);
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [title, setTitle] = React.useState('Schedule');
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
   };
+  const onListItemClick = title => () => {
+    setTitle(title);
+    setDrawerOpen(false);
+  }
   return (
-    <div>
-      <CssBaseline>
-        <AppBar position="absolute" className={clsx(classes.appBar, drawerOpen && classes.appBarShift)}>
-          <Toolbar >
-            <IconButton
-              className={clsx(drawerOpen && classes.menuButtonHidden)}
-              onClick={toggleDrawer}
-            >
-              <MenuIcon></MenuIcon>
-            </IconButton>
-          </Toolbar>
-        </AppBar>
-        <Drawer
-          variant="permanent"
-          classes={{
-            paper: clsx(classes.drawerPaper, !drawerOpen && classes.drawerPaperClose),
-          }}
-          open={drawerOpen}
-        >
-          <div className={classes.toolbarIcon}>
-            <IconButton onClick={toggleDrawer}>
-              <ChevronLeftIcon></ChevronLeftIcon>
-            </IconButton>
-          </div>
-          <Divider />
-          <List>{sideNavList}</List>
-          <Divider />
-          <List>yeeeeeeeeeeeeeeeeeeeeeeeeeeet</List>
-        </Drawer>
-      </CssBaseline>
+    <Router>
+      <div className={classes.root}>
+        <CssBaseline>
+          <AppBar position="absolute" className={clsx(classes.appBar, drawerOpen && classes.appBarShift)}>
+            <Toolbar className={classes.toolbar}>
+              <IconButton
+                edge="start"
+                className={clsx(classes.menuButton, drawerOpen && classes.menuButtonHidden)}
+                onClick={toggleDrawer}
+              >
+                <MenuIcon></MenuIcon>
+              </IconButton>
+              <Typography component="h1" variant="h6" className={classes.title}>
+                TimetaBros
+          </Typography>
+            </Toolbar>
+          </AppBar>
+          <Drawer
+            variant="permanent"
+            classes={{
+              paper: clsx(classes.drawerPaper, !drawerOpen && classes.drawerPaperClose),
+            }}
+            open={drawerOpen}
+          >
+            <div className={classes.toolbarIcon}>
+              <IconButton onClick={toggleDrawer}>
+                <ChevronLeftIcon></ChevronLeftIcon>
+              </IconButton>
+            </div>
+            <Divider />
+            <List>    <div>
+              <ListItem button selected={title=="Schedule"} component={Link} to="/schedule" onClick={onListItemClick('Schedule')}>
+                <ListItemIcon>
+                  <Schedule></Schedule>
+                </ListItemIcon>
+                <ListItemText primary="Schedule"></ListItemText>
+              </ListItem>
+              <ListItem button selected={title=="Friends"} component={Link} to="/friends" onClick={onListItemClick('Friends')}>
+                <ListItemIcon>
+                  <People></People>
+                </ListItemIcon>
+                <ListItemText primary="Friends"></ListItemText>
+              </ListItem>
+            </div></List>
+            <Divider />
+            <List></List>
+          </Drawer>
+        </CssBaseline>
+        <main className={classes.content}>
+          <div className={classes.appBarSpacer}/>
+            <Container className={classes.container}>
+              <Route path="/schedule" component={Profile} />
+              <Route path="/friends" component={Friends} />
+            </Container>
 
-    </div>
+
+        </main>
+      </div>
+
+    </Router>
 
   );
 }
