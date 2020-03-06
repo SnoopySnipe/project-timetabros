@@ -27,7 +27,7 @@ type LoginCredentials struct {
 
 type EventItem struct {
     Createdby *primitive.ObjectID
-    Creatorstatus string `json:"creatorstatus" binding:"required"`
+    Creatorstatus string `json:"creatorstatus"`
     Startdate string `json:"startdate" binding:"required"`
     Enddate string `json:"enddate" binding:"required"`
     Title string `json:"title" binding:"required"`
@@ -38,7 +38,7 @@ type EventItem struct {
 
 type EventItemDB struct {
     Createdby *primitive.ObjectID `json:"createdby" binding:"required"`
-    Creatorstatus string `json:"creatorstatus" binding:"required"`
+    Creatorstatus string `json:"creatorstatus"`
     Startdate time.Time `json:"startdate" binding:"required"`
     Enddate time.Time `json:"enddate" binding:"required"`
     Title string `json:"title" binding:"required"`

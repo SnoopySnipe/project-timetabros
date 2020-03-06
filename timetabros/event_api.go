@@ -2,9 +2,8 @@ package main
 
 import (
     "context"
-    //"encoding/json"
     "net/http"
-    "log"
+    "time"
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
@@ -129,10 +128,8 @@ func UpdateEventItemDetails(c *gin.Context) {
 		return
     }
     // verify that updater is owner of event
-    log.Println(session.Values["_id"])
-    log.Println(eventDB.Createdby)
     if session.Values["_id"].(*primitive.ObjectID).String() != eventDB.Createdby.String() {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
+        c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
     }
     // get update credentials
@@ -164,6 +161,118 @@ func UpdateEventItemDetails(c *gin.Context) {
         "description": eventDB.Description,
         "expirydate": eventDB.Expirydate,
         "eventmembers": eventDB.Eventmembers,
+    })
+}
+
+// delete event item api
+// curl -b cookie.txt -X DELETE localhost:3000/api/event_items/id
+func DeleteEventItem(c *gin.Context) {
+    // get session
+    session, err := store.Get(c.Request, "session")
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    // check if authenticated
+    if !(isAuthenticated(session)) {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
+		return
+    }
+    // get id and check that its valid
+    id_param := c.Param("id")
+    id, err := primitive.ObjectIDFromHex(id_param)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id " + id_param})
+		return
+    }
+    // find the matching event
+    var eventDB EventItemDB
+    err = eventItems.FindOne(context.TODO(), bson.M{"_id": id}).Decode(&eventDB)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Event " + id_param + " not found"})
+		return
+    }
+    // verify that deleter is owner of event
+    if session.Values["_id"].(*primitive.ObjectID).String() != eventDB.Createdby.String() {
+        c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
+		return
+    }
+    // delete event from db
+    _, err = eventItems.DeleteOne(context.TODO(), bson.M{"_id": id})
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	    return
+    }
+    // send response
+    c.JSON(http.StatusOK, gin.H{
+        "_id": id,
+        "createdby": eventDB.Createdby,
+        "creatorstatus": eventDB.Creatorstatus,
+        "startdate": eventDB.Startdate,
+        "enddate": eventDB.Enddate,
+        "title": eventDB.Title,
+        "description": eventDB.Description,
+        "expirydate": eventDB.Expirydate,
+        "eventmembers": eventDB.Eventmembers,
+    })
+}
+
+// get user's events api
+// curl -b cookie.txt -X GET localhost:3000/api/users/id/event_items
+func GetUserEvents(c *gin.Context) {
+    // get session
+    session, err := store.Get(c.Request, "session")
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    // check if authenticated
+    if !(isAuthenticated(session)) {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
+		return
+    }
+    // get id and check that its valid
+    id_param := c.Param("id")
+    id, err := primitive.ObjectIDFromHex(id_param)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id " + id_param})
+		return
+    }
+    // find the matching user
+    var user User
+    err = users.FindOne(context.TODO(), bson.M{"_id": id}).Decode(&user)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "User " + id_param + " not found"})
+		return
+    }
+    // get user's events
+    userScheduleItems, err := eventItemFind(bson.M{"createdby": id, "creatorstatus": "", "expirydate": time.Time{}, "eventmembers": nil})
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    userTempScheduleItems, err := eventItemFind(bson.M{"createdby": id, "creatorstatus": "", "expirydate": bson.M{"$ne": time.Time{}}, "eventmembers": nil})
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    userEventOwnerItems, err := eventItemFind(bson.M{"createdby": id, "creatorstatus": bson.M{"$ne": ""}, "expirydate": time.Time{}})
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    userEventMemberItems, err := eventItemFind(bson.M{"createdby": bson.M{"$ne": id}, "creatorstatus": bson.M{"$ne": ""}, "expirydate": time.Time{}, "eventmembers": bson.M{"$elemMatch": bson.M{"userid": id}}})
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    // send response
+    c.JSON(http.StatusOK, gin.H{
+        "_id": id,
+        "scheduleitems": userScheduleItems,
+        "tempscheduleitems": userTempScheduleItems,
+        "eventowneritems": userEventOwnerItems,
+        "eventmemberitems": userEventMemberItems,
     })
 }
 

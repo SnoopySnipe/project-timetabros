@@ -72,3 +72,26 @@ func ConvertEventItem(event EventItem) (EventItemDB, error) {
     return eventDB, nil
 }
 
+func eventItemFind(filter bson.M) ([]EventItemDB, error) {
+    var err error
+    var items []EventItemDB
+    var item EventItemDB
+
+    cur, err := eventItems.Find(context.Background(), filter)
+    if err != nil {
+        return items, err
+    }
+    defer cur.Close(context.Background())
+    for cur.Next(context.Background()) {
+        err = cur.Decode(&item)
+        if err != nil {
+            return items, err
+        }
+        items = append(items, item)
+    }
+    if err = cur.Err(); err != nil {
+        return items, err
+    }
+    return items, err
+} 
+
