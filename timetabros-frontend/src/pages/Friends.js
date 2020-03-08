@@ -1,8 +1,8 @@
 import React from 'react';
-import FriendService from "../services/FriendService";
+import UserProfile from "./components/UserProfile";
 
 
-class Friend extends React.Component {
+class Friends extends React.Component {
     constructor(){
         super()
         this.state = {friendList: []}
@@ -37,9 +37,9 @@ class Friend extends React.Component {
         console.log("friendList");
         console.log(friendList);
         return(
-            <div>
+            <div id="friends">
                 {friendList.map(friend =>
-                    <FriendService key={friend.username} user={friend} />)}
+                    <UserProfile key={friend.username} user={friend} />)}
             </div>
         )
 
@@ -47,4 +47,4 @@ class Friend extends React.Component {
 }
 
 
-export default Friend;
+export default Friends;

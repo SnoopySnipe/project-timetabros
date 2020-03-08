@@ -1,6 +1,6 @@
 import React from 'react';
 import logo from '../logo.svg';
-import '../styles/components/App.css';
+import '../styles/pages/App.css';
 import SideNav from './SideNav';
 import { render } from '@testing-library/react';
 
