@@ -12,7 +12,7 @@ import (
 
     "github.com/gin-gonic/gin"
     "github.com/gorilla/sessions"
-    "github.com/gorilla/securecookie"
+    //"github.com/gorilla/securecookie"
     "github.com/gin-contrib/cors"
 )
 
@@ -48,7 +48,8 @@ func main() {
     config.AllowCredentials = true
     router.Use(cors.New(config))
     
-    store = sessions.NewCookieStore([]byte(securecookie.GenerateRandomKey(32)))
+    //store = sessions.NewCookieStore([]byte(securecookie.GenerateRandomKey(32)))
+    store = sessions.NewCookieStore([]byte("pleasechangeandstoreinconf"))
     gob.Register(&primitive.ObjectID{})
     //router.Use(static.Serve("/", static.LocalFile("./frontend", true)))
     api := router.Group("/api") 

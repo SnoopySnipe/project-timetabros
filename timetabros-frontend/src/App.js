@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import SideNav from './components/SideNav';
+import SideNav from './pages/SideNav';
 import Landing from './pages/Landing/Landing';
 import AuthContext from './context/AuthContext';
 import { BrowserRouter, Route, Redirect, Switch } from 'react-router-dom';
@@ -15,8 +15,12 @@ const App = () => {
     <AuthContext.Provider value = {{authenticatedUser, setAuthenticatedUser}}>
       <BrowserRouter>
         <Switch>
-          <Route path="/home">
+          {/* <Route path="/home">
             {authenticatedUser ? <SideNav/> : <Redirect to='/' />}
+          </Route> */}
+          {/* Disabled route protection for easier dev */}
+          <Route path="/home">
+            <SideNav/>
           </Route>
 
           <Route path='/' component={Landing}></Route>

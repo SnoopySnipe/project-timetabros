@@ -3,9 +3,9 @@ import { Button, Container, TextField, Link, Paper } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import styles from './SignUpStyles';
-import AuthContext from '../../context/AuthContext';
+import AuthContext from '../../../context/AuthContext';
 import { withRouter, NavLink } from 'react-router-dom';
-import {signIn} from '../../services/UserService';
+import {signIn} from '../../../services/UserService';
 class SignUp extends React.Component {
     static contextType = AuthContext;
 
