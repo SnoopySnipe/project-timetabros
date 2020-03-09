@@ -13,6 +13,7 @@ import (
     "github.com/gin-gonic/gin"
     "github.com/gorilla/sessions"
     "github.com/gorilla/securecookie"
+    "github.com/gin-contrib/cors"
 )
 
 const layout = "2006-01-02T15:04:05.000Z"
@@ -40,6 +41,13 @@ func main() {
 
     // setup api routers
     router := gin.Default()
+
+    // setup cors headers
+    config := cors.DefaultConfig()
+    config.AllowOrigins = []string{"http://localhost:3000"}
+    config.AllowCredentials = true
+    router.Use(cors.New(config))
+    
     store = sessions.NewCookieStore([]byte(securecookie.GenerateRandomKey(32)))
     gob.Register(&primitive.ObjectID{})
     //router.Use(static.Serve("/", static.LocalFile("./frontend", true)))
@@ -68,6 +76,6 @@ func main() {
 
 
 
-    router.Run(":3000")
+    router.Run(":3001")
 }
 

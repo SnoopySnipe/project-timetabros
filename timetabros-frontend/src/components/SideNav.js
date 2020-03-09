@@ -14,7 +14,6 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import Schedule from '@material-ui/icons/Schedule';
 import People from '@material-ui/icons/People';
 import ListItem from '@material-ui/core/ListItem';
@@ -134,13 +133,13 @@ export default function SideNav() {
             </div>
             <Divider />
             <List>    <div>
-              <ListItem button selected={title=="Schedule"} component={Link} to="/schedule" onClick={onListItemClick('Schedule')}>
+              <ListItem button selected={title==="Schedule"} component={Link} to="/schedule" onClick={onListItemClick('Schedule')}>
                 <ListItemIcon>
                   <Schedule></Schedule>
                 </ListItemIcon>
                 <ListItemText primary="Schedule"></ListItemText>
               </ListItem>
-              <ListItem button selected={title=="Friends"} component={Link} to="/friends" onClick={onListItemClick('Friends')}>
+              <ListItem button selected={title==="Friends"} component={Link} to="/friends" onClick={onListItemClick('Friends')}>
                 <ListItemIcon>
                   <People></People>
                 </ListItemIcon>
