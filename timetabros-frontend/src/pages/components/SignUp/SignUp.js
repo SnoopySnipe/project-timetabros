@@ -1,11 +1,12 @@
 import React from 'react';
 import { Button, Container, TextField, Link, Paper } from '@material-ui/core';
+import { Alert, AlertTitle } from '@material-ui/lab';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import styles from './SignUpStyles';
 import AuthContext from '../../../context/AuthContext';
 import { withRouter, NavLink } from 'react-router-dom';
-import {signIn} from '../../../services/UserService';
+import {signUp} from '../../../services/UserService';
 class SignUp extends React.Component {
     static contextType = AuthContext;
 
@@ -14,7 +15,11 @@ class SignUp extends React.Component {
         lastName: '',
         email: '',
         username: '',
-        password: ''
+        password: '',
+        registered: false,
+        registrationToken: '',
+        errored: false,
+        error: ''
     };
 
     handleLogin = (e) => {
@@ -24,13 +29,14 @@ class SignUp extends React.Component {
         e.preventDefault();
         // setError(null);
         // setLoading(true);
-        signIn(this.state.username, this.state.password).then(response => {
-          this.context.setAuthenticatedUser(response.data.username);          
-          history.push('/home');
+        signUp(this.state.firstName, this.state.lastName, this.state.email, this.state.username, this.state.password).then(response => {
+            this.setState({errored: false});
+            this.setState({registrationToken: response.data.token});
+            this.setState({registered: true});
         }).catch(error => {
-        //   setLoading(false);
-        //   if (error.response.status === 401) setError(error.response.data.message);
-        //   else setError("Something went wrong. Please try again later.");
+            this.setState({registered: false})
+            this.setState({error: error.response.data.error});
+            this.setState({errored: true});
         });
     }
     render() {
@@ -50,6 +56,18 @@ class SignUp extends React.Component {
                     <Button className={classes.submit} type="submit" variant="outlined" fullWidth>
                         Sign Up
                     </Button>
+                    {
+                    this.state.registered && 
+                    <Alert className={classes.alert} variant="outlined" severity="success">
+                        Successfully registered! Here is your token {this.state.registrationToken}
+                    </Alert>
+                    }
+                    {
+                    this.state.errored && 
+                    <Alert className={classes.alert} variant="outlined" severity="error">
+                        {this.state.error}
+                    </Alert>
+                    }
                     {/* <Link> */}
                         <NavLink to='/signin'>
                         Have an account? Sign in here!

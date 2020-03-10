@@ -16,6 +16,9 @@ const styles = (theme => ({
     },
     cardContainer: {
         paddingTop: theme.spacing(8),
+    },
+    alert: {
+        marginBottom: theme.spacing(2),
     }
 }));
 
