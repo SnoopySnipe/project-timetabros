@@ -1,6 +1,6 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import clsx from 'clsx';
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Route, Link, Redirect } from "react-router-dom";
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { makeStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
@@ -19,7 +19,10 @@ import People from '@material-ui/icons/People';
 import ListItem from '@material-ui/core/ListItem';
 import Profile from './Profile';
 import Friends from './Friends';
-import { Container } from '@material-ui/core';
+import { Container, Button } from '@material-ui/core';
+import AuthContext from '../context/AuthContext';
+import { signOut } from '../services/UserService';
+
 const drawerWidth = 240;
 const useStyles = makeStyles(theme => ({
   root: {
@@ -94,6 +97,7 @@ export default function SideNav() {
   const classes = useStyles();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [title, setTitle] = React.useState('Schedule');
+  const context = useContext(AuthContext);
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
   };
@@ -101,6 +105,12 @@ export default function SideNav() {
     setTitle(title);
     setDrawerOpen(false);
   }
+  const handleSignOut = () => {
+    signOut().then(() => {
+      context.setAuthenticatedUser('');
+    });
+  }
+
   return (
     <Router>
       <div className={classes.root}>
@@ -116,7 +126,10 @@ export default function SideNav() {
               </IconButton>
               <Typography component="h1" variant="h6" className={classes.title}>
                 TimetaBros
-          </Typography>
+              </Typography>
+              <Button variant="contained" onClick={handleSignOut}>
+                Sign out
+              </Button>
             </Toolbar>
           </AppBar>
           <Drawer
