@@ -1,10 +1,12 @@
 import React, {useContext} from 'react';
 import clsx from 'clsx';
-import { BrowserRouter as Router, Route, Link, Redirect } from "react-router-dom";
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { makeStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import NotificationsIcon from '@material-ui/icons/Notifications';
 import MenuIcon from '@material-ui/icons/Menu';
 import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
@@ -20,12 +22,15 @@ import ListItem from '@material-ui/core/ListItem';
 import Profile from './Profile';
 import Friends from './Friends';
 import Requests from './components/Requests/Requests';
-import { Container, Button } from '@material-ui/core';
+import { Container, Badge } from '@material-ui/core';
 import AuthContext from '../context/AuthContext';
 import { signOut } from '../services/UserService';
 
 const drawerWidth = 240;
 const useStyles = makeStyles(theme => ({
+  yeet: {
+    flexGrow: 1,
+  },
   root: {
     display: 'flex',
   },
@@ -128,9 +133,14 @@ export default function SideNav() {
               <Typography component="h1" variant="h6" className={classes.title}>
                 TimetaBros
               </Typography>
-              <Button variant="contained" onClick={handleSignOut}>
+              <IconButton component={Link} to="/home/requests" onClick={onListItemClick('')}>
+                <Badge badgeContent={4} color="secondary" variant="dot">
+                  <NotificationsIcon/>
+                </Badge>
+              </IconButton>
+              {/* <Button variant="contained" onClick={handleSignOut}>
                 Sign out
-              </Button>
+              </Button> */}
             </Toolbar>
           </AppBar>
           <Drawer
@@ -146,7 +156,7 @@ export default function SideNav() {
               </IconButton>
             </div>
             <Divider />
-            <List>    <div>
+            <List className={classes.yeet}>    <div>
               <ListItem button selected={title==="Schedule"} component={Link} to="/home/schedule" onClick={onListItemClick('Schedule')}>
                 <ListItemIcon>
                   <Schedule></Schedule>
@@ -159,15 +169,16 @@ export default function SideNav() {
                 </ListItemIcon>
                 <ListItemText primary="Friends"></ListItemText>
               </ListItem>
-              <ListItem button selected={title==="Requests"} component={Link} to="/home/requests" onClick={onListItemClick('Requests')}>
-                <ListItemIcon>
-                  <People></People>
-                </ListItemIcon>
-                <ListItemText primary="Requests"></ListItemText>
-              </ListItem>
             </div></List>
             <Divider />
-            <List></List>
+            <List>
+              <ListItem button onClick={handleSignOut}>
+                  <ListItemIcon>
+                    <ExitToAppIcon/>
+                  </ListItemIcon>
+                  <ListItemText primary="Sign out"></ListItemText>
+                </ListItem>
+            </List>
           </Drawer>
         </CssBaseline>
         <main className={classes.content}>

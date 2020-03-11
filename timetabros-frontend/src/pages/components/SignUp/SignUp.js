@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button, Container, TextField, Link, Paper } from '@material-ui/core';
-import { Alert, AlertTitle } from '@material-ui/lab';
+import { Button, Container, TextField, Paper } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import styles from './SignUpStyles';
@@ -23,8 +23,6 @@ class SignUp extends React.Component {
     };
 
     handleLogin = (e) => {
-        const { history } = this.props;
-        console.log(this.context);
         e.preventDefault();
         signUp(this.state.firstName, this.state.lastName, this.state.email, this.state.username, this.state.password).then(response => {
             this.setState({errored: false});

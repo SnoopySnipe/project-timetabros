@@ -3,7 +3,7 @@ import { withStyles } from '@material-ui/core/styles';
 import AuthContext from '../../context/AuthContext';
 import styles from './LandingStyles';
 import SignIn from '../components/SignIn/SignIn';
-import { BrowserRouter, Route, Redirect, Link } from 'react-router-dom';
+import { Route, Link } from 'react-router-dom';
 import SignUp from '../components/SignUp/SignUp';
 
 class Landing extends React.Component {
