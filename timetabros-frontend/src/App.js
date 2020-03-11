@@ -21,7 +21,7 @@ const App = () => {
           </Route> */}
           {/* Disabled route protection for easier dev */}
           <Route path="/home" component={SideNav}/>
-
+          
           <Route path='/landing' component={Landing}/>
         </Switch>
 

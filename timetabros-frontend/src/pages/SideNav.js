@@ -147,19 +147,19 @@ export default function SideNav() {
             </div>
             <Divider />
             <List>    <div>
-              <ListItem button selected={title==="Schedule"} component={Link} to="/schedule" onClick={onListItemClick('Schedule')}>
+              <ListItem button selected={title==="Schedule"} component={Link} to="/home/schedule" onClick={onListItemClick('Schedule')}>
                 <ListItemIcon>
                   <Schedule></Schedule>
                 </ListItemIcon>
                 <ListItemText primary="Schedule"></ListItemText>
               </ListItem>
-              <ListItem button selected={title==="Friends"} component={Link} to="/friends" onClick={onListItemClick('Friends')}>
+              <ListItem button selected={title==="Friends"} component={Link} to="/home/friends" onClick={onListItemClick('Friends')}>
                 <ListItemIcon>
                   <People></People>
                 </ListItemIcon>
                 <ListItemText primary="Friends"></ListItemText>
               </ListItem>
-              <ListItem button selected={title==="Requests"} component={Link} to="/requests" onClick={onListItemClick('Requests')}>
+              <ListItem button selected={title==="Requests"} component={Link} to="/home/requests" onClick={onListItemClick('Requests')}>
                 <ListItemIcon>
                   <People></People>
                 </ListItemIcon>
@@ -173,9 +173,9 @@ export default function SideNav() {
         <main className={classes.content}>
           <div className={classes.appBarSpacer}/>
             <Container className={classes.container}>
-              <Route path="/schedule" component={Profile} />
-              <Route path="/friends" component={Friends} />
-              <Route path="/requests" component={Requests} />
+              <Route path="/home/schedule" component={Profile} />
+              <Route path="/home/friends" component={Friends} />
+              <Route path="/home/requests" component={Requests} />
             </Container>
 
 
