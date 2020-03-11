@@ -1,4 +1,5 @@
 import React from 'react';
+import Calendar from './components/Calendar';
 
 class Profile extends React.Component {
     constructor(){
@@ -7,7 +8,11 @@ class Profile extends React.Component {
 
     render(){
         return(
-            <h1>SCHEDULE</h1>
+            <div>
+                <h1>SCHEDULE</h1>
+                <Calendar />
+            </div>
+            
         )
     }
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import UserProfile from "./components/UserProfile";
+import '../styles/pages/Friends.css';
 
 
 class Friends extends React.Component {
