@@ -14,16 +14,15 @@ const App = () => {
   return (
     <AuthContext.Provider value = {{authenticatedUser, setAuthenticatedUser}}>
       <BrowserRouter>
-        <Switch>
+        <Switch>       
+          <Redirect exact from='/' to='/landing' />   
           {/* <Route path="/home">
-            {authenticatedUser ? <SideNav/> : <Redirect to='/' />}
+            {authenticatedUser ? <SideNav/> : <Redirect to='/landing' />}
           </Route> */}
           {/* Disabled route protection for easier dev */}
-          <Route path="/home">
-            <SideNav/>
-          </Route>
+          <Route path="/home" component={SideNav}/>
 
-          <Route path='/' component={Landing}></Route>
+          <Route path='/landing' component={Landing}/>
         </Switch>
 
       </BrowserRouter>

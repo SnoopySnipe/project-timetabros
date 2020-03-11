@@ -23,12 +23,9 @@ class SignUp extends React.Component {
     };
 
     handleLogin = (e) => {
-        // this.props.history.push('/home');
         const { history } = this.props;
         console.log(this.context);
         e.preventDefault();
-        // setError(null);
-        // setLoading(true);
         signUp(this.state.firstName, this.state.lastName, this.state.email, this.state.username, this.state.password).then(response => {
             this.setState({errored: false});
             this.setState({registrationToken: response.data.token});
@@ -69,8 +66,8 @@ class SignUp extends React.Component {
                     </Alert>
                     }
                     {/* <Link> */}
-                        <NavLink to='/signin'>
-                        Have an account? Sign in here!
+                        <NavLink to='/landing/signin'>
+                            Have an account? Sign in here!
                         </NavLink>
                     {/* </Link> */}
                 </form>

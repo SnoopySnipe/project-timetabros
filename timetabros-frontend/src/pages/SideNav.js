@@ -19,6 +19,7 @@ import People from '@material-ui/icons/People';
 import ListItem from '@material-ui/core/ListItem';
 import Profile from './Profile';
 import Friends from './Friends';
+import Requests from './components/Requests/Requests';
 import { Container, Button } from '@material-ui/core';
 import AuthContext from '../context/AuthContext';
 import { signOut } from '../services/UserService';
@@ -158,6 +159,12 @@ export default function SideNav() {
                 </ListItemIcon>
                 <ListItemText primary="Friends"></ListItemText>
               </ListItem>
+              <ListItem button selected={title==="Requests"} component={Link} to="/requests" onClick={onListItemClick('Requests')}>
+                <ListItemIcon>
+                  <People></People>
+                </ListItemIcon>
+                <ListItemText primary="Requests"></ListItemText>
+              </ListItem>
             </div></List>
             <Divider />
             <List></List>
@@ -168,6 +175,7 @@ export default function SideNav() {
             <Container className={classes.container}>
               <Route path="/schedule" component={Profile} />
               <Route path="/friends" component={Friends} />
+              <Route path="/requests" component={Requests} />
             </Container>
 
 

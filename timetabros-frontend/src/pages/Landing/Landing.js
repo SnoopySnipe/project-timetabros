@@ -13,11 +13,11 @@ class Landing extends React.Component {
         const { classes } = this.props;
         return (
             <div className={classes.bgContainer}>
-                <Route path='/signin' component={SignIn}/>
-                <Route path='/signup' component={SignUp}/>
+                <Route path='/landing/signin' component={SignIn}/>
+                <Route path='/landing/signup' component={SignUp}/>
 
-                <Link to="/signin">Sign in</Link>
-                <Link to="/signup">Sign up</Link>
+                <Link to="/landing/signin">Sign in</Link>
+                <Link to="/landing/signup">Sign up</Link>
             </div>
     
         )

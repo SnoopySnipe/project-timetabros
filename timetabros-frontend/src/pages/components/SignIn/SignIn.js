@@ -18,15 +18,10 @@ class SignIn extends React.Component {
         const { history } = this.props;
         console.log(this.context);
         e.preventDefault();
-        // setError(null);
-        // setLoading(true);
         signIn(this.state.username, this.state.password).then(response => {
           this.context.setAuthenticatedUser(response.data.username);          
           history.push('/home');
         }).catch(error => {
-        //   setLoading(false);
-        //   if (error.response.status === 401) setError(error.response.data.message);
-        //   else setError("Something went wrong. Please try again later.");
         });
     }
     render() {
@@ -44,7 +39,7 @@ class SignIn extends React.Component {
                         Sign In
                     </Button>
                     {/* <Link> */}
-                        <NavLink to='/signup'>
+                        <NavLink to='/landing/signup'>
                             Sign up for an account here!
                         </NavLink>
                     {/* </Link> */}
