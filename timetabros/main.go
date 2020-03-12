@@ -62,12 +62,16 @@ func main() {
 
 
     // define api routes
-    // TODO sanitize inputs, check inputs are logically valid
+    // TODO sanitize inputs, check inputs are logically valid, limit user inputs
     // TODO check for authenticated
+    // TODO send notifications
+    // TODO check for user settings
     router.POST("/signup", SignUp)
     router.GET("/verify/:token", Verify)
     router.POST("/signin", SignIn)
     router.GET("/signout", SignOut)
+    api.GET("/users/:id", GetUserDetails)
+    api.PATCH("/users/:id", UpdateUserDetails)
 
     api.POST("/event_items", CreateEventItem)
     api.GET("/event_items/:id", GetEventItemDetails)

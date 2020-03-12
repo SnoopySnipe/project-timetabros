@@ -12,7 +12,7 @@ import (
 )
 
 // create event api
-// curl -b cookie.txt -X POST -H "Content-Type: application/json" -d @data.txt localhost:3000/api/event_items
+// curl -b cookie.txt -X POST -H "Content-Type: application/json" -d @data.txt localhost:3001/api/event_items
 func CreateEventItem(c *gin.Context) {
     // get session
     session, err := store.Get(c.Request, "session")
@@ -58,7 +58,7 @@ func CreateEventItem(c *gin.Context) {
 }
 
 // get event details api
-// curl -b cookie.txt -X GET localhost:3000/api/event_items/id
+// curl -b cookie.txt -X GET localhost:3001/api/event_items/id
 func GetEventItemDetails(c *gin.Context) {
     // get session
     session, err := store.Get(c.Request, "session")
@@ -100,7 +100,7 @@ func GetEventItemDetails(c *gin.Context) {
 }
 
 // update event details api
-// curl -b cookie.txt -X PATCH -H "Content-Type: application/json" -d @data.txt localhost:3000/api/event_items/id
+// curl -b cookie.txt -X PATCH -H "Content-Type: application/json" -d @data.txt localhost:3001/api/event_items/id
 func UpdateEventItemDetails(c *gin.Context) {
     // get session
     session, err := store.Get(c.Request, "session")
@@ -165,7 +165,7 @@ func UpdateEventItemDetails(c *gin.Context) {
 }
 
 // delete event item api
-// curl -b cookie.txt -X DELETE localhost:3000/api/event_items/id
+// curl -b cookie.txt -X DELETE localhost:3001/api/event_items/id
 func DeleteEventItem(c *gin.Context) {
     // get session
     session, err := store.Get(c.Request, "session")
@@ -218,7 +218,7 @@ func DeleteEventItem(c *gin.Context) {
 }
 
 // get user's events api
-// curl -b cookie.txt -X GET localhost:3000/api/users/id/event_items
+// curl -b cookie.txt -X GET localhost:3001/api/users/id/event_items
 func GetUserEvents(c *gin.Context) {
     // get session
     session, err := store.Get(c.Request, "session")

@@ -13,6 +13,18 @@ type User struct {
     Email string `json:"email" binding:"required"`
     Password string `json:"password" binding:"required"`
     Verified int
+    Notificationsettings NotificationSettings `json:"notificationsettings"`
+    Privacysettings PrivacySettings `json:"privacysettings"`
+}
+
+type NotificationSettings struct {
+    Email string
+    Inapp string
+}
+
+type PrivacySettings struct {
+    Profile string
+    Schedule string
 }
 
 type PendingUser struct {
