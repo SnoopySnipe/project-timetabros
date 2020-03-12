@@ -21,6 +21,7 @@ const layout = "2006-01-02T15:04:05.000Z"
 var users *mongo.Collection
 var pendingUsers *mongo.Collection
 var eventItems *mongo.Collection
+var friendConnections *mongo.Collection
 var store *sessions.CookieStore
 
 func main() {
@@ -38,6 +39,7 @@ func main() {
     users = client.Database("timetabros").Collection("users")
     pendingUsers = client.Database("timetabros").Collection("pending_users")
     eventItems = client.Database("timetabros").Collection("event_items")
+    friendConnections = client.Database("timetabros").Collection("friend_connections")
 
     // setup api routers
     router := gin.Default()
@@ -78,6 +80,11 @@ func main() {
     api.PATCH("/event_items/:id", UpdateEventItemDetails)
     api.DELETE("/event_items/:id", DeleteEventItem)
     api.GET("/users/:id/event_items", GetUserEvents)
+
+    api.POST("/friends",SendFriendRequest)
+    api.PATCH("/friends/:id", AcceptFriendRequest)
+    api.GET("/users/:id/friends", GetFriends)
+    api.DELETE("/friends", DeleteFriendConnection)
 
 
 

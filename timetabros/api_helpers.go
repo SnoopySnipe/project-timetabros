@@ -93,5 +93,28 @@ func eventItemFind(filter bson.M) ([]EventItemDB, error) {
         return items, err
     }
     return items, err
-} 
+}
+
+func friendFind(filter bson.M) ([]FriendConnectionDB, error) {
+    var err error
+    var friends []FriendConnectionDB
+    var friend FriendConnectionDB
+
+    cur, err := friendConnections.Find(context.Background(), filter)
+    if err != nil {
+        return friends, err
+    }
+    defer cur.Close(context.Background())
+    for cur.Next(context.Background()) {
+        err = cur.Decode(&friend)
+        if err != nil {
+            return friends, err
+        }
+        friends = append(friends, friend)
+    }
+    if err = cur.Err(); err != nil {
+        return friends, err
+    }
+    return friends, err
+}
 

@@ -69,3 +69,13 @@ type EventMemberDB struct {
     Status string `json:"status" binding:"required"`
 }
 
+type FriendConnection struct {
+    Userid string `json:"userid" binding:"required"`
+}
+
+type FriendConnectionDB struct {
+    User1 *primitive.ObjectID `json:"user1" binding:"required"`
+    User2 primitive.ObjectID `json:"user2" binding:"required"`
+    Status string `json:"status" binding:"required"`
+}
+

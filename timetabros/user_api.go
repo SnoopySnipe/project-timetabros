@@ -14,7 +14,6 @@ import (
 )
 
 // signup api
-// TODO send email
 // curl -X POST -H "Content-Type: application/json" -d '{"username":"SnoopySnipe","password":"snoopy","firstname":"Andrew","lastname":"Leung","email":"andrewleung.41898@outlook.com"}' localhost:3001/signup
 func SignUp(c *gin.Context) {
     // get data from request body and store into user type
@@ -259,7 +258,7 @@ func GetUserDetails(c *gin.Context) {
 }
 
 // update user details api
-// curl -b cookie.txt -X PATCH -H "Content-Type: application/json" -d @data.txt localhost:3001/api/users/id
+// curl -b cookie.txt -c cookie.txt -X PATCH -H "Content-Type: application/json" -d @data.txt localhost:3001/api/users/id
 func UpdateUserDetails(c *gin.Context) {
     // get session
     session, err := store.Get(c.Request, "session")
