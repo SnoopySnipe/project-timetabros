@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
-import {DayPilot, DayPilotCalendar, DayPilotNavigator} from "daypilot-pro-react";
+import {DayPilot, DayPilotCalendar} from "daypilot-pro-react";
+
 //import "./CalendarStyles.css";
 
 const styles = {
@@ -14,24 +15,42 @@ const styles = {
 
 class Calendar extends Component {
 
-  constructor(props) {
-    super(props);
-    this.state = {
-        viewType: "WorkWeek",
+  state = {
+      
+  };
+
+  config = {
+    viewType: "WorkWeek",
         durationBarVisible: false,
         timeRangeSelectedHandling: "Enabled",
         headerDateFormat: "dddd",
         onTimeRangeSelected: args => {
             let dp = this.calendar;
+            let title = "";
+            let desc = "";
             DayPilot.Modal.prompt("Create a new event:", "").then(function(modal) {
-            dp.clearSelection();
-            if (!modal.result) { return; }
-            dp.events.add(new DayPilot.Event({
-                start: args.start,
-                end: args.end,
-                id: DayPilot.guid(),
-                text: modal.result
-            }));
+                dp.clearSelection();
+                if (!modal.result) { return; }
+                title = modal.result;
+                console.log("HELLO");
+                console.log(title);
+                console.log(desc);
+                DayPilot.Modal.prompt("Description:", "").then(function(modal) {
+                    dp.clearSelection();
+                    if (!modal.result) { return; }
+                    desc = modal.result;
+                    console.log("HELLO");
+                    console.log(title);
+                    console.log(desc);
+                    dp.events.add(new DayPilot.Event({
+                        start: args.start,
+                        end: args.end,
+                        id: DayPilot.guid(),
+                        text: title,
+                        attendants:[],
+                        description: desc
+                    }));
+                });
             });
         },
         eventDeleteHandling: "Update",
@@ -39,8 +58,8 @@ class Calendar extends Component {
             this.message("Event deleted: " + args.e.text());
         },
         onEventClick: args => {
-            console.log(this.calendar)
             console.log(args);
+            console.log(args.e.data.description);
         },
         contextMenu: new DayPilot.Menu({
             items: [
@@ -50,6 +69,7 @@ class Calendar extends Component {
                         if (!modal.result) { return; }
                         args.source.data.text = modal.result;
                         args.source.calendar.events.update(args.source);
+                        args.source.data.attendants.push("Jeff");
                     });
                 }},
                 { text: "Delete", onClick: function (args) {
@@ -60,10 +80,9 @@ class Calendar extends Component {
                 }},
             ]
         }),
-
-
-    };
   }
+
+
 
   componentDidMount() {
 
@@ -74,7 +93,7 @@ class Calendar extends Component {
   }
 
   render() {
-    var {...config} = this.state;
+    var {...config} = this.config;
     return (
       <div>
         <DayPilotCalendar

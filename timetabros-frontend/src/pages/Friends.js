@@ -1,36 +1,45 @@
 import React from 'react';
 import UserProfile from "./components/UserProfile";
 import '../styles/pages/Friends.css';
+import axios from 'axios';
 
 
 class Friends extends React.Component {
-    constructor(){
-        super()
-        this.state = {friendList: []}
-    }
+    state = {
+        friendList: []
+    };
 
     componentWillMount(){
         // Grab array of friends from api call
-        let FL = this.getFriends();
-        console.log("FL");
-        console.log(FL);
+
+        // Swap bottom api call to // localhost:3001/api/users/:id/friends later
+
+        // This is hard coded for now
+        axios.get(`http://localhost:3001/api/users/5e692e2cac7ccf00b9e1d71b`).then(res => {
+            let newFL = this.state.friendList;
+            newFL.push(res.data);
+            this.setState({friendList: newFL});
+        })
+        console.log(this.state.friendList);
         // Set the state
-        this.setState({friendList: FL});
     }
 
     // Just for testing purposes
-    getFriends(){
-        let List = []
-        for(var i=0; i<5; i++){
-            let number = Math.floor(Math.random()*10) + 1;
-            let user = {
-                username: "test"+number,
-                firstname: "firstname"+number,
-                lastname: "lastname"+number}
-            List.push(user);
-        }
-        return List;
-        
+    // getFriends(){
+    //     let List = []
+    //     for(var i=0; i<5; i++){
+    //         let number = Math.floor(Math.random()*10) + 1;
+    //         let user = {
+    //             username: "test"+number,
+    //             firstname: "firstname"+number,
+    //             lastname: "lastname"+number}
+    //         List.push(user);
+    //     }
+    //     return List;
+    // }
+
+    addFriend(id){
+        console.log(id);
     }
 
     render() {
@@ -38,9 +47,18 @@ class Friends extends React.Component {
         console.log("friendList");
         console.log(friendList);
         return(
-            <div id="friends">
-                {friendList.map(friend =>
-                    <UserProfile key={friend.username} user={friend} />)}
+            <div>
+                <div id="friends">
+                    {friendList.map(friend =>
+                        <div>
+                            <UserProfile key={friend.username} user={friend} />
+                            <button onClick={() => this.addFriend(friend._id)}>
+                                Add
+                            </button>
+                        </div>
+                    )}
+                </div>
+                
             </div>
         )
 
