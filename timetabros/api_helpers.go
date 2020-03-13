@@ -7,6 +7,7 @@ import (
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
+    "go.mongodb.org/mongo-driver/mongo/options"
 
     "github.com/gorilla/sessions"
 )
@@ -139,5 +140,30 @@ func groupFind(filter bson.M) ([]Group, error) {
         return groupsRes, err
     }
     return groupsRes, err
+}
+
+func userFind(filter bson.M) ([]SearchUserResult, error) {
+    var err error
+    var results []SearchUserResult
+
+    cur, err := users.Find(context.Background(), filter, options.Find().SetProjection(bson.M{"score": bson.M{"$meta": "textScore"}}).SetSort(bson.M{"score": bson.M{"$meta": "textScore"}}))
+    if err != nil {
+        return results, err
+    }
+    defer cur.Close(context.Background())
+    for cur.Next(context.Background()) {
+        var result SearchUserResult
+        raw := cur.Current
+        result.ID = raw.Lookup("_id").ObjectID()
+        result.Username = raw.Lookup("username").StringValue()
+        result.Firstname = raw.Lookup("firstname").StringValue()
+        result.Lastname = raw.Lookup("lastname").StringValue()
+        result.Email = raw.Lookup("email").StringValue()
+        results = append(results, result)
+    }
+    if err = cur.Err(); err != nil {
+        return results, err
+    }
+    return results, err
 }
 

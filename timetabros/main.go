@@ -6,6 +6,7 @@ import (
     "encoding/gob"
     "net/http"
 
+    "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
@@ -38,6 +39,12 @@ func main() {
     }
     // get mongodb collections
     users = client.Database("timetabros").Collection("users")
+    // index users for searching
+    model := mongo.IndexModel{
+        Keys: bson.M{"username": "text", "firstname": "text", "lastname": "text"},
+        Options: nil,
+    }
+    users.Indexes().CreateOne(context.TODO(), model)
     pendingUsers = client.Database("timetabros").Collection("pending_users")
     eventItems = client.Database("timetabros").Collection("event_items")
     friendConnections = client.Database("timetabros").Collection("friend_connections")
@@ -76,6 +83,7 @@ func main() {
     router.GET("/signout", SignOut)
     api.GET("/users/:id", GetUserDetails)
     api.PATCH("/users/:id", UpdateUserDetails)
+    api.GET("/users", SearchUsers)
 
     api.POST("/event_items", CreateEventItem)
     api.GET("/event_items/:id", GetEventItemDetails)

@@ -4,6 +4,7 @@ import (
     "context"
     "encoding/json"
     "net/http"
+    //"log"
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
@@ -356,4 +357,42 @@ func UpdateUserDetails(c *gin.Context) {
         "token": token,
     })
 }
+
+// search users api
+// curl -b cookie.txt -X GET -H "Content-Type: application/json" -d '{"query":"alex rhyme jeffrey andrew leung snoopysnipe"}' localhost:3001/api/users
+func SearchUsers(c *gin.Context) {
+    // get session
+    session, err := store.Get(c.Request, "session")
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    // check if authenticated
+    if !(isAuthenticated(session)) {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
+		return
+    }
+    // get search query
+    byte_data, err := c.GetRawData()
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    data := &SearchUserCredentials{}
+    err = json.Unmarshal(byte_data, data)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	    return
+    }
+    query := data.Query
+    // search users
+    searchResults, err := userFind(bson.M{"$text": bson.M{"$search": query,},})
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    // send response
+    c.JSON(http.StatusOK, searchResults)
+}
+
 

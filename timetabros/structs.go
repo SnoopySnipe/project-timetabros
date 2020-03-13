@@ -17,6 +17,18 @@ type User struct {
     Privacysettings PrivacySettings `json:"privacysettings"`
 }
 
+type SearchUserResult struct {
+    ID primitive.ObjectID `json:"ID"`
+    Username string `json:"username"`
+    Firstname string `json:"firstname"`
+    Lastname string `json:"lastname"`
+    Email string `json:"email"`
+}
+
+type SearchUserCredentials struct {
+    Query string `json:"query"`
+}
+
 type NotificationSettings struct {
     Email string
     Inapp string
