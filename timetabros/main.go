@@ -22,6 +22,7 @@ var users *mongo.Collection
 var pendingUsers *mongo.Collection
 var eventItems *mongo.Collection
 var friendConnections *mongo.Collection
+var groups *mongo.Collection
 var store *sessions.CookieStore
 
 func main() {
@@ -40,6 +41,7 @@ func main() {
     pendingUsers = client.Database("timetabros").Collection("pending_users")
     eventItems = client.Database("timetabros").Collection("event_items")
     friendConnections = client.Database("timetabros").Collection("friend_connections")
+    groups = client.Database("timetabros").Collection("groups")
 
     // setup api routers
     router := gin.Default()
@@ -67,7 +69,7 @@ func main() {
     // TODO sanitize inputs, check inputs are logically valid, limit user inputs
     // TODO check for authenticated
     // TODO send notifications
-    // TODO check for user settings
+    // TODO check for settings
     router.POST("/signup", SignUp)
     router.GET("/verify/:token", Verify)
     router.POST("/signin", SignIn)
@@ -81,10 +83,16 @@ func main() {
     api.DELETE("/event_items/:id", DeleteEventItem)
     api.GET("/users/:id/event_items", GetUserEvents)
 
-    api.POST("/friends",SendFriendRequest)
+    api.POST("/friends", SendFriendRequest)
     api.PATCH("/friends/:id", AcceptFriendRequest)
     api.GET("/users/:id/friends", GetFriends)
     api.DELETE("/friends", DeleteFriendConnection)
+
+    api.POST("/groups", CreateGroup)
+    api.GET("/groups/:id", GetGroupDetails)
+    api.PATCH("/groups/:id", UpdateGroupDetails)
+    api.DELETE("/groups/:id", DeleteGroup)
+    api.GET("/users/:id/groups", GetUserGroups)
 
 
 

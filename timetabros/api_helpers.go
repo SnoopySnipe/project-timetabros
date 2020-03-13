@@ -75,7 +75,6 @@ func ConvertEventItem(event EventItem) (EventItemDB, error) {
 func eventItemFind(filter bson.M) ([]EventItemDB, error) {
     var err error
     var items []EventItemDB
-    var item EventItemDB
 
     cur, err := eventItems.Find(context.Background(), filter)
     if err != nil {
@@ -83,6 +82,7 @@ func eventItemFind(filter bson.M) ([]EventItemDB, error) {
     }
     defer cur.Close(context.Background())
     for cur.Next(context.Background()) {
+        var item EventItemDB
         err = cur.Decode(&item)
         if err != nil {
             return items, err
@@ -98,7 +98,6 @@ func eventItemFind(filter bson.M) ([]EventItemDB, error) {
 func friendFind(filter bson.M) ([]FriendConnectionDB, error) {
     var err error
     var friends []FriendConnectionDB
-    var friend FriendConnectionDB
 
     cur, err := friendConnections.Find(context.Background(), filter)
     if err != nil {
@@ -106,6 +105,7 @@ func friendFind(filter bson.M) ([]FriendConnectionDB, error) {
     }
     defer cur.Close(context.Background())
     for cur.Next(context.Background()) {
+        var friend FriendConnectionDB
         err = cur.Decode(&friend)
         if err != nil {
             return friends, err
@@ -116,5 +116,28 @@ func friendFind(filter bson.M) ([]FriendConnectionDB, error) {
         return friends, err
     }
     return friends, err
+}
+
+func groupFind(filter bson.M) ([]Group, error) {
+    var err error
+    var groupsRes []Group
+
+    cur, err := groups.Find(context.Background(), filter)
+    if err != nil {
+        return groupsRes, err
+    }
+    defer cur.Close(context.Background())
+    for cur.Next(context.Background()) {
+        var group Group
+        err = cur.Decode(&group)
+        if err != nil {
+            return groupsRes, err
+        }
+        groupsRes = append(groupsRes, group)
+    }
+    if err = cur.Err(); err != nil {
+        return groupsRes, err
+    }
+    return groupsRes, err
 }
 

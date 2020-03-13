@@ -79,3 +79,17 @@ type FriendConnectionDB struct {
     Status string `json:"status" binding:"required"`
 }
 
+type Group struct {
+    Createdby *primitive.ObjectID `json:"createdby"`
+    Creatorrole string `json:"creatorrole"`
+    Name string `json:"name" binding:"required"`
+    About string `json:"about"`
+    Visibility string `json:"visibility" binding:"required"`
+    Groupmembers []GroupMember `json:"groupmembers"`
+}
+
+type GroupMember struct {
+    Userid primitive.ObjectID `json:"userid" binding:"required"`
+    Role string `json:"role" binding:"required"`
+}
+

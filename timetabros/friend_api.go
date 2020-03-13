@@ -150,17 +150,11 @@ func GetFriends (c *gin.Context) {
 		return
     }
     // get user's friends
-    friends1, err := friendFind(bson.M{"status": "accepted", "user1": id})
+    friends, err := friendFind(bson.M{"status": "accepted", "$or": []bson.M{bson.M{"user1": id}, bson.M{"user2": id}}})
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
     }
-    friends2, err := friendFind(bson.M{"status": "accepted", "user2": id})
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-    }
-    friends := append(friends1, friends2...)
     sentFriendRequests, err := friendFind(bson.M{"status": "pending", "user1": id})
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
