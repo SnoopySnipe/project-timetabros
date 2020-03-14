@@ -10,6 +10,7 @@ class Requests extends React.Component {
     // this.context.authenticatedUser
     render() {
         const { classes } = this.props;
+        console.log(this.context.authenticatedUser);
         const list = [{requestorName: 'yeet Hay'}, {requestorName: 'Jeffrey Man-Hei Leung'}];
         const listItems = list.map((request) => (
             <ListItem divider>

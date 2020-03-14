@@ -113,7 +113,8 @@ export default function SideNav() {
   }
   const handleSignOut = () => {
     signOut().then(() => {
-      context.setAuthenticatedUser('');
+      context.setAuthenticatedUser(null);
+      localStorage.removeItem('authenticatedUser');
     });
   }
 
