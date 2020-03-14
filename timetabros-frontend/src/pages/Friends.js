@@ -1,7 +1,7 @@
 import React from 'react';
 import UserProfile from "./components/UserProfile";
 import '../styles/pages/Friends.css';
-
+import AddFriendBar from './components/AddFriendBar/AddFriendBar';
 
 class Friends extends React.Component {
     constructor(){
@@ -39,6 +39,7 @@ class Friends extends React.Component {
         console.log(friendList);
         return(
             <div id="friends">
+                <AddFriendBar></AddFriendBar>
                 {friendList.map(friend =>
                     <UserProfile key={friend.username} user={friend} />)}
             </div>
