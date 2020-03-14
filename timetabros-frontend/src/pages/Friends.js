@@ -2,9 +2,11 @@ import React from 'react';
 import UserProfile from "./components/UserProfile";
 import '../styles/pages/Friends.css';
 import axios from 'axios';
-
+import AuthContext from '../context/AuthContext';
 
 class Friends extends React.Component {
+    static contextType = AuthContext;
+
     state = {
         friendList: []
     };
@@ -15,7 +17,7 @@ class Friends extends React.Component {
         // Swap bottom api call to // localhost:3001/api/users/:id/friends later
 
         // This is hard coded for now
-        axios.get(`http://localhost:3001/api/users/5e692e2cac7ccf00b9e1d71b`).then(res => {
+        axios.get(`http://localhost:3001/api/users/${this.context.authenticatedUser._id}`).then(res => {
             let newFL = this.state.friendList;
             newFL.push(res.data);
             this.setState({friendList: newFL});

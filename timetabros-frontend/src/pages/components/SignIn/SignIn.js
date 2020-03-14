@@ -19,7 +19,8 @@ class SignIn extends React.Component {
         console.log(this.context);
         e.preventDefault();
         signIn(this.state.username, this.state.password).then(response => {
-          this.context.setAuthenticatedUser(response.data.username);          
+          this.context.setAuthenticatedUser(response.data);
+          localStorage.setItem('authenticatedUser', JSON.stringify(response.data));    
           history.push('/home');
         }).catch(error => {
         });

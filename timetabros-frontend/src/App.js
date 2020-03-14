@@ -9,18 +9,17 @@ import axios from 'axios';
 axios.defaults.withCredentials = true; 
 
 const App = () => {
-  const [authenticatedUser, setAuthenticatedUser] = React.useState('');
-  console.log(authenticatedUser);
+  const storedAuthenticatedUser = JSON.parse(localStorage.getItem('authenticatedUser'));
+  const [authenticatedUser, setAuthenticatedUser] = React.useState(storedAuthenticatedUser ? storedAuthenticatedUser : null);
   return (
     <AuthContext.Provider value = {{authenticatedUser, setAuthenticatedUser}}>
       <BrowserRouter>
         <Switch>       
           <Redirect exact from='/' to='/landing' />   
-          {/* <Route path="/home">
+          <Route path="/home">
             {authenticatedUser ? <SideNav/> : <Redirect to='/landing' />}
-          </Route> */}
-          {/* Disabled route protection for easier dev */}
-          <Route path="/home" component={SideNav}/>
+          </Route>
+
           
           <Route path='/landing' component={Landing}/>
         </Switch>
