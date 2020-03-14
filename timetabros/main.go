@@ -102,6 +102,10 @@ func main() {
     api.DELETE("/groups/:id", DeleteGroup)
     api.GET("/users/:id/groups", GetUserGroups)
 
+    api.POST("/groups/:id/members", SendGroupRequest)
+    api.PATCH("/groups/:id/members", AcceptGroupRequest)
+    api.DELETE("/groups/:id/members", DeleteGroupMember)
+
 
 
     router.Run(":3001")
