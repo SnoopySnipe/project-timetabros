@@ -261,7 +261,12 @@ func GetUserEvents(c *gin.Context) {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
     }
-    userEventMemberItems, err := eventItemFind(bson.M{"createdby": bson.M{"$ne": id}, "creatorstatus": bson.M{"$ne": ""}, "expirydate": time.Time{}, "eventmembers": bson.M{"$elemMatch": bson.M{"userid": id}}})
+    userEventMemberItems, err := eventItemFind(bson.M{"createdby": bson.M{"$ne": id}, "creatorstatus": bson.M{"$ne": ""}, "expirydate": time.Time{}, "eventmembers": bson.M{"$elemMatch": bson.M{"userid": id, "status": bson.M{"$ne": "invited"}}}})
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    userEventRequestItems, err := eventItemFind(bson.M{"createdby": bson.M{"$ne": id}, "creatorstatus": bson.M{"$ne": ""}, "expirydate": time.Time{}, "eventmembers": bson.M{"$elemMatch": bson.M{"userid": id, "status": "invited"}}})
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -273,6 +278,7 @@ func GetUserEvents(c *gin.Context) {
         "tempscheduleitems": userTempScheduleItems,
         "eventowneritems": userEventOwnerItems,
         "eventmemberitems": userEventMemberItems,
+        "eventrequestitems": userEventRequestItems,
     })
 }
 

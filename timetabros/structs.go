@@ -102,6 +102,6 @@ type Group struct {
 
 type GroupMember struct {
     Userid primitive.ObjectID `json:"userid" binding:"required"`
-    Role string `json:"role" binding:"required"`
+    Role string `json:"role"`
 }
 
