@@ -13,6 +13,30 @@ type User struct {
     Email string `json:"email" binding:"required"`
     Password string `json:"password" binding:"required"`
     Verified int
+    Notificationsettings NotificationSettings `json:"notificationsettings"`
+    Privacysettings PrivacySettings `json:"privacysettings"`
+}
+
+type SearchUserResult struct {
+    ID primitive.ObjectID `json:"ID"`
+    Username string `json:"username"`
+    Firstname string `json:"firstname"`
+    Lastname string `json:"lastname"`
+    Email string `json:"email"`
+}
+
+type SearchUserCredentials struct {
+    Query string `json:"query"`
+}
+
+type NotificationSettings struct {
+    Email string
+    Inapp string
+}
+
+type PrivacySettings struct {
+    Profile string
+    Schedule string
 }
 
 type PendingUser struct {
@@ -55,5 +79,29 @@ type EventMember struct {
 type EventMemberDB struct {
     Userid primitive.ObjectID `json:"userid" binding:"required"`
     Status string `json:"status" binding:"required"`
+}
+
+type FriendConnection struct {
+    Userid string `json:"userid" binding:"required"`
+}
+
+type FriendConnectionDB struct {
+    User1 *primitive.ObjectID `json:"user1" binding:"required"`
+    User2 primitive.ObjectID `json:"user2" binding:"required"`
+    Status string `json:"status" binding:"required"`
+}
+
+type Group struct {
+    Createdby *primitive.ObjectID `json:"createdby"`
+    Creatorrole string `json:"creatorrole"`
+    Name string `json:"name" binding:"required"`
+    About string `json:"about"`
+    Visibility string `json:"visibility" binding:"required"`
+    Groupmembers []GroupMember `json:"groupmembers"`
+}
+
+type GroupMember struct {
+    Userid primitive.ObjectID `json:"userid" binding:"required"`
+    Role string `json:"role" binding:"required"`
 }
 

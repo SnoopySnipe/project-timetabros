@@ -7,6 +7,7 @@ import (
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
+    "go.mongodb.org/mongo-driver/mongo/options"
 
     "github.com/gorilla/sessions"
 )
@@ -75,7 +76,6 @@ func ConvertEventItem(event EventItem) (EventItemDB, error) {
 func eventItemFind(filter bson.M) ([]EventItemDB, error) {
     var err error
     var items []EventItemDB
-    var item EventItemDB
 
     cur, err := eventItems.Find(context.Background(), filter)
     if err != nil {
@@ -83,6 +83,7 @@ func eventItemFind(filter bson.M) ([]EventItemDB, error) {
     }
     defer cur.Close(context.Background())
     for cur.Next(context.Background()) {
+        var item EventItemDB
         err = cur.Decode(&item)
         if err != nil {
             return items, err
@@ -93,5 +94,76 @@ func eventItemFind(filter bson.M) ([]EventItemDB, error) {
         return items, err
     }
     return items, err
-} 
+}
+
+func friendFind(filter bson.M) ([]FriendConnectionDB, error) {
+    var err error
+    var friends []FriendConnectionDB
+
+    cur, err := friendConnections.Find(context.Background(), filter)
+    if err != nil {
+        return friends, err
+    }
+    defer cur.Close(context.Background())
+    for cur.Next(context.Background()) {
+        var friend FriendConnectionDB
+        err = cur.Decode(&friend)
+        if err != nil {
+            return friends, err
+        }
+        friends = append(friends, friend)
+    }
+    if err = cur.Err(); err != nil {
+        return friends, err
+    }
+    return friends, err
+}
+
+func groupFind(filter bson.M) ([]Group, error) {
+    var err error
+    var groupsRes []Group
+
+    cur, err := groups.Find(context.Background(), filter)
+    if err != nil {
+        return groupsRes, err
+    }
+    defer cur.Close(context.Background())
+    for cur.Next(context.Background()) {
+        var group Group
+        err = cur.Decode(&group)
+        if err != nil {
+            return groupsRes, err
+        }
+        groupsRes = append(groupsRes, group)
+    }
+    if err = cur.Err(); err != nil {
+        return groupsRes, err
+    }
+    return groupsRes, err
+}
+
+func userFind(filter bson.M) ([]SearchUserResult, error) {
+    var err error
+    var results []SearchUserResult
+
+    cur, err := users.Find(context.Background(), filter, options.Find().SetProjection(bson.M{"score": bson.M{"$meta": "textScore"}}).SetSort(bson.M{"score": bson.M{"$meta": "textScore"}}))
+    if err != nil {
+        return results, err
+    }
+    defer cur.Close(context.Background())
+    for cur.Next(context.Background()) {
+        var result SearchUserResult
+        raw := cur.Current
+        result.ID = raw.Lookup("_id").ObjectID()
+        result.Username = raw.Lookup("username").StringValue()
+        result.Firstname = raw.Lookup("firstname").StringValue()
+        result.Lastname = raw.Lookup("lastname").StringValue()
+        result.Email = raw.Lookup("email").StringValue()
+        results = append(results, result)
+    }
+    if err = cur.Err(); err != nil {
+        return results, err
+    }
+    return results, err
+}
 
