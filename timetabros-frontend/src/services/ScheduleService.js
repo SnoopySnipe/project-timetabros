@@ -9,3 +9,7 @@ export const createEventItem = (title, startdate, enddate) => {
 export const getEventItems = (userId) => {
     return axios.get(`http://localhost:3001/api/users/${userId}/event_items`);
 }
+
+export const deleteEventItem = (eventItemId) => {
+    return axios.delete(`http://localhost:3001/api/event_items/${eventItemId}`);
+}
