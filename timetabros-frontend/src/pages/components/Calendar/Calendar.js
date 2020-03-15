@@ -25,79 +25,89 @@ class Calendar extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      event: {},
+      startDate: '',
+    }
+    this.config = {
       viewType: "Week",
-          durationBarVisible: false,
-          timeRangeSelectedHandling: "Enabled",
-          headerDateFormat: "dddd MMMM d",
-          onTimeRangeSelected: args => {
-              let dp = this.calendar;
-              let title = "";
-              let desc = "";
-              DayPilot.Modal.prompt("Create a new event:", "").then((modal) => {
-                  dp.clearSelection();
-                  if (!modal.result) { return; }
-                  title = modal.result;
-                  console.log("HELLO");
-                  console.log(title);
-                  console.log(desc);
-                  DayPilot.Modal.prompt("Description:", "").then((modal) => {
-                      dp.clearSelection();
-                      if (!modal.result) { return; }
-                      createEventItem(title, args.start.toDate(), args.end.toDate()).then(
-                        (createdEventItem) => {
-                          this.setState({
-                            event: this.state.events.concat([{
-                              id: createdEventItem._id,
-                              text: createdEventItem.title, 
-                              startdate:createdEventItem.startdate, 
-                              enddate: createdEventItem.enddate
-                            }])
-                          });
-                          desc = modal.result;
-                          console.log("HELLO");
-                          console.log(title);
-                          console.log(desc);
-                          dp.events.add(new DayPilot.Event({
-                              start: args.start,
-                              end: args.end,
-                              id: DayPilot.guid(),
-                              text: title,
-                              attendants:[],
-                              description: desc
-                          }));
-                        }
-                      );
-                  });
-              });
-          },
-          eventDeleteHandling: "Update",
-          onEventDeleted: function (args) {
-            console.log(args);
-              this.message("Event deleted: " + args.e.text());
-          },
-          onEventClick: args => {
+      durationBarVisible: false,
+      timeRangeSelectedHandling: "Enabled",
+      headerDateFormat: "dddd MMMM d",
+      onTimeRangeSelected: args => {
+        let dp = this.calendar;
+        let title = "";
+        let desc = "";
+        DayPilot.Modal.prompt("Create a new event:", "").then((modal) => {
+            dp.clearSelection();
+            if (!modal.result) { return; }
+            title = modal.result;
+            
+            // console.log("HELLO");
+            // console.log(title);
+            // console.log(desc);
+
+            DayPilot.Modal.prompt("Description:", "").then((modal) => {
+                dp.clearSelection();
+                if (!modal.result) { return; }
+                createEventItem(title, args.start.toDate(), args.end.toDate()).then(
+                  (createdEventItem) => {
+                    this.setState({
+                      event: this.state.events.concat([{
+                        id: createdEventItem._id,
+                        text: createdEventItem.title, 
+                        startdate:createdEventItem.startdate, 
+                        enddate: createdEventItem.enddate
+                      }])
+                    });
+                    desc = modal.result;
+
+                    // console.log("HELLO");
+                    // console.log(title);
+                    // console.log(desc);
+                    
+                    dp.events.add(new DayPilot.Event({
+                        start: args.start,
+                        end: args.end,
+                        id: DayPilot.guid(),
+                        text: title,
+                        attendants:[],
+                        description: desc
+                    }));
+                  }
+                );
+            });
+        });
+      },
+      eventDeleteHandling: "Update",
+      onEventDeleted: function (args) {
+        console.log(args);
+          this.message("Event deleted: " + args.e.text());
+      },
+      onEventClick: args => {
+          console.log(args);
+          console.log(args.e.data.description);
+      },
+      contextMenu: new DayPilot.Menu({
+        items: [
+          { text: "Edit", onClick: function (args) {
               console.log(args);
-              console.log(args.e.data.description);
+              DayPilot.Modal.prompt("Update event text:", args.source.text()).then(function(modal) {
+                  if (!modal.result) { return; }
+                  args.source.data.text = modal.result;
+                  args.source.calendar.events.update(args.source);
+                  args.source.data.attendants.push("Jeff");
+              });
+            }
           },
-          contextMenu: new DayPilot.Menu({
-              items: [
-                  { text: "Edit", onClick: function (args) {
-                      console.log(args);
-                      DayPilot.Modal.prompt("Update event text:", args.source.text()).then(function(modal) {
-                          if (!modal.result) { return; }
-                          args.source.data.text = modal.result;
-                          args.source.calendar.events.update(args.source);
-                          args.source.data.attendants.push("Jeff");
-                      });
-                  }},
-                  { text: "Delete", onClick: function (args) {
-                      DayPilot.Modal.confirm("Delete Event?").then(function(modal) {
-                          if (!modal.result) { return; }
-                          args.source.calendar.events.remove(modal);
-                      });
-                  }},
-              ]
-          }),
+          { text: "Delete", onClick: function (args) {
+              DayPilot.Modal.confirm("Delete Event?").then(function(modal) {
+                  if (!modal.result) { return; }
+                  args.source.calendar.events.remove(modal);
+              });
+            }
+          },
+        ]
+      }),
     }
   }
 
@@ -143,7 +153,7 @@ class Calendar extends Component {
 
   }
   render() {
-    var {...config} = this.state;
+    var {...config} = this.config;
     return (
       <div>
         <IconButton onClick={()=>{
