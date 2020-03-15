@@ -61,6 +61,7 @@ type EventItem struct {
 }
 
 type EventItemDB struct {
+    ID primitive.ObjectID `json:"ID"`
     Createdby *primitive.ObjectID `json:"createdby" binding:"required"`
     Creatorstatus string `json:"creatorstatus"`
     Startdate time.Time `json:"startdate" binding:"required"`
@@ -90,12 +91,14 @@ type FriendConnection struct {
 }
 
 type FriendConnectionDB struct {
+    ID primitive.ObjectID `json:"ID"`
     User1 *primitive.ObjectID `json:"user1" binding:"required"`
     User2 primitive.ObjectID `json:"user2" binding:"required"`
     Status string `json:"status" binding:"required"`
 }
 
 type Group struct {
+    ID primitive.ObjectID `json:"ID"`
     Createdby *primitive.ObjectID `json:"createdby"`
     Creatorrole string `json:"creatorrole"`
     Name string `json:"name" binding:"required"`

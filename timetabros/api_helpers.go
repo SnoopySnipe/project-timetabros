@@ -88,6 +88,8 @@ func eventItemFind(filter bson.M) ([]EventItemDB, error) {
         if err != nil {
             return items, err
         }
+        raw := cur.Current
+        item.ID = raw.Lookup("_id").ObjectID()
         items = append(items, item)
     }
     if err = cur.Err(); err != nil {
@@ -111,6 +113,8 @@ func friendFind(filter bson.M) ([]FriendConnectionDB, error) {
         if err != nil {
             return friends, err
         }
+        raw := cur.Current
+        friend.ID = raw.Lookup("_id").ObjectID()
         friends = append(friends, friend)
     }
     if err = cur.Err(); err != nil {
@@ -134,6 +138,8 @@ func groupFind(filter bson.M) ([]Group, error) {
         if err != nil {
             return groupsRes, err
         }
+        raw := cur.Current
+        group.ID = raw.Lookup("_id").ObjectID()
         groupsRes = append(groupsRes, group)
     }
     if err = cur.Err(); err != nil {
