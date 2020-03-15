@@ -25,10 +25,6 @@ class Calendar extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      event: {},
-      startDate: '',
-    }
-    this.config = {
       viewType: "Week",
       durationBarVisible: false,
       timeRangeSelectedHandling: "Enabled",
@@ -114,9 +110,7 @@ class Calendar extends Component {
 
 
   fetchEventItems() {
-    getEventItems(this.context.authenticatedUser._id).then((response) => {
-      console.log(response);
-      
+    getEventItems(this.context.authenticatedUser._id).then((response) => {      
       let events = response.data.scheduleitems ? response.data.scheduleitems.map((item) => {
 
         let start = new Date(this.state.startDate);
@@ -139,6 +133,7 @@ class Calendar extends Component {
       this.setState({
         events: events
       });
+      console.log(this.state.events);
     });
   }
 
@@ -153,7 +148,7 @@ class Calendar extends Component {
 
   }
   render() {
-    var {...config} = this.config;
+    var {...config} = this.state;
     return (
       <div>
         <IconButton onClick={()=>{
