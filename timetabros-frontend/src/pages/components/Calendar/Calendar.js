@@ -106,7 +106,8 @@ class Calendar extends Component {
   fetchEventItems() {
     getEventItems(this.context.authenticatedUser._id).then((response) => {
       console.log(response);
-      let events = response.data.scheduleitems.map((item) => {
+      
+      let events = response.data.scheduleitems ? response.data.scheduleitems.map((item) => {
 
         let start = new Date(this.state.startDate);
         let itemStartDate = new Date(item.startdate);
@@ -123,7 +124,7 @@ class Calendar extends Component {
         end.setSeconds(0);
         end.setMilliseconds(0);
         return {start: start.toISOString(), end: end.toISOString(), text: item.title};
-      });
+      }) : [];
       console.log(events);
       this.setState({
         events: events
