@@ -8,7 +8,8 @@ class Friends extends React.Component {
     static contextType = AuthContext;
 
     state = {
-        friendList: []
+        friendList: [],
+        query: ""
     };
 
     componentWillMount(){
@@ -16,33 +17,40 @@ class Friends extends React.Component {
 
         // Swap bottom api call to // localhost:3001/api/users/:id/friends later
 
-        // This is hard coded for now
+        // Get specific user details
         axios.get(`http://localhost:3001/api/users/${this.context.authenticatedUser._id}`).then(res => {
             let newFL = this.state.friendList;
             newFL.push(res.data);
             this.setState({friendList: newFL});
         })
         console.log(this.state.friendList);
-        // Set the state
-    }
+        // // Set the state
 
-    // Just for testing purposes
-    // getFriends(){
-    //     let List = []
-    //     for(var i=0; i<5; i++){
-    //         let number = Math.floor(Math.random()*10) + 1;
-    //         let user = {
-    //             username: "test"+number,
-    //             firstname: "firstname"+number,
-    //             lastname: "lastname"+number}
-    //         List.push(user);
-    //     }
-    //     return List;
-    // }
+    }
 
     addFriend(id){
         console.log(id);
     }
+
+    searchFriend = event => {
+        event.preventDefault();
+        console.log(this.state);
+        let query = {
+            "query": this.state.query
+        }
+        console.log(query);
+
+        // WHAT THE FUCK IS GOING ON?????? this doesnt actually work...
+        axios.get(`http://localhost:3001/api/users`, {query: this.state.query})
+            .then(res => {
+                console.log(res);
+            })
+    }
+
+    setQuery = event => {
+        this.setState({ query: event.target.value});
+    }
+
 
     render() {
         let friendList = this.state.friendList
@@ -50,6 +58,10 @@ class Friends extends React.Component {
         console.log(friendList);
         return(
             <div>
+                <form onSubmit={this.searchFriend}>
+                    <input type="text" name="searchQuery" onChange={this.setQuery}/>
+                    <button type="submit">Search</button>
+                </form>
                 <div id="friends">
                     {friendList.map(friend =>
                         <div>
@@ -60,8 +72,8 @@ class Friends extends React.Component {
                         </div>
                     )}
                 </div>
-                
             </div>
+            
         )
 
     }
