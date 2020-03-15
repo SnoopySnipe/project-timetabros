@@ -310,7 +310,7 @@ func SendGroupRequest(c *gin.Context) {
     groupMemberDB.Userid = user_id
     // verify that the sender is in the group and receiver is not
     var groupCheck1 Group
-    err = groups.FindOne(context.TODO(), bson.M{"_id": group_id, "createdby": bson.M{"$ne": session.Values["_id"]}, "groupmembers": bson.M{"$not": bson.M{"$elemMatch": bson.M{"userid": session.Values["_id"], "role": "member"}}}}).Decode(&groupCheck1)
+    err = groups.FindOne(context.TODO(), bson.M{"_id": group_id, "createdby": bson.M{"$ne": session.Values["_id"]}, "groupmembers": bson.M{"$not": bson.M{"$elemMatch": bson.M{"userid": session.Values["_id"]}}}}).Decode(&groupCheck1)
     if err == nil {
         c.JSON(http.StatusForbidden, gin.H{"error": "User " + session.Values["_id"].(*primitive.ObjectID).String() + " is not in the group " + id_param})
 	    return

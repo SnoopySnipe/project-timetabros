@@ -282,3 +282,251 @@ func GetUserEvents(c *gin.Context) {
     })
 }
 
+// send event invite api
+// curl -b cookie.txt -X POST -H "Content-Type: application/json" -d '{"userid":"userid"}' localhost:3001/api/event_items/id/members
+func SendEventRequest(c *gin.Context) {
+    // get session
+    session, err := store.Get(c.Request, "session")
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    // check if authenticated
+    if !(isAuthenticated(session)) {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
+		return
+    }
+    // get user and group to send group request to
+    var eventMember FriendConnection
+    if err = c.ShouldBindJSON(&eventMember); err != nil {
+    	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+    id_param := c.Param("id")
+    // check if id is valid
+    user_id, err := primitive.ObjectIDFromHex(eventMember.Userid)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id " + eventMember.Userid})
+		return
+    }
+    event_id, err := primitive.ObjectIDFromHex(id_param)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id " + id_param})
+		return
+    }
+    // verify that user is sending event request to another user
+    if session.Values["_id"].(*primitive.ObjectID).String() == user_id.String() {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot send event request to self"})
+		return
+    }
+    // find the matching user
+    var user User
+    err = users.FindOne(context.TODO(), bson.M{"_id": user_id}).Decode(&user)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "User " + eventMember.Userid + " not found"})
+		return
+    }
+    // find the matching event
+    var event EventItemDB
+    err = eventItems.FindOne(context.TODO(), bson.M{"_id": event_id, "creatorstatus": bson.M{"$ne": ""}, "expirydate": time.Time{}}).Decode(&event)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Event " + id_param + " not found"})
+		return
+    }
+    var eventMemberDB EventMemberDB
+    eventMemberDB.Status = "invited"
+    eventMemberDB.Userid = user_id
+    // verify that the sender is in the event and receiver is not
+    var eventCheck1 EventItemDB
+    err = eventItems.FindOne(context.TODO(), bson.M{"_id": event_id, "createdby": bson.M{"$ne": session.Values["_id"]}, "eventmembers": bson.M{"$not": bson.M{"$elemMatch": bson.M{"userid": session.Values["_id"]}}}}).Decode(&eventCheck1)
+    if err == nil {
+        c.JSON(http.StatusForbidden, gin.H{"error": "User " + session.Values["_id"].(*primitive.ObjectID).String() + " is not in the event " + id_param})
+	    return
+    } 
+    var eventCheck2 EventItemDB
+    err = eventItems.FindOne(context.TODO(), bson.M{"_id": event_id, "$or": []bson.M{bson.M{"createdby": user_id},bson.M{"eventmembers": bson.M{"$elemMatch": bson.M{"userid": user_id}}},},}).Decode(&eventCheck2)
+    if err == nil {
+        c.JSON(http.StatusConflict, gin.H{"error": "User " + eventMember.Userid + " is already in event " + id_param})
+	    return
+    }
+    // insert event member
+    event.Eventmembers = append(event.Eventmembers, eventMemberDB)
+    _, err = eventItems.UpdateOne(context.TODO(), bson.M{"_id": event_id}, bson.M{"$set": bson.M{"eventmembers": event.Eventmembers}})
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	    return
+    }
+    // send back response
+    c.JSON(http.StatusOK, gin.H{
+        "_id": event_id,
+        "createdby": event.Createdby,
+        "creatorstatus": event.Creatorstatus,
+        "startdate": event.Startdate,
+        "enddate": event.Enddate,
+        "title": event.Title,
+        "description": event.Description,
+        "expirydate": event.Expirydate,
+        "eventmembers": event.Eventmembers,
+    })
+}
+
+// udpate event status api
+// curl -b cookie.txt -X PATCH -H "Content-Type: application/json" -d '{"status":"going"}' localhost:3001/api/event_items/id/members
+func UpdateEventStatus(c *gin.Context) {
+    // get session
+    session, err := store.Get(c.Request, "session")
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    // check if authenticated
+    if !(isAuthenticated(session)) {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
+		return
+    }
+    // get event to update status
+    id_param := c.Param("id")
+    // get status
+    var status UpdateEventStatusCredentials
+    if err = c.ShouldBindJSON(&status); err != nil {
+    	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+    // check if id is valid
+    event_id, err := primitive.ObjectIDFromHex(id_param)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id " + id_param})
+		return
+    }
+    // find the matching event
+    var event EventItemDB
+    err = eventItems.FindOne(context.TODO(), bson.M{"_id": event_id, "creatorstatus": bson.M{"$ne": ""}, "expirydate": time.Time{}}).Decode(&event)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Event " + id_param + " not found"})
+		return
+    }
+    // verify that accepter is invited to event
+    var eventCheck1 Group
+    err = eventItems.FindOne(context.TODO(), bson.M{"_id": event_id, "eventmembers": bson.M{"$elemMatch": bson.M{"userid": session.Values["_id"], "status": "invited"}}}).Decode(&eventCheck1)
+    if err != nil {
+        c.JSON(http.StatusConflict, gin.H{"error": "User " + session.Values["_id"].(*primitive.ObjectID).String() + " is not invited to event " + id_param})
+	    return
+    }
+    // update event member
+    var ems []EventMemberDB
+    for _, em := range event.Eventmembers {
+        if em.Userid.Hex() == session.Values["_id"].(*primitive.ObjectID).Hex() {
+            em.Status = status.Status
+        }
+        ems = append(ems, em)
+    }
+    _, err = eventItems.UpdateOne(context.TODO(), bson.M{"_id": event_id}, bson.M{"$set": bson.M{"eventmembers": ems}})
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	    return
+    }
+    // send back response
+    c.JSON(http.StatusOK, gin.H{
+        "_id": event_id,
+        "createdby": event.Createdby,
+        "creatorstatus": event.Creatorstatus,
+        "startdate": event.Startdate,
+        "enddate": event.Enddate,
+        "title": event.Title,
+        "description": event.Description,
+        "expirydate": event.Expirydate,
+        "eventmembers": ems,
+    })
+}
+
+// delete event member api
+// curl -b cookie.txt -X DELETE -H "Content-Type: application/json" -d '{"userid":"userid"}' localhost:3001/api/event_items/id/members
+func DeleteEventMember(c *gin.Context) {
+    // get session
+    session, err := store.Get(c.Request, "session")
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    // check if authenticated
+    if !(isAuthenticated(session)) {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
+		return
+    }
+    // get user and group to delete group member from
+    var eventMember FriendConnection
+    if err = c.ShouldBindJSON(&eventMember); err != nil {
+    	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+    id_param := c.Param("id")
+    // check if id is valid
+    user_id, err := primitive.ObjectIDFromHex(eventMember.Userid)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id " + eventMember.Userid})
+		return
+    }
+    event_id, err := primitive.ObjectIDFromHex(id_param)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id " + id_param})
+		return
+    }
+    // find the matching user
+    var user User
+    err = users.FindOne(context.TODO(), bson.M{"_id": user_id}).Decode(&user)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "User " + eventMember.Userid + " not found"})
+		return
+    }
+    // find the matching event
+    var event EventItemDB
+    err = eventItems.FindOne(context.TODO(), bson.M{"_id": event_id, "creatorstatus": bson.M{"$ne": ""}, "expirydate": time.Time{}}).Decode(&event)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Event " + id_param + " not found"})
+		return
+    }
+    // verify that the deleter is either self or is admin
+    if event.Createdby.Hex() == session.Values["_id"].(*primitive.ObjectID).Hex() {
+        if session.Values["_id"].(*primitive.ObjectID).Hex() == user_id.Hex() {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "Creator cannot delete self from event"})
+		    return
+        }
+    } else {
+        if session.Values["_id"].(*primitive.ObjectID).Hex() != user_id.Hex() {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "Members can only delete self from event"})
+		    return
+        }
+    }
+    // verify that deleted is in member list
+    var eventCheck1 EventItemDB
+    err = eventItems.FindOne(context.TODO(), bson.M{"_id": event_id, "eventmembers": bson.M{"$elemMatch": bson.M{"userid": user_id}}}).Decode(&eventCheck1)
+    if err != nil {
+        c.JSON(http.StatusConflict, gin.H{"error": "User " + user_id.String() + " is not in event " + id_param})
+	    return
+    }
+    // remove event member
+    var ems []EventMemberDB
+    for _, em := range event.Eventmembers {
+        if em.Userid.Hex() != user_id.Hex() {
+            ems = append(ems, em)
+        }
+    }
+    _, err = eventItems.UpdateOne(context.TODO(), bson.M{"_id": event_id}, bson.M{"$set": bson.M{"eventmembers": ems}})
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	    return
+    }
+    // send back response
+    c.JSON(http.StatusOK, gin.H{
+        "_id": event_id,
+        "createdby": event.Createdby,
+        "creatorstatus": event.Creatorstatus,
+        "startdate": event.Startdate,
+        "enddate": event.Enddate,
+        "title": event.Title,
+        "description": event.Description,
+        "expirydate": event.Expirydate,
+        "eventmembers": ems,
+    })
+}
+

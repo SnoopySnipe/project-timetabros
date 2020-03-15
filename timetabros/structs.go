@@ -71,6 +71,10 @@ type EventItemDB struct {
     Eventmembers []EventMemberDB `json:"eventmembers"`
 }
 
+type UpdateEventStatusCredentials struct {
+    Status string
+}
+
 type EventMember struct {
     Userid string `json:"userid" binding:"required"`
     Status string `json:"status" binding:"required"`

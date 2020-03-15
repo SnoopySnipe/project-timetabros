@@ -77,6 +77,8 @@ func main() {
     // TODO check for authenticated
     // TODO send notifications
     // TODO check for settings
+    // TODO some apis need ids to be returned
+    // TODO fix some error status codes
     router.POST("/signup", SignUp)
     router.GET("/verify/:token", Verify)
     router.POST("/signin", SignIn)
@@ -105,6 +107,10 @@ func main() {
     api.POST("/groups/:id/members", SendGroupRequest)
     api.PATCH("/groups/:id/members", AcceptGroupRequest)
     api.DELETE("/groups/:id/members", DeleteGroupMember)
+
+    api.POST("/event_items/:id/members", SendEventRequest)
+    api.PATCH("/event_items/:id/members", UpdateEventStatus)
+    api.DELETE("/event_items/:id/members", DeleteEventMember)
 
 
 
