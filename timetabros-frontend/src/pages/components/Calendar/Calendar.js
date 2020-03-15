@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {DayPilot, DayPilotCalendar} from "daypilot-pro-react";
-import { getEventItems, createEventItem } from '../../../services/ScheduleService';
+import { getEventItems, createEventItem, deleteEventItem } from '../../../services/ScheduleService';
 import AuthContext from '../../../context/AuthContext';
 import { IconButton, Button } from '@material-ui/core';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
@@ -37,11 +37,6 @@ class Calendar extends Component {
             dp.clearSelection();
             if (!modal.result) { return; }
             title = modal.result;
-            
-            // console.log("HELLO");
-            // console.log(title);
-            // console.log(desc);
-
             DayPilot.Modal.prompt("Description:", "").then((modal) => {
                 dp.clearSelection();
                 if (!modal.result) { return; }
@@ -57,10 +52,6 @@ class Calendar extends Component {
                     });
                     desc = modal.result;
 
-                    // console.log("HELLO");
-                    // console.log(title);
-                    // console.log(desc);
-                    
                     dp.events.add(new DayPilot.Event({
                         start: args.start,
                         end: args.end,
@@ -76,7 +67,7 @@ class Calendar extends Component {
       },
       eventDeleteHandling: "Update",
       onEventDeleted: function (args) {
-        console.log(args);
+        console.log('dete');
           this.message("Event deleted: " + args.e.text());
       },
       onEventClick: args => {
@@ -95,10 +86,13 @@ class Calendar extends Component {
               });
             }
           },
-          { text: "Delete", onClick: function (args) {
-              DayPilot.Modal.confirm("Delete Event?").then(function(modal) {
+          { text: "Delete", onClick: (args) => {
+              DayPilot.Modal.confirm("Delete Event?").then((modal) => {
                   if (!modal.result) { return; }
-                  args.source.calendar.events.remove(modal);
+                  deleteEventItem(args.source.data.id).then(() => {
+                    args.source.calendar.events.remove(modal);
+                    this.fetchEventItems();
+                  });
               });
             }
           },
@@ -127,7 +121,7 @@ class Calendar extends Component {
         end.setMinutes(itemEndDate.getMinutes());
         end.setSeconds(0);
         end.setMilliseconds(0);
-        return {start: start.toISOString(), end: end.toISOString(), text: item.title};
+        return {start: start.toISOString(), end: end.toISOString(), text: item.title, id: item.ID};
       }) : [];
       console.log(events);
       this.setState({
