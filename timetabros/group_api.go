@@ -124,15 +124,21 @@ func UpdateGroupDetails(c *gin.Context) {
 		return
     }
     // get update credentials
-    var updatedGroup Group
+    var updatedGroup GroupUpdate
     if err := c.ShouldBindJSON(&updatedGroup); err != nil {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+    if updatedGroup.Name != "" {
+        group.Name = updatedGroup.Name
+    }
+    if updatedGroup.About != "" {
+        group.About = updatedGroup.About
+    }
+    if updatedGroup.Visibility != "" {
+        group.Visibility = updatedGroup.Visibility
+    }
     // save group into db
-    group.Name = updatedGroup.Name
-    group.About = updatedGroup.About
-    group.Visibility = updatedGroup.Visibility
     _, err = groups.UpdateOne(context.TODO(), bson.M{"_id": id}, bson.M{"$set": bson.M{"name": group.Name, "about": group.About, "visibility": group.Visibility}})
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

@@ -17,6 +17,16 @@ type User struct {
     Privacysettings PrivacySettings `json:"privacysettings"`
 }
 
+type UserUpdate struct {
+    Username string `json:"username"`
+    Firstname string `json:"firstname"`
+    Lastname string `json:"lastname"`
+    Email string `json:"email"`
+    Password string `json:"password"`
+    Notificationsettings NotificationSettings `json:"notificationsettings"`
+    Privacysettings PrivacySettings `json:"privacysettings"`
+}
+
 type SearchUserResult struct {
     ID primitive.ObjectID `json:"ID"`
     Username string `json:"username"`
@@ -30,13 +40,13 @@ type SearchUserCredentials struct {
 }
 
 type NotificationSettings struct {
-    Email string
-    Inapp string
+    Email string `json:"email"`
+    Inapp string `json:"inapp"`
 }
 
 type PrivacySettings struct {
-    Profile string
-    Schedule string
+    Profile string `json:"profile"`
+    Schedule string `json:"schedule"`
 }
 
 type PendingUser struct {
@@ -58,6 +68,14 @@ type EventItem struct {
     Description string `json:"description"`
     Expirydate string `json:"expirydate"`
     Eventmembers string `json:"eventmembers"`
+}
+
+type EventItemUpdate struct {
+    Startdate string `json:"startdate"`
+    Enddate string `json:"enddate"`
+    Title string `json:"title"`
+    Description string `json:"description"`
+    Expirydate string `json:"expirydate"`
 }
 
 type EventItemDB struct {
@@ -105,6 +123,12 @@ type Group struct {
     About string `json:"about"`
     Visibility string `json:"visibility" binding:"required"`
     Groupmembers []GroupMember `json:"groupmembers"`
+}
+
+type GroupUpdate struct {
+    Name string `json:"name"`
+    About string `json:"about"`
+    Visibility string `json:"visibility"`
 }
 
 type GroupMember struct {

@@ -292,55 +292,75 @@ func UpdateUserDetails(c *gin.Context) {
 		return
     }
     // get update credentials
-    var updatedUser User
+    var updatedUser UserUpdate
     if err = c.ShouldBindJSON(&updatedUser); err != nil {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-    updatedUser.Verified = 1
     // create salted hash and store it instead of password in clear
-    hash, err := bcrypt.GenerateFromPassword([]byte(updatedUser.Password), bcrypt.DefaultCost)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	    return
+    if updatedUser.Password != "" {
+        hash, err := bcrypt.GenerateFromPassword([]byte(updatedUser.Password), bcrypt.DefaultCost)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	        return
+        }
+        updatedUser.Password = string(hash)
+        user.Password = updatedUser.Password
     }
-    updatedUser.Password = string(hash)
     // check if user already exists
     var existingUser User
-    if updatedUser.Username != user.Username {
-        err = users.FindOne(context.TODO(), bson.M{"username": updatedUser.Username}).Decode(&existingUser)
-        if err == nil {
-            c.JSON(http.StatusConflict, gin.H{"error": "Username " + existingUser.Username + " already exists"})
-        	return
+    if updatedUser.Username != "" {
+        if updatedUser.Username != user.Username {
+            err = users.FindOne(context.TODO(), bson.M{"username": updatedUser.Username}).Decode(&existingUser)
+            if err == nil {
+                c.JSON(http.StatusConflict, gin.H{"error": "Username " + existingUser.Username + " already exists"})
+            	return
+            }
+            user.Username = updatedUser.Username
         }
     }
     var token primitive.ObjectID
-    if updatedUser.Email != user.Email {
-        err = users.FindOne(context.TODO(), bson.M{"email": updatedUser.Email}).Decode(&existingUser)
-        if err == nil {
-            c.JSON(http.StatusConflict, gin.H{"error": "Email " + existingUser.Email + " is already in use"})
-	        return
-        }
-        updatedUser.Verified = 0
-        // insert pending user into db
-        var pendingUser PendingUser
-        pendingUser.Userid = id
-        insertedPendingUser, err := pendingUsers.InsertOne(context.TODO(), pendingUser)
-        if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		    return
-        }
-        token = insertedPendingUser.InsertedID.(primitive.ObjectID)
-        // remove user id from session
-        session.Values["_id"] = nil
-        err = session.Save(c.Request, c.Writer)
-        if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		    return
+    if updatedUser.Email != "" {
+        if updatedUser.Email != user.Email {
+            err = users.FindOne(context.TODO(), bson.M{"email": updatedUser.Email}).Decode(&existingUser)
+            if err == nil {
+                c.JSON(http.StatusConflict, gin.H{"error": "Email " + existingUser.Email + " is already in use"})
+	            return
+            }
+            user.Email = updatedUser.Email
+            user.Verified = 0
+            // insert pending user into db
+            var pendingUser PendingUser
+            pendingUser.Userid = id
+            insertedPendingUser, err := pendingUsers.InsertOne(context.TODO(), pendingUser)
+            if err != nil {
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		        return
+            }
+            token = insertedPendingUser.InsertedID.(primitive.ObjectID)
+            // remove user id from session
+            session.Values["_id"] = nil
+            err = session.Save(c.Request, c.Writer)
+            if err != nil {
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		        return
+            }
         }
     }
+    if updatedUser.Firstname != "" {
+        user.Firstname = updatedUser.Firstname
+    }
+    if updatedUser.Lastname != "" {
+        user.Lastname = updatedUser.Lastname
+    }
+    if updatedUser.Notificationsettings.Email != "" &&  updatedUser.Notificationsettings.Inapp != "" {
+        user.Notificationsettings = updatedUser.Notificationsettings
+    }
+    if updatedUser.Privacysettings.Profile != "" &&  updatedUser.Privacysettings.Schedule != ""  {
+        user.Privacysettings = updatedUser.Privacysettings
+    }
     // save user into db
-    _, err = users.UpdateOne(context.TODO(), bson.M{"_id": id}, bson.M{"$set": updatedUser})
+    _, err = users.UpdateOne(context.TODO(), bson.M{"_id": id}, bson.M{"$set": user})
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	    return
@@ -348,12 +368,12 @@ func UpdateUserDetails(c *gin.Context) {
     // send response
     c.JSON(http.StatusOK, gin.H{
         "_id": id,
-        "username": updatedUser.Username,
-        "firstname": updatedUser.Firstname,
-        "lastname": updatedUser.Lastname,
-        "email": updatedUser.Email,
-        "notificationsettings": updatedUser.Notificationsettings,
-        "privacysettings": updatedUser.Privacysettings,
+        "username": user.Username,
+        "firstname": user.Firstname,
+        "lastname": user.Lastname,
+        "email": user.Email,
+        "notificationsettings": user.Notificationsettings,
+        "privacysettings": user.Privacysettings,
         "token": token,
     })
 }

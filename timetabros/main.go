@@ -74,10 +74,8 @@ func main() {
 
     // define api routes
     // TODO sanitize inputs, check inputs are logically valid, limit user inputs
-    // TODO check for authenticated
     // TODO send notifications
     // TODO check for settings
-    // TODO some apis need ids to be returned
     // TODO fix some error status codes
     router.POST("/signup", SignUp)
     router.GET("/verify/:token", Verify)

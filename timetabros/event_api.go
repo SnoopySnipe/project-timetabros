@@ -133,16 +133,40 @@ func UpdateEventItemDetails(c *gin.Context) {
 		return
     }
     // get update credentials
-    var event EventItem
+    var event EventItemUpdate
     if err := c.ShouldBindJSON(&event); err != nil {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-    event.Createdby = session.Values["_id"].(*primitive.ObjectID)
-    eventDB, err = ConvertEventItem(event)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	    return
+    if event.Startdate != "" {
+        startdate, err := time.Parse(layout, event.Startdate)
+        if err != nil {
+	        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		    return
+        }
+        eventDB.Startdate = startdate
+    }
+    if event.Enddate != "" {
+        enddate, err := time.Parse(layout, event.Enddate)
+        if err != nil {
+	        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		    return
+        }
+        eventDB.Enddate = enddate
+    }
+    if event.Expirydate != "" {
+        expirydate, err := time.Parse(layout, event.Expirydate)
+        if err != nil {
+	        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		    return
+        }
+        eventDB.Expirydate = expirydate
+    }
+    if event.Title != "" {
+        eventDB.Title = event.Title
+    }
+    if event.Description != "" {
+        eventDB.Description = event.Description
     }
     // save event into db
     _, err = eventItems.UpdateOne(context.TODO(), bson.M{"_id": id}, bson.M{"$set": bson.M{"startdate": eventDB.Startdate, "enddate": eventDB.Enddate, "title": eventDB.Title, "description": eventDB.Description, "expirydate": eventDB.Expirydate}})
