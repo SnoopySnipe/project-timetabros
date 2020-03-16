@@ -83,7 +83,7 @@ func main() {
     router.GET("/signout", SignOut)
     api.GET("/users/:id", GetUserDetails)
     api.PATCH("/users/:id", UpdateUserDetails)
-    api.GET("/users", SearchUsers)
+    api.POST("/users", SearchUsers)
 
     api.POST("/event_items", CreateEventItem)
     api.GET("/event_items/:id", GetEventItemDetails)

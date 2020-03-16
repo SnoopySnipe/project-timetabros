@@ -37,13 +37,9 @@ class Friends extends React.Component {
     searchFriend = event => {
         event.preventDefault();
         console.log(this.state);
-        let query = {
-            "query": this.state.query
-        }
-        console.log(query);
 
         // WHAT THE FUCK IS GOING ON?????? this doesnt actually work...
-        axios.get(`http://localhost:3001/api/users`, {query: this.state.query})
+        axios.post(`http://localhost:3001/api/users`, {query: this.state.query})
             .then(res => {
                 console.log(res);
             })
