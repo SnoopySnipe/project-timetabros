@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {DayPilot, DayPilotCalendar} from "daypilot-pro-react";
-import { getEventItems, createEventItem, deleteEventItem } from '../../../services/ScheduleService';
+import { getEventItems, createEventItem, deleteEventItem, updateEventItemTime, updateEventItemTitle } from '../../../services/ScheduleService';
 import AuthContext from '../../../context/AuthContext';
 import { IconButton, Button } from '@material-ui/core';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
@@ -40,6 +40,7 @@ class Calendar extends Component {
             DayPilot.Modal.prompt("Description:", "").then((modal) => {
                 dp.clearSelection();
                 if (!modal.result) { return; }
+                desc = modal.result;
                 createEventItem(title, args.start.toDate(), args.end.toDate()).then(
                   (createdEventItem) => {
                     this.setState({
@@ -50,16 +51,16 @@ class Calendar extends Component {
                         enddate: createdEventItem.enddate
                       }])
                     });
-                    desc = modal.result;
 
-                    dp.events.add(new DayPilot.Event({
-                        start: args.start,
-                        end: args.end,
-                        id: DayPilot.guid(),
-                        text: title,
-                        attendants:[],
-                        description: desc
-                    }));
+                    this.fetchEventItems();
+                    // dp.events.add(new DayPilot.Event({
+                    //     start: args.start,
+                    //     end: args.end,
+                    //     id: createdEventItem._id,
+                    //     text: title,
+                    //     attendants:[],
+                    //     description: desc
+                    // }));
                   }
                 );
             });
@@ -70,25 +71,39 @@ class Calendar extends Component {
         console.log('dete');
           this.message("Event deleted: " + args.e.text());
       },
+      onEventMoved: args => {
+        console.log(args);
+        updateEventItemTime(args.e.data.id, args.newStart.toDate(), args.newEnd.toDate()).then(
+          () => {
+            this.fetchEventItems();
+          }
+        );
+      },
       onEventClick: args => {
           console.log(args);
           console.log(args.e.data.description);
       },
       contextMenu: new DayPilot.Menu({
         items: [
-          { text: "Edit", onClick: function (args) {
+          { text: "Edit", onClick: (args) => {
               console.log(args);
-              DayPilot.Modal.prompt("Update event text:", args.source.text()).then(function(modal) {
+              DayPilot.Modal.prompt("Update event text:", args.source.text()).then((modal) => {
                   if (!modal.result) { return; }
-                  args.source.data.text = modal.result;
-                  args.source.calendar.events.update(args.source);
-                  args.source.data.attendants.push("Jeff");
+                  updateEventItemTitle(args.source.data.id, modal.result).then(
+                    () => {
+                      args.source.data.text = modal.result;
+                      args.source.calendar.events.update(args.source);
+                      this.fetchEventItems();
+                    }
+                  );
+
               });
             }
           },
           { text: "Delete", onClick: (args) => {
               DayPilot.Modal.confirm("Delete Event?").then((modal) => {
                   if (!modal.result) { return; }
+                  console.log(args);
                   deleteEventItem(args.source.data.id).then(() => {
                     args.source.calendar.events.remove(modal);
                     this.fetchEventItems();
