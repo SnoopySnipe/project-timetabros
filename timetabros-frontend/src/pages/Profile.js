@@ -4,23 +4,14 @@ import Calendar from './components/Calendar/Calendar';
 class Profile extends React.Component {
     constructor(){
         super();
-        this.submitCalender = this.submitCalender.bind(this);
     }
-
-    submitCalender(){
-        console.log("fuck");
-        //TODO
-    }
-
 
     render(){
         return(
             <div>
                 <h1>SCHEDULE</h1>
-                <Calendar />
-                <button onClick={this.submitCalender}>
-                    Test
-                </button>
+                {/* <Calendar targetSchedule="5e692e2cac7ccf00b9e1d71b"/> */}
+                <Calendar targetSchedule=""/>
             </div>
             
         )

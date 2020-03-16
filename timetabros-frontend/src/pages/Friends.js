@@ -18,7 +18,9 @@ class Friends extends React.Component {
         // Swap bottom api call to // localhost:3001/api/users/:id/friends later
 
         // Get specific user details
-        axios.get(`http://localhost:3001/api/users/${this.context.authenticatedUser._id}`).then(res => {
+        
+        axios.get(`http://localhost:3001/api/users/5e692e2cac7ccf00b9e1d71b`).then(res => {
+        //axios.get(`http://localhost:3001/api/users/${this.context.authenticatedUser._id}`).then(res => {
             let newFL = this.state.friendList;
             newFL.push(res.data);
             this.setState({friendList: newFL});
