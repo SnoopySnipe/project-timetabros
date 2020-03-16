@@ -5,20 +5,60 @@ import CheckIcon from '@material-ui/icons/Check';
 import CloseIcon from '@material-ui/icons/Close';
 import AuthContext from '../../../context/AuthContext';
 import styles from './RequestsStyles';
+import { getFriends } from '../../../services/FriendService';
+import { getUser } from '../../../services/UserService';
+
 class Requests extends React.Component {
     static contextType = AuthContext;
+    constructor(props) {
+        super(props);
+        this.state = {
+            friendRequests: []
+        }
+    }
+    componentWillMount(){
+         getFriends(this.context.authenticatedUser._id).then(
+             (response) => {
+                 console.log(response);
+                 if(!response.data.receivedfriendrequests) return;
+                 response.data.receivedfriendrequests.forEach(
+                     (friendRequest) => {
+                         getUser(friendRequest.user1).then(
+                             (res) => {
+                                const user = res.data;
+                                this.setState(
+                                    {
+                                        friendRequests : this.state.friendRequests.concat([{
+                                            id: user._id,
+                                            firstName: user.firstname,
+                                            lastName: user.lastname,
+                                            username: user.username
+                                          }])
+                                    }
+                                )
+
+                                console.log(this.state.friendRequests);
+                             }
+                         )
+                     });
+             }
+         )
+     }
     // this.context.authenticatedUser
     render() {
         const { classes } = this.props;
         console.log(this.context.authenticatedUser);
-        const list = [{requestorName: 'yeet Hay'}, {requestorName: 'Jeffrey Man-Hei Leung'}];
-        const listItems = list.map((request) => (
+        const friendRequestList = this.state.friendRequests;
+        const listItems = !friendRequestList ? [] : friendRequestList.map((request) => (
             <ListItem divider>
                 <ListItemAvatar>
-                    <Avatar>{request.requestorName.charAt(0).toUpperCase()}</Avatar>
+                    <Avatar>{request.firstName.charAt(0).toUpperCase()}</Avatar>
                 </ListItemAvatar>
-                <ListItemText>
-                {request.requestorName}
+                <ListItemText 
+                    primary={`${request.firstName} ${request.lastName}`}
+                    secondary={request.username}
+                >
+                
                 </ListItemText>
                 <ListItemSecondaryAction>
                     <IconButton size="small" aria-label="accept">
@@ -41,7 +81,7 @@ class Requests extends React.Component {
                     <Grid item xs={12} md={6}>
                         <h1>Event requests</h1>
                         <List>
-                            {listItems}
+                            {/* {listItems} */}
                         </List>
                     </Grid>
                 </Grid>

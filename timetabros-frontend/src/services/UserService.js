@@ -13,3 +13,7 @@ export const signUp = (firstname, lastname, email, username, password) => {
 export const signOut = () => {
     return axios.get('http://localhost:3001/signout');
 }
+
+export const getUser = (userid) => {
+    return axios.get(`http://localhost:3001/api/users/${userid}`);
+}
