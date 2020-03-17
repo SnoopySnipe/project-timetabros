@@ -5,7 +5,7 @@ import CheckIcon from '@material-ui/icons/Check';
 import CloseIcon from '@material-ui/icons/Close';
 import AuthContext from '../../../context/AuthContext';
 import styles from './RequestsStyles';
-import { getFriends } from '../../../services/FriendService';
+import { acceptFriendRequest, getFriends } from '../../../services/FriendService';
 import { getUser } from '../../../services/UserService';
 
 class Requests extends React.Component {
@@ -16,34 +16,47 @@ class Requests extends React.Component {
             friendRequests: []
         }
     }
-    componentWillMount(){
-         getFriends(this.context.authenticatedUser._id).then(
-             (response) => {
-                 console.log(response);
-                 if(!response.data.receivedfriendrequests) return;
-                 response.data.receivedfriendrequests.forEach(
-                     (friendRequest) => {
-                         getUser(friendRequest.user1).then(
-                             (res) => {
-                                const user = res.data;
-                                this.setState(
-                                    {
-                                        friendRequests : this.state.friendRequests.concat([{
-                                            id: user._id,
-                                            firstName: user.firstname,
-                                            lastName: user.lastname,
-                                            username: user.username
-                                          }])
-                                    }
-                                )
 
-                                console.log(this.state.friendRequests);
-                             }
-                         )
-                     });
-             }
-         )
-     }
+    handleAcceptFriend = (requestId) => {
+        console.log(requestId);
+        acceptFriendRequest(requestId).then(
+            () => {
+                this.fetchFriendRequests();
+            }
+        )
+    }
+
+    fetchFriendRequests() {
+        this.setState({friendRequests: []})
+        getFriends(this.context.authenticatedUser._id).then(
+            (response) => {
+                console.log(response);
+                if(!response.data.receivedfriendrequests) return;
+                response.data.receivedfriendrequests.forEach(
+                    (friendRequest) => {
+                        getUser(friendRequest.user1).then(
+                            (res) => {
+                               const user = res.data;
+                               this.setState(
+                                   {
+                                       friendRequests : this.state.friendRequests.concat([{
+                                           id: friendRequest.ID,
+                                           userId: user._id,
+                                           firstName: user.firstname,
+                                           lastName: user.lastname,
+                                           username: user.username
+                                         }])
+                                   }
+                               )
+                            }
+                        )
+                    });
+            }
+        )
+    }
+    componentWillMount(){
+        this.fetchFriendRequests();
+    }
     // this.context.authenticatedUser
     render() {
         const { classes } = this.props;
@@ -61,10 +74,10 @@ class Requests extends React.Component {
                 
                 </ListItemText>
                 <ListItemSecondaryAction>
-                    <IconButton size="small" aria-label="accept">
+                    <IconButton size="small" aria-label="accept" onClick={()=>this.handleAcceptFriend(request.id)}>
                       <CheckIcon fontSize="small" />
                     </IconButton>
-                    <IconButton size="small" aria-label="accept">
+                    <IconButton size="small" aria-label="decline">
                       <CloseIcon fontSize="small" />
                     </IconButton>
                 </ListItemSecondaryAction>

@@ -5,6 +5,10 @@ export const sendFriendRequest = (userid) => {
     { userid });
 }
 
+export const acceptFriendRequest = (requestId) => {
+    return axios.patch(`http://localhost:3001/api/friends/${requestId}`);
+}
+
 export const getFriends = (userid) => {
     return axios.get(`http://localhost:3001/api/users/${userid}/friends`);
 }

@@ -5,15 +5,21 @@ import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import { Container, Grid, List, ListItem, ListItemText, ListItemAvatar, Avatar, ListItemSecondaryAction, IconButton } from '@material-ui/core';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
-import { sendFriendRequest } from '../services/FriendService';
+import { getFriends, sendFriendRequest } from '../services/FriendService';
+import { getUser } from '../services/UserService';
 class Friends extends React.Component {
     static contextType = AuthContext;
 
-    state = {
-        searchedUsers: [],
-        friendList: [],
-        query: ""
-    };
+    constructor(props) {
+        super(props);
+        this.state = {
+            searchedUsers: [],
+            friendList: [],
+            query: ""
+        };
+        console.log(this.state);
+    }
+
 
     componentWillMount(){
         // Grab array of friends from api call
@@ -22,10 +28,31 @@ class Friends extends React.Component {
 
         // Get specific user details
         
-        axios.get(`http://localhost:3001/api/users/5e692e2cac7ccf00b9e1d71b`).then(res => {
-        //axios.get(`http://localhost:3001/api/users/${this.context.authenticatedUser._id}`).then(res => {
-        })
-        console.log(this.state.friendList);
+        getFriends(this.context.authenticatedUser._id).then(
+            (response) => {
+                const friendList = !response.data.friends ? [] : response.data.friends.forEach(
+                    (item) => {
+                        const friendId = this.context.authenticatedUser._id == item.user1 ? item.user2 : item.user1;
+                        getUser(friendId).then(
+                            (res) => {
+                                const user = res.data;
+                                console.log(this.state);
+                                this.setState(
+                                    {
+                                        friendList : this.state.friendList.concat([{
+                                            id: user._id,
+                                            firstName: user.firstname,
+                                            lastName: user.lastname,
+                                            username: user.username
+                                          }])
+                                    }
+                                )
+                             }
+                        )
+                    }
+                );
+            }
+        )
         // // Set the state
 
     }
@@ -59,6 +86,8 @@ class Friends extends React.Component {
     render() {
         let friendList = this.state.friendList;
         const searchedList = this.state.searchedUsers;
+        console.log(friendList);
+        console.log(searchedList);
         const listItems = !searchedList ? [] : searchedList.map((user) => (
             <ListItem divider>
                 <ListItemAvatar>
@@ -71,13 +100,28 @@ class Friends extends React.Component {
             
                 </ListItemText>
                 <ListItemSecondaryAction>
+                    {!this.state.friendList.some((friend)=>friend.id === user.ID) && 
                     <IconButton size="small" aria-label="accept" onClick={()=>this.handleAddUser(user.ID)}>
                       <PersonAddIcon fontSize="small" />
-                    </IconButton>
+                    </IconButton>}
+
                 </ListItemSecondaryAction>
             </ListItem>
         ))
-        console.log("friendList");
+        const friends = this.state.friendList;
+        const friendItems = !friends ? [] : friends.map((user) => (
+            <ListItem button divider>
+                <ListItemAvatar>
+                    <Avatar>{user.firstName.charAt(0).toUpperCase()}</Avatar>
+                </ListItemAvatar>
+                <ListItemText 
+                    primary={`${user.firstName}  ${user.lastName}`}
+                    secondary={user.username}
+                >
+            
+                </ListItemText>
+            </ListItem>
+        ))
         console.log(friendList);
         return(
             <Grid container spacing={4} >
@@ -94,7 +138,7 @@ class Friends extends React.Component {
                 <Grid item xs={12} md={6}>
                     <h1>Friend list</h1>
                     <List>
-                        {/* {listItems} */}
+                        {friendItems}
                     </List>
                 </Grid>
             </Grid>
