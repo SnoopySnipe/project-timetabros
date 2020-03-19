@@ -24,7 +24,6 @@ class Calendar extends Component {
     console.log(props);
     this.state = {
       events: [],
-      calendarOwner: props.targetSchedule,
       viewType: "Week",
       durationBarVisible: false,
       timeRangeSelectedHandling: "Enabled",
@@ -113,24 +112,17 @@ class Calendar extends Component {
     }
   }
 
-  // authorizeCalendar(){
-  //   let properCalendarOwner = this.state.calendarOwner ? this.state.calendarOwner : this.context.authenticatedUser._id; 
-  //   this.setState({
-  //     calendarOwner: properCalendarOwner
-  //   },() =>{
-  //     // If user is not Calendar Owner
-  //     if (this.state.calendarOwner !== this.context.authenticatedUser._id){
-  //       this.setState({
-  //         timeRangeSelectedHandling: "Disabled",
-  //         eventClickHandling: "Disabled",
-  //         eventRightClickHandling: "Disabled",
-  //         eventMoveHandling: "Disabled",
-  //         eventResizeHandling: "Disabled",
-  //       })
-  //     }
-  //     this.fetchEventItems(this.state.calendarOwner);
-  //   });
-  // }
+  authorizeCalendar(){
+    console.log(this.props);
+    if(this.props.canEdit) return;
+    this.setState({
+      timeRangeSelectedHandling: "Disabled",
+      eventClickHandling: "Disabled",
+      eventRightClickHandling: "Disabled",
+      eventMoveHandling: "Disabled",
+      eventResizeHandling: "Disabled",
+    })
+  }
 
   fetchEventItems(userId) {
     //getEventItems(this.context.authenticatedUser._id).then((response) => {
@@ -167,8 +159,8 @@ class Calendar extends Component {
     this.setState({
       startDate: (new Date()).toISOString()
     });
+    this.authorizeCalendar();
     this.fetchEventItems(this.props.user._id);
-    //this.authorizeCalendar();
   }
 
   updateWeekEventItems() {

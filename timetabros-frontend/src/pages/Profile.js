@@ -37,7 +37,7 @@ class Profile extends React.Component {
                 <h1>SCHEDULE</h1>
                 {/* <Calendar targetSchedule="5e692e2cac7ccf00b9e1d71b"/> */}
                 
-                <Calendar user={this.state.user} targetSchedule=""/>
+                <Calendar user={this.state.user} canEdit={this.state.canEdit}/>
             </div>
             
         )
