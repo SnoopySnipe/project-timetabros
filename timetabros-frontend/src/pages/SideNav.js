@@ -158,7 +158,7 @@ export default function SideNav() {
             </div>
             <Divider />
             <List className={classes.yeet}>    <div>
-              <ListItem button selected={title==="Schedule"} component={Link} to="/home/schedule" onClick={onListItemClick('Schedule')}>
+              <ListItem button selected={title==="Schedule"} component={Link} to="/home/profile" onClick={onListItemClick('Schedule')}>
                 <ListItemIcon>
                   <Schedule></Schedule>
                 </ListItemIcon>
@@ -185,7 +185,8 @@ export default function SideNav() {
         <main className={classes.content}>
           <div className={classes.appBarSpacer}/>
             <Container className={classes.container}>
-              <Route path="/home/schedule" component={Profile} />
+            <Route exact path="/home/profile" component={Profile}/>
+              <Route path="/home/profile/:id" component={Profile}/>
               <Route path="/home/friends" component={Friends} />
               <Route path="/home/requests" component={Requests} />
             </Container>

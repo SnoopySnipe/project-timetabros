@@ -1,8 +1,7 @@
 import React, {Component} from 'react';
 import {DayPilot, DayPilotCalendar} from "daypilot-pro-react";
 import { getEventItems, createEventItem, deleteEventItem, updateEventItemTime, updateEventItemTitle } from '../../../services/ScheduleService';
-import AuthContext from '../../../context/AuthContext';
-import { IconButton, Button } from '@material-ui/core';
+import { IconButton } from '@material-ui/core';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import Moment from 'react-moment';
@@ -20,12 +19,11 @@ const styles = {
 };
 
 class Calendar extends Component {
-  static contextType = AuthContext;
-
   constructor(props) {
     super(props);
-
+    console.log(props);
     this.state = {
+      events: [],
       calendarOwner: props.targetSchedule,
       viewType: "Week",
       durationBarVisible: false,
@@ -45,6 +43,7 @@ class Calendar extends Component {
                 desc = modal.result;
                 createEventItem(title, args.start.toDate(), args.end.toDate()).then(
                   (createdEventItem) => {
+                    console.log(this.events);
                     this.setState({
                       event: this.state.events.concat([{
                         id: createdEventItem._id,
@@ -54,7 +53,7 @@ class Calendar extends Component {
                       }])
                     });
 
-                    this.fetchEventItems(this.state.calendarOwner);
+                    this.fetchEventItems(this.props.user._id);
                     //this.fetchEventItems("5e692e2cac7ccf00b9e1d71b");
                     // dp.events.add(new DayPilot.Event({
                     //     start: args.start,
@@ -71,32 +70,28 @@ class Calendar extends Component {
       },
       eventDeleteHandling: "Update",
       onEventDeleted: function (args) {
-        console.log('dete');
         this.message("Event deleted: " + args.e.text());
       },
       onEventMoved: args => {
-        console.log(args);
         updateEventItemTime(args.e.data.id, args.newStart.toDate(), args.newEnd.toDate()).then(
           () => {
-            this.fetchEventItems(this.state.calendarOwner);
+            this.fetchEventItems(this.props.user._id);
           }
         );
       },
       onEventClick: args => {
-          console.log(args);
-          console.log(args.e.data.description);
+
       },
       contextMenu: new DayPilot.Menu({
         items: [
           { text: "Edit", onClick: (args) => {
-              console.log(args);
               DayPilot.Modal.prompt("Update event text:", args.source.text()).then((modal) => {
                   if (!modal.result) { return; }
                   updateEventItemTitle(args.source.data.id, modal.result).then(
                     () => {
                       args.source.data.text = modal.result;
                       args.source.calendar.events.update(args.source);
-                      this.fetchEventItems(this.state.calendarOwner);
+                      this.fetchEventItems(this.props.user._id);
                     }
                   );
 
@@ -106,10 +101,9 @@ class Calendar extends Component {
           { text: "Delete", onClick: (args) => {
               DayPilot.Modal.confirm("Delete Event?").then((modal) => {
                   if (!modal.result) { return; }
-                  console.log(args);
                   deleteEventItem(args.source.data.id).then(() => {
                     args.source.calendar.events.remove(modal);
-                    this.fetchEventItems(this.state.calendarOwner);
+                    this.fetchEventItems(this.props.user._id);
                   });
               });
             }
@@ -119,34 +113,27 @@ class Calendar extends Component {
     }
   }
 
-  authorizeCalendar(){
-    console.log("properCalendarOwner");
-    let properCalendarOwner = this.state.calendarOwner ? this.state.calendarOwner : this.context.authenticatedUser._id; 
-    console.log(properCalendarOwner);
-    this.setState({
-      calendarOwner: properCalendarOwner
-    },() =>{
-      // If user is not Calendar Owner
-      if (this.state.calendarOwner != this.context.authenticatedUser._id){
-        console.log("NOT AUTHORIZED");
-        this.setState({
-          timeRangeSelectedHandling: "Disabled",
-          eventClickHandling: "Disabled",
-          eventRightClickHandling: "Disabled",
-          eventMoveHandling: "Disabled",
-          eventResizeHandling: "Disabled",
-        })
-      } else { 
-        console.log("AUTHORIZED");
-      }
-      this.fetchEventItems(this.state.calendarOwner);
-    });
-  }
+  // authorizeCalendar(){
+  //   let properCalendarOwner = this.state.calendarOwner ? this.state.calendarOwner : this.context.authenticatedUser._id; 
+  //   this.setState({
+  //     calendarOwner: properCalendarOwner
+  //   },() =>{
+  //     // If user is not Calendar Owner
+  //     if (this.state.calendarOwner !== this.context.authenticatedUser._id){
+  //       this.setState({
+  //         timeRangeSelectedHandling: "Disabled",
+  //         eventClickHandling: "Disabled",
+  //         eventRightClickHandling: "Disabled",
+  //         eventMoveHandling: "Disabled",
+  //         eventResizeHandling: "Disabled",
+  //       })
+  //     }
+  //     this.fetchEventItems(this.state.calendarOwner);
+  //   });
+  // }
 
   fetchEventItems(userId) {
     //getEventItems(this.context.authenticatedUser._id).then((response) => {
-    console.log("USERID");
-    console.log(userId);
     getEventItems(userId).then((response) => {      
       let events = response.data.scheduleitems ? response.data.scheduleitems.map((item) => {
 
@@ -166,11 +153,9 @@ class Calendar extends Component {
         end.setMilliseconds(0);
         return {start: start.toISOString(), end: end.toISOString(), text: item.title, id: item.ID};
       }) : [];
-      // console.log(events);
       this.setState({
         events: events
       });
-      // console.log(this.state.events);
     })
     // Not sure if we need this
     .catch(error => {
@@ -182,7 +167,8 @@ class Calendar extends Component {
     this.setState({
       startDate: (new Date()).toISOString()
     });
-    this.authorizeCalendar();
+    this.fetchEventItems(this.props.user._id);
+    //this.authorizeCalendar();
   }
 
   updateWeekEventItems() {
@@ -197,7 +183,7 @@ class Calendar extends Component {
           const date = new Date(this.state.startDate);
           date.setDate(date.getDate() - 7);
           this.setState({startDate: date.toISOString()});
-          this.fetchEventItems(this.state.calendarOwner);
+          this.fetchEventItems(this.props.user._id);
           }}>
           <ArrowBackIosIcon />
         </IconButton>
@@ -209,7 +195,7 @@ class Calendar extends Component {
           const date = new Date(this.state.startDate);
           date.setDate(date.getDate() + 7);
           this.setState({startDate: date.toISOString()});
-          this.fetchEventItems(this.state.calendarOwner);
+          this.fetchEventItems(this.props.user._id);
           }}>
           <ArrowForwardIosIcon />
         </IconButton>

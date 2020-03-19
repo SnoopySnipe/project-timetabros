@@ -1,12 +1,14 @@
 import React from 'react';
-import UserProfile from "./components/UserProfile";
+import Profile from './Profile';
 import '../styles/pages/Friends.css';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
-import { Container, Grid, List, ListItem, ListItemText, ListItemAvatar, Avatar, ListItemSecondaryAction, IconButton } from '@material-ui/core';
+import { Grid, List, ListItem, ListItemText, ListItemAvatar, Avatar, ListItemSecondaryAction, IconButton } from '@material-ui/core';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import { getFriends, sendFriendRequest } from '../services/FriendService';
 import { getUser } from '../services/UserService';
+import { Route } from 'react-router-dom';
+
 class Friends extends React.Component {
     static contextType = AuthContext;
 
@@ -15,24 +17,21 @@ class Friends extends React.Component {
         this.state = {
             searchedUsers: [],
             friendList: [],
+            sentFriendRequests: [],
             query: ""
         };
         console.log(this.state);
     }
 
-
-    componentWillMount(){
-        // Grab array of friends from api call
-
-        // Swap bottom api call to // localhost:3001/api/users/:id/friends later
-
-        // Get specific user details
-        
+    fetchFriends() {
+        this.setState({friendList: []});
         getFriends(this.context.authenticatedUser._id).then(
             (response) => {
-                const friendList = !response.data.friends ? [] : response.data.friends.forEach(
+                const sentRequests = response.data.sentfriendrequests;
+                this.setState({sentFriendRequests: sentRequests? sentRequests : []});
+                if(response.data.friends) response.data.friends.forEach(
                     (item) => {
-                        const friendId = this.context.authenticatedUser._id == item.user1 ? item.user2 : item.user1;
+                        const friendId = this.context.authenticatedUser._id === item.user1 ? item.user2 : item.user1;
                         getUser(friendId).then(
                             (res) => {
                                 const user = res.data;
@@ -52,13 +51,11 @@ class Friends extends React.Component {
                     }
                 );
             }
-        )
-        // // Set the state
-
+        );
     }
 
-    addFriend(id){
-        console.log(id);
+    componentWillMount(){
+        this.fetchFriends();
     }
 
     searchFriend = event => {
@@ -79,8 +76,12 @@ class Friends extends React.Component {
 
     handleAddUser = userid => {
         sendFriendRequest(userid).then((res)=>{
-            console.log(res);
+            this.fetchFriends();
         });
+    }
+
+    handleSelectFriend = userId => {
+        this.props.history.push(`/home/profile/${userId}`);
     }
 
     render() {
@@ -100,17 +101,21 @@ class Friends extends React.Component {
             
                 </ListItemText>
                 <ListItemSecondaryAction>
-                    {!this.state.friendList.some((friend)=>friend.id === user.ID) && 
-                    <IconButton size="small" aria-label="accept" onClick={()=>this.handleAddUser(user.ID)}>
-                      <PersonAddIcon fontSize="small" />
-                    </IconButton>}
+                    {this.state.sentFriendRequests.some((request)=> (request.user1 === user.ID || request.user2 === user.ID) && request.status === "pending") 
+                    ? <div>pending</div> 
+                    : this.state.friendList.some((friend)=>friend.id === user.ID) 
+                    ? <div>friends</div> 
+                    : <IconButton size="small" aria-label="accept" onClick={()=>this.handleAddUser(user.ID)}>
+                    <PersonAddIcon fontSize="small" />
+                    </IconButton>
+                    }
 
                 </ListItemSecondaryAction>
             </ListItem>
         ))
         const friends = this.state.friendList;
         const friendItems = !friends ? [] : friends.map((user) => (
-            <ListItem button divider>
+            <ListItem button divider onClick={()=>this.handleSelectFriend(user.id)}>
                 <ListItemAvatar>
                     <Avatar>{user.firstName.charAt(0).toUpperCase()}</Avatar>
                 </ListItemAvatar>
@@ -122,7 +127,6 @@ class Friends extends React.Component {
                 </ListItemText>
             </ListItem>
         ))
-        console.log(friendList);
         return(
             <Grid container spacing={4} >
                 <Grid item xs={12} md={6}>
