@@ -216,7 +216,7 @@ func DeleteFriendConnection (c *gin.Context) {
     var friendConnectionDB FriendConnectionDB
     err = friendConnections.FindOne(context.TODO(), bson.M{"$or": []bson.M{bson.M{"user1": session.Values["_id"], "user2": id,},bson.M{"user1": id, "user2": session.Values["_id"],},},}).Decode(&friendConnectionDB)
     if err != nil {
-        c.JSON(http.StatusConflict, gin.H{"error": "Not friends with user " + friendConnection.Userid})
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Not friends with user " + friendConnection.Userid})
 	    return
     }
     // delete friend from db

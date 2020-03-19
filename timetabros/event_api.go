@@ -433,7 +433,7 @@ func UpdateEventStatus(c *gin.Context) {
     var eventCheck1 Group
     err = eventItems.FindOne(context.TODO(), bson.M{"_id": event_id, "eventmembers": bson.M{"$elemMatch": bson.M{"userid": session.Values["_id"], "status": "invited"}}}).Decode(&eventCheck1)
     if err != nil {
-        c.JSON(http.StatusConflict, gin.H{"error": "User " + session.Values["_id"].(*primitive.ObjectID).String() + " is not invited to event " + id_param})
+        c.JSON(http.StatusForbidden, gin.H{"error": "User " + session.Values["_id"].(*primitive.ObjectID).String() + " is not invited to event " + id_param})
 	    return
     }
     // update event member
@@ -525,7 +525,7 @@ func DeleteEventMember(c *gin.Context) {
     var eventCheck1 EventItemDB
     err = eventItems.FindOne(context.TODO(), bson.M{"_id": event_id, "eventmembers": bson.M{"$elemMatch": bson.M{"userid": user_id}}}).Decode(&eventCheck1)
     if err != nil {
-        c.JSON(http.StatusConflict, gin.H{"error": "User " + user_id.String() + " is not in event " + id_param})
+        c.JSON(http.StatusBadRequest, gin.H{"error": "User " + user_id.String() + " is not in event " + id_param})
 	    return
     }
     // remove event member

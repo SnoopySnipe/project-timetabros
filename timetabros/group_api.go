@@ -379,7 +379,7 @@ func AcceptGroupRequest(c *gin.Context) {
     var groupCheck1 Group
     err = groups.FindOne(context.TODO(), bson.M{"_id": group_id, "groupmembers": bson.M{"$elemMatch": bson.M{"userid": session.Values["_id"], "role": "invited"}}}).Decode(&groupCheck1)
     if err != nil {
-        c.JSON(http.StatusConflict, gin.H{"error": "User " + session.Values["_id"].(*primitive.ObjectID).String() + " is not invited to group " + id_param})
+        c.JSON(http.StatusForbidden, gin.H{"error": "User " + session.Values["_id"].(*primitive.ObjectID).String() + " is not invited to group " + id_param})
 	    return
     }
     // update group member
@@ -469,7 +469,7 @@ func DeleteGroupMember(c *gin.Context) {
     var groupCheck1 Group
     err = groups.FindOne(context.TODO(), bson.M{"_id": group_id, "groupmembers": bson.M{"$elemMatch": bson.M{"userid": user_id}}}).Decode(&groupCheck1)
     if err != nil {
-        c.JSON(http.StatusConflict, gin.H{"error": "User " + user_id.String() + " is not in group " + id_param})
+        c.JSON(http.StatusBadRequest, gin.H{"error": "User " + user_id.String() + " is not in group " + id_param})
 	    return
     }
     // remove group member
