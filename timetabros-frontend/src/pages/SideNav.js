@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import clsx from 'clsx';
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -25,7 +25,7 @@ import Requests from './components/Requests/Requests';
 import { Container, Badge } from '@material-ui/core';
 import AuthContext from '../context/AuthContext';
 import { signOut } from '../services/UserService';
-
+import { getFriends } from '../services/FriendService';
 const drawerWidth = 240;
 const useStyles = makeStyles(theme => ({
   yeet: {
@@ -102,7 +102,8 @@ const useStyles = makeStyles(theme => ({
 export default function SideNav() {
   const classes = useStyles();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [title, setTitle] = React.useState('Schedule');
+  const [title, setTitle] = React.useState('');
+  const [friendRequests, setFriendRequests] = React.useState(0);
   const context = useContext(AuthContext);
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
@@ -116,6 +117,18 @@ export default function SideNav() {
       context.setAuthenticatedUser(null);
       localStorage.removeItem('authenticatedUser');
     });
+  }
+  useEffect(() => {
+    fetchFriendRequestNum();
+  }, []);
+
+  const fetchFriendRequestNum = () => {
+    getFriends(context.authenticatedUser._id).then(
+      (response) => {
+        const friendRequests = response.data.receivedfriendrequests;
+        setFriendRequests(friendRequests ? friendRequests.length : 0);
+      }
+    )
   }
 
   return (
@@ -134,8 +147,8 @@ export default function SideNav() {
               <Typography component="h1" variant="h6" className={classes.title}>
                 TimetaBros
               </Typography>
-              <IconButton component={Link} to="/home/requests" onClick={onListItemClick('')}>
-                <Badge badgeContent={4} color="secondary" variant="dot">
+              <IconButton component={Link} to={{pathname: "/home/requests", props: {setFriendRequests}}} onClick={onListItemClick('')}>
+                <Badge badgeContent={friendRequests} color="secondary">
                   <NotificationsIcon/>
                 </Badge>
               </IconButton>

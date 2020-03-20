@@ -17,3 +17,7 @@ export const signOut = () => {
 export const getUser = (userid) => {
     return axios.get(`http://localhost:3001/api/users/${userid}`);
 }
+
+export const verifyToken = (token) => {
+    return axios.get(`http://localhost:3001/verify/${token}`);
+}

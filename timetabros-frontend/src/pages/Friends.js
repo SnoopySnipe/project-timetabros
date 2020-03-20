@@ -24,6 +24,7 @@ class Friends extends React.Component {
     }
 
     fetchFriends() {
+        console.log('!!!!');
         this.setState({friendList: []});
         getFriends(this.context.authenticatedUser._id).then(
             (response) => {
@@ -54,7 +55,7 @@ class Friends extends React.Component {
         );
     }
 
-    componentWillMount(){
+    componentDidMount(){
         this.fetchFriends();
     }
 

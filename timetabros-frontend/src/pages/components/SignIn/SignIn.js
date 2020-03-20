@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Container, TextField, Paper } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import styles from './SignInStyles';
@@ -19,10 +20,13 @@ class SignIn extends React.Component {
         console.log(this.context);
         e.preventDefault();
         signIn(this.state.username, this.state.password).then(response => {
-          this.context.setAuthenticatedUser(response.data);
-          localStorage.setItem('authenticatedUser', JSON.stringify(response.data));    
-          history.push('/home');
+            this.setState({errored: false});
+            this.context.setAuthenticatedUser(response.data);
+            localStorage.setItem('authenticatedUser', JSON.stringify(response.data));    
+            history.push('/home');
         }).catch(error => {
+            this.setState({errored:true});
+            this.setState({error: error.response.data.error});
         });
     }
     render() {
@@ -36,6 +40,12 @@ class SignIn extends React.Component {
                 <form onSubmit={this.handleLogin} className={classes.form}>
                     <TextField value={this.state.username} onChange={(e) => {this.setState({username: e.target.value})}} label="Username" variant="outlined" margin="normal" required fullWidth/>
                     <TextField value={this.state.password} onChange={(e) => {this.setState({password: e.target.value})}} label="Password" variant="outlined" margin="normal" type="password" required fullWidth/>
+                    {
+                    this.state.errored && 
+                    <Alert className={classes.alert} variant="outlined" severity="error">
+                        {this.state.error}
+                    </Alert>
+                    }
                     <Button className={classes.submit} type="submit" variant="outlined" fullWidth>
                         Sign In
                     </Button>

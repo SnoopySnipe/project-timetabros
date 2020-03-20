@@ -7,10 +7,12 @@ import AuthContext from '../../../context/AuthContext';
 import styles from './RequestsStyles';
 import { acceptFriendRequest, getFriends } from '../../../services/FriendService';
 import { getUser } from '../../../services/UserService';
+import { withRouter } from 'react-router-dom';
 
 class Requests extends React.Component {
     static contextType = AuthContext;
     constructor(props) {
+        console.log(props);
         super(props);
         this.state = {
             friendRequests: []
@@ -30,8 +32,11 @@ class Requests extends React.Component {
         this.setState({friendRequests: []})
         getFriends(this.context.authenticatedUser._id).then(
             (response) => {
-                console.log(response);
-                if(!response.data.receivedfriendrequests) return;
+                if(!response.data.receivedfriendrequests) {
+                    if(this.props.location.props) this.props.location.props.setFriendRequests(0);
+                    return;
+                }
+                if(this.props.location.props) this.props.location.props.setFriendRequests(response.data.receivedfriendrequests.length);
                 response.data.receivedfriendrequests.forEach(
                     (friendRequest) => {
                         getUser(friendRequest.user1).then(
@@ -102,4 +107,4 @@ class Requests extends React.Component {
     }
 }
 
-export default withStyles(styles)(Requests);
+export default withStyles(styles)(withRouter(Requests));

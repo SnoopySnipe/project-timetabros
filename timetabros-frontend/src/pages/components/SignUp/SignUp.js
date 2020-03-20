@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import styles from './SignUpStyles';
 import AuthContext from '../../../context/AuthContext';
 import { withRouter, NavLink } from 'react-router-dom';
-import {signUp} from '../../../services/UserService';
+import {signUp, verifyToken} from '../../../services/UserService';
 class SignUp extends React.Component {
     static contextType = AuthContext;
 
@@ -26,8 +26,11 @@ class SignUp extends React.Component {
         e.preventDefault();
         signUp(this.state.firstName, this.state.lastName, this.state.email, this.state.username, this.state.password).then(response => {
             this.setState({errored: false});
-            this.setState({registrationToken: response.data.token});
-            this.setState({registered: true});
+            verifyToken(response.data.token).then(
+                () => {
+                    this.setState({registered: true});
+                }
+            )
         }).catch(error => {
             this.setState({registered: false})
             this.setState({error: error.response.data.error});
@@ -54,7 +57,7 @@ class SignUp extends React.Component {
                     {
                     this.state.registered && 
                     <Alert className={classes.alert} variant="outlined" severity="success">
-                        Successfully registered! Here is your token {this.state.registrationToken}
+                        Successfully registered!
                     </Alert>
                     }
                     {
