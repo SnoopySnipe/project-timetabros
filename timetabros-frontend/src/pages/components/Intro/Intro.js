@@ -1,12 +1,11 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import { Grid, IconButton } from '@material-ui/core';
-import AuthContext from '../../context/AuthContext';
-import styles from './LandingStyles';
-import SignIn from '../components/SignIn/SignIn';
+import { Grid, Button } from '@material-ui/core';
+import AuthContext from '../../../context/AuthContext';
+import styles from './IntroStyles';
+import SignIn from '../../components/SignIn/SignIn';
 import { Route, Link } from 'react-router-dom';
-import SignUp from '../components/SignUp/SignUp';
-import Intro from '../components/Intro/Intro';
+import SignUp from '../../components/SignUp/SignUp';
 
 class Landing extends React.Component {
     static contextType = AuthContext;
@@ -14,11 +13,30 @@ class Landing extends React.Component {
     render() {
         const { classes } = this.props;
         return (
-            <div className={classes.bgContainer}>
-                <Route exact path='/landing' component={Intro}/>
-                <Route path='/landing/signin' component={SignIn}/>
-                <Route path='/landing/signup' component={SignUp}/>
-            </div>
+                <Grid className={classes.container} container spacing={4} alignItems="center" justify="center">
+                    <Grid item>
+                        <h1>TimetaBros</h1>
+                        <h3>A social scheduler for students, by students.</h3>
+                        <Grid container spacing={2}>
+                            <Grid item>
+                                <Button size="small" variant="contained" component={Link} to='/landing/signin'>
+                                    Sign in
+                                </Button>
+                            </Grid>
+                            <Grid item>
+                                <Button size="small" variant="contained" component={Link} to='/landing/signup'>
+                                    Sign up
+                                </Button>
+                            </Grid>
+                        </Grid>
+
+
+                    </Grid>
+                    {/* <Grid item>
+                        <h1>TimetaBros</h1>
+                        <h3>A social scheduler for students, by students.</h3>
+                    </Grid> */}
+                </Grid>
     
         )
     }

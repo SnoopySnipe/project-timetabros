@@ -18,11 +18,14 @@ const styles = (theme => ({
     },
     bgContainer: {
         minHeight: '100vh',
-        backgroundImage: `linear-gradient(to bottom, rgba(245, 246, 252, 0.52), rgba(117, 19, 93, 0.73)), url(${books})`,
+        backgroundImage: `linear-gradient(to bottom, rgba(245, 246, 252, 0.70), rgba(117, 19, 93, 0.90)), url(${books})`,
         backgroundSize: 'cover',
     },
     cardContainer: {
         paddingTop: theme.spacing(8),
+    },
+    container: {
+        minHeight: '100vh',
     }
 }));
 
