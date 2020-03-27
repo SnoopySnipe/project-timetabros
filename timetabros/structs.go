@@ -6,6 +6,13 @@ import (
     "go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type EmailSetup struct {
+    Host string
+    Port string
+    Address string
+    Password string
+}
+
 type User struct {
     Username string `json:"username" binding:"required"`
     Firstname string `json:"firstname" binding:"required"`

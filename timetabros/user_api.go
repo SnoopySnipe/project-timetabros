@@ -4,6 +4,7 @@ import (
     "context"
     "encoding/json"
     "net/http"
+    "net/smtp"
     //"log"
 
     "go.mongodb.org/mongo-driver/bson"
@@ -59,6 +60,24 @@ func SignUp(c *gin.Context) {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
     }
+
+
+
+    path := "/verify/" + insertedPendingUser.InsertedID.(primitive.ObjectID).Hex()
+    // send email
+    to := []string{user.Email}
+    msg := []byte("To: " + user.Email + "\r\n" +
+        "Subject: TimetaBros User SignUp\r\n" +
+		"\r\n" +
+		"You signed up for TimetaBros, please click " + site + path + " to verify your email.\r\n")
+    err = smtp.SendMail(email_setup.Host + ":" + email_setup.Port, auth, email_setup.Address, to, msg)
+	if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+
+
     // send back response with user data and token
     c.JSON(http.StatusOK, gin.H{
         "_id": insertedUser.InsertedID,
@@ -259,7 +278,7 @@ func GetUserDetails(c *gin.Context) {
 }
 
 // update user details api
-// curl -b cookie.txt -c cookie.txt -X PATCH -H "Content-Type: application/json" -d @data.txt localhost:3001/api/users/id
+// curl -b cookie.txt -c cookie.txt -X PATCH -H "Content-Type: application/json" -d @data.txt localhost:3001/api/users
 func UpdateUserDetails(c *gin.Context) {
     // get session
     session, err := store.Get(c.Request, "session")
@@ -273,7 +292,7 @@ func UpdateUserDetails(c *gin.Context) {
 		return
     }
     // get id and check that its valid
-    id_param := c.Param("id")
+    id_param := session.Values["_id"].(*primitive.ObjectID).Hex()
     id, err := primitive.ObjectIDFromHex(id_param)
     if err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id " + id_param})
@@ -345,6 +364,23 @@ func UpdateUserDetails(c *gin.Context) {
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		        return
             }
+
+
+            path := "/verify/" + token.Hex()
+            // send email
+            to := []string{user.Email}
+            msg := []byte("To: " + user.Email + "\r\n" +
+		            "Subject: TimetaBros User Email Updated\r\n" +
+		            "\r\n" +
+		            "Your email was updated, please click " + site + path + " to verify.\r\n")
+            err = smtp.SendMail(email_setup.Host + ":" + email_setup.Port, auth, email_setup.Address, to, msg)
+	        if err != nil {
+		        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		        return
+	        }
+
+
+
         }
     }
     if updatedUser.Firstname != "" {

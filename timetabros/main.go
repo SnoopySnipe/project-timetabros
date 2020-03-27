@@ -5,6 +5,7 @@ import (
     "log"
     "encoding/gob"
     "net/http"
+    "net/smtp"
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
@@ -25,6 +26,10 @@ var eventItems *mongo.Collection
 var friendConnections *mongo.Collection
 var groups *mongo.Collection
 var store *sessions.CookieStore
+
+var auth smtp.Auth
+var email_setup EmailSetup
+var site string
 
 func main() {
     // connect to mongodb
@@ -49,6 +54,15 @@ func main() {
     eventItems = client.Database("timetabros").Collection("event_items")
     friendConnections = client.Database("timetabros").Collection("friend_connections")
     groups = client.Database("timetabros").Collection("groups")
+
+
+
+    // setup email
+    site = "http://localhost:3001"
+    email_setup = EmailSetup{Host: "smtp.gmail.com", Port: "587", Address: email_address, Password: email_password}
+    auth = smtp.PlainAuth("", email_setup.Address, email_setup.Password, email_setup.Host)
+
+
 
     // setup api routers
     router := gin.Default()
@@ -82,7 +96,7 @@ func main() {
     router.POST("/signin", SignIn)
     router.GET("/signout", SignOut)
     api.GET("/users/:id", GetUserDetails)
-    api.PATCH("/users/:id", UpdateUserDetails)
+    api.PATCH("/users", UpdateUserDetails)
     api.POST("/users", SearchUsers)
 
     api.POST("/event_items", CreateEventItem)
