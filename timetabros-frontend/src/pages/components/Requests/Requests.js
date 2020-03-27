@@ -14,9 +14,6 @@ class Requests extends React.Component {
     constructor(props) {
         console.log(props);
         super(props);
-        this.state = {
-            friendRequests: []
-        }
     }
 
     handleAcceptFriend = (requestId) => {
@@ -28,45 +25,15 @@ class Requests extends React.Component {
         )
     }
 
-    fetchFriendRequests() {
-        this.setState({friendRequests: []})
-        getFriends(this.context.authenticatedUser._id).then(
-            (response) => {
-                if(!response.data.receivedfriendrequests) {
-                    if(this.props.location.props) this.props.location.props.setFriendRequests(0);
-                    return;
-                }
-                if(this.props.location.props) this.props.location.props.setFriendRequests(response.data.receivedfriendrequests.length);
-                response.data.receivedfriendrequests.forEach(
-                    (friendRequest) => {
-                        getUser(friendRequest.user1).then(
-                            (res) => {
-                               const user = res.data;
-                               this.setState(
-                                   {
-                                       friendRequests : this.state.friendRequests.concat([{
-                                           id: friendRequest.ID,
-                                           userId: user._id,
-                                           firstName: user.firstname,
-                                           lastName: user.lastname,
-                                           username: user.username
-                                         }])
-                                   }
-                               )
-                            }
-                        )
-                    });
-            }
-        )
-    }
-    componentWillMount(){
-        this.fetchFriendRequests();
-    }
+
+    // componentWillMount(){
+    //     this.fetchFriendRequests();
+    // }
     // this.context.authenticatedUser
     render() {
         const { classes } = this.props;
         console.log(this.context.authenticatedUser);
-        const friendRequestList = this.state.friendRequests;
+        const friendRequestList = this.props.friendRequests;
         const listItems = !friendRequestList ? [] : friendRequestList.map((request) => (
             <ListItem divider>
                 <ListItemAvatar>

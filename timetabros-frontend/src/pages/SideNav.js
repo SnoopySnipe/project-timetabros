@@ -26,6 +26,7 @@ import { Container, Badge } from '@material-ui/core';
 import AuthContext from '../context/AuthContext';
 import { signOut } from '../services/UserService';
 import { getFriends } from '../services/FriendService';
+import { getUser } from '../services/UserService';
 const drawerWidth = 240;
 const useStyles = makeStyles(theme => ({
   yeet: {
@@ -103,7 +104,7 @@ export default function SideNav() {
   const classes = useStyles();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [title, setTitle] = React.useState('');
-  const [friendRequests, setFriendRequests] = React.useState(0);
+  const [friendRequests, setFriendRequests] = React.useState([]);
   const context = useContext(AuthContext);
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
@@ -119,15 +120,33 @@ export default function SideNav() {
     });
   }
   useEffect(() => {
-    fetchFriendRequestNum();
+    fetchFriendRequests();
   }, []);
 
-  const fetchFriendRequestNum = () => {
+
+  const fetchFriendRequests = () => {
+    setFriendRequests([]);
     getFriends(context.authenticatedUser._id).then(
-      (response) => {
-        const friendRequests = response.data.receivedfriendrequests;
-        setFriendRequests(friendRequests ? friendRequests.length : 0);
-      }
+        (response) => {
+            if(!response.data.receivedfriendrequests) {
+                return;
+            }
+            response.data.receivedfriendrequests.forEach(
+                (friendRequest) => {
+                    getUser(friendRequest.user1).then(
+                        (res) => {
+                           const user = res.data;
+                           setFriendRequests(friendRequests.concat([{
+                            id: friendRequest.ID,
+                            userId: user._id,
+                            firstName: user.firstname,
+                            lastName: user.lastname,
+                            username: user.username
+                          }]));
+                        }
+                    )
+                });
+        }
     )
   }
 
@@ -147,8 +166,8 @@ export default function SideNav() {
               <Typography component="h1" variant="h6" className={classes.title}>
                 TimetaBros
               </Typography>
-              <IconButton component={Link} to={{pathname: "/home/requests", props: {setFriendRequests}}} onClick={onListItemClick('')}>
-                <Badge badgeContent={friendRequests} color="secondary">
+              <IconButton component={Link} to={{pathname: "/home/requests"}} onClick={onListItemClick('')}>
+                <Badge badgeContent={friendRequests.length} color="secondary">
                   <NotificationsIcon/>
                 </Badge>
               </IconButton>
@@ -201,7 +220,7 @@ export default function SideNav() {
             <Route exact path="/home/profile" component={Profile}/>
               <Route path="/home/profile/:id" component={Profile}/>
               <Route path="/home/friends" component={Friends} />
-              <Route path="/home/requests" component={Requests} />
+              <Route path="/home/requests" render={(props) => <Requests friendRequests={friendRequests} onFriendRequestChange={fetchFriendRequests} />} />
             </Container>
 
 
