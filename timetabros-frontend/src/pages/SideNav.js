@@ -19,9 +19,11 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Schedule from '@material-ui/icons/Schedule';
 import People from '@material-ui/icons/People';
 import ListItem from '@material-ui/core/ListItem';
+import CompareIcon from '@material-ui/icons/Compare';
 import Profile from './Profile';
 import Friends from './Friends';
 import Requests from './components/Requests/Requests';
+import Compare from './Compare';
 import { Container, Badge } from '@material-ui/core';
 import AuthContext from '../context/AuthContext';
 import { signOut } from '../services/UserService';
@@ -202,6 +204,12 @@ export default function SideNav() {
                 </ListItemIcon>
                 <ListItemText primary="Friends"></ListItemText>
               </ListItem>
+              <ListItem button selected={title==="Compare"} component={Link} to="/home/compare" onClick={onListItemClick('Compare')}>
+                <ListItemIcon>
+                  <CompareIcon></CompareIcon>
+                </ListItemIcon>
+                <ListItemText primary="Compare"></ListItemText>
+              </ListItem>
             </div></List>
             <Divider />
             <List>
@@ -221,6 +229,7 @@ export default function SideNav() {
               <Route path="/home/profile/:id" component={Profile}/>
               <Route path="/home/friends" component={Friends} />
               <Route path="/home/requests" render={(props) => <Requests friendRequests={friendRequests} onFriendRequestChange={fetchFriendRequests} />} />
+              <Route path="/home/compare" component={Compare} />
             </Container>
 
 

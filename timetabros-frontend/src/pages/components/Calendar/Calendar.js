@@ -21,8 +21,8 @@ const styles = {
 class Calendar extends Component {
   constructor(props) {
     super(props);
-    console.log(props);
     this.state = {
+      users: [],
       events: [],
       viewType: "Week",
       durationBarVisible: false,
@@ -42,7 +42,6 @@ class Calendar extends Component {
                 desc = modal.result;
                 createEventItem(title, args.start.toDate(), args.end.toDate()).then(
                   (createdEventItem) => {
-                    console.log(this.events);
                     this.setState({
                       event: this.state.events.concat([{
                         id: createdEventItem._id,
@@ -52,16 +51,7 @@ class Calendar extends Component {
                       }])
                     });
 
-                    this.fetchEventItems(this.props.user._id);
-                    //this.fetchEventItems("5e692e2cac7ccf00b9e1d71b");
-                    // dp.events.add(new DayPilot.Event({
-                    //     start: args.start,
-                    //     end: args.end,
-                    //     id: createdEventItem._id,
-                    //     text: title,
-                    //     attendants:[],
-                    //     description: desc
-                    // }));
+                    //this.fetchEventItems(this.props.user._id);
                   }
                 );
             });
@@ -113,7 +103,6 @@ class Calendar extends Component {
   }
 
   authorizeCalendar(){
-    console.log(this.props);
     if(this.props.canEdit) return;
     this.setState({
       timeRangeSelectedHandling: "Disabled",
@@ -145,8 +134,9 @@ class Calendar extends Component {
         end.setMilliseconds(0);
         return {start: start.toISOString(), end: end.toISOString(), text: item.title, id: item.ID};
       }) : [];
+      let properEvents = this.state.events.concat(events);
       this.setState({
-        events: events
+        events: properEvents
       });
     })
     // Not sure if we need this
@@ -160,9 +150,25 @@ class Calendar extends Component {
       startDate: (new Date()).toISOString()
     });
     this.authorizeCalendar();
-    this.fetchEventItems(this.props.user._id);
+    if(this.props.user){
+      this.fetchEventItems(this.props.user._id);
+    } else if (this.props.users){
+      this.setState({
+        events:[]
+      })
+      for (let userId of this.props.users) {
+        this.fetchEventItems(userId);
+      }
+    }
   }
-
+  componentWillReceiveProps(){
+    this.setState({
+      events:[]
+    })
+    for (let userId of this.props.users) {
+      this.fetchEventItems(userId);
+    }
+  }
   updateWeekEventItems() {
 
   }
@@ -175,7 +181,7 @@ class Calendar extends Component {
           const date = new Date(this.state.startDate);
           date.setDate(date.getDate() - 7);
           this.setState({startDate: date.toISOString()});
-          this.fetchEventItems(this.props.user._id);
+          //this.fetchEventItems(this.props.user._id);
           }}>
           <ArrowBackIosIcon />
         </IconButton>

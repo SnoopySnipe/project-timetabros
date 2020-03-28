@@ -15,6 +15,8 @@ class Profile extends React.Component {
     }
     componentDidMount() {
         let id = this.props.match.params.id;
+        console.log(this.props);
+        console.log("Calender UserId");
         console.log(id);
         if(!id) {
             id = this.context.authenticatedUser._id;
