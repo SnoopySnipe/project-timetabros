@@ -32,6 +32,11 @@ func CreateGroup(c *gin.Context) {
 	}
     group.Createdby = session.Values["_id"].(*primitive.ObjectID)
     group.Creatorrole = "admin"
+    // verify inputs
+    if errs := validate.Struct(group); errs != nil {
+	    c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		return
+    }
     // insert group into db
     insertedGroup, err := groups.InsertOne(context.TODO(), group)
     if err != nil {
@@ -129,6 +134,13 @@ func UpdateGroupDetails(c *gin.Context) {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+    // verify inputs
+    if errs := validate.Struct(updatedGroup); errs != nil {
+	    c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		return
+    }
+
     if updatedGroup.Name != "" {
         group.Name = updatedGroup.Name
     }
@@ -275,7 +287,7 @@ func SendGroupRequest(c *gin.Context) {
 		return
     }
     // get user and group to send group request to
-    var groupMember FriendConnection
+    var groupMember UserIDStruct
     if err = c.ShouldBindJSON(&groupMember); err != nil {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -422,7 +434,7 @@ func DeleteGroupMember(c *gin.Context) {
 		return
     }
     // get user and group to delete group member from
-    var groupMember FriendConnection
+    var groupMember UserIDStruct
     if err = c.ShouldBindJSON(&groupMember); err != nil {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

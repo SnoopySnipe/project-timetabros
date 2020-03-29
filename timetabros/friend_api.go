@@ -25,7 +25,7 @@ func SendFriendRequest (c *gin.Context) {
 		return
     }
     // get user to send friend request to
-    var friendConnection FriendConnection
+    var friendConnection UserIDStruct
     if err = c.ShouldBindJSON(&friendConnection); err != nil {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -189,7 +189,7 @@ func DeleteFriendConnection (c *gin.Context) {
 		return
     }
     // get user to being deleted
-    var friendConnection FriendConnection
+    var friendConnection UserIDStruct
     if err = c.ShouldBindJSON(&friendConnection); err != nil {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

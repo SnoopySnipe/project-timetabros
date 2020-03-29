@@ -14,8 +14,9 @@ import (
 
     "github.com/gin-gonic/gin"
     "github.com/gorilla/sessions"
-    //"github.com/gorilla/securecookie"
     "github.com/gin-contrib/cors"
+
+    "gopkg.in/go-playground/validator.v9"
 )
 
 const layout = "2006-01-02T15:04:05.000Z"
@@ -25,13 +26,19 @@ var pendingUsers *mongo.Collection
 var eventItems *mongo.Collection
 var friendConnections *mongo.Collection
 var groups *mongo.Collection
+
 var store *sessions.CookieStore
 
 var auth smtp.Auth
 var email_setup EmailSetup
 var site string
 
+var validate *validator.Validate
+
 func main() {
+    // setup input validation
+    validate = validator.New()
+
     // connect to mongodb
     clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
     client, err := mongo.Connect(context.TODO(), clientOptions)
@@ -73,11 +80,11 @@ func main() {
     config.AllowCredentials = true
     router.Use(cors.New(config))
     
-    //store = sessions.NewCookieStore([]byte(securecookie.GenerateRandomKey(32)))
+
     store = sessions.NewCookieStore([]byte("pleasechangeandstoreinconf"))
     gob.Register(&primitive.ObjectID{})
     //router.Use(static.Serve("/", static.LocalFile("./frontend", true)))
-    api := router.Group("/api") 
+    api := router.Group("/api")
     api.GET("/", func(c *gin.Context) {
         c.JSON(http.StatusOK, gin.H {
             "message": "pong",
@@ -88,9 +95,9 @@ func main() {
 
     // define api routes
     // TODO sanitize inputs, check inputs are logically valid, limit user inputs
-    // TODO send notifications
     // TODO check for settings
-    // TODO fix some error status codes
+
+    // user apis
     router.POST("/signup", SignUp)
     router.GET("/verify/:token", Verify)
     router.POST("/signin", SignIn)
@@ -99,27 +106,32 @@ func main() {
     api.PATCH("/users", UpdateUserDetails)
     api.POST("/users", SearchUsers)
 
+    // event apis
     api.POST("/event_items", CreateEventItem)
     api.GET("/event_items/:id", GetEventItemDetails)
     api.PATCH("/event_items/:id", UpdateEventItemDetails)
     api.DELETE("/event_items/:id", DeleteEventItem)
     api.GET("/users/:id/event_items", GetUserEvents)
 
+    // friend apis
     api.POST("/friends", SendFriendRequest)
     api.PATCH("/friends/:id", AcceptFriendRequest)
     api.GET("/users/:id/friends", GetFriends)
     api.DELETE("/friends", DeleteFriendConnection)
 
+    // group apis
     api.POST("/groups", CreateGroup)
     api.GET("/groups/:id", GetGroupDetails)
     api.PATCH("/groups/:id", UpdateGroupDetails)
     api.DELETE("/groups/:id", DeleteGroup)
     api.GET("/users/:id/groups", GetUserGroups)
 
+    // group request apis
     api.POST("/groups/:id/members", SendGroupRequest)
     api.PATCH("/groups/:id/members", AcceptGroupRequest)
     api.DELETE("/groups/:id/members", DeleteGroupMember)
 
+    // event request apis
     api.POST("/event_items/:id/members", SendEventRequest)
     api.PATCH("/event_items/:id/members", UpdateEventStatus)
     api.DELETE("/event_items/:id/members", DeleteEventMember)

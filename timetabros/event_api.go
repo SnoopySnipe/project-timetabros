@@ -32,9 +32,21 @@ func CreateEventItem(c *gin.Context) {
 		return
 	}
     event.Createdby = session.Values["_id"].(*primitive.ObjectID)
+
+    // verify inputs
+    if errs := validate.Struct(event); errs != nil {
+	    c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		return
+    }
+
     eventDB, err := ConvertEventItem(event)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	    return
+    }
+    // verify event end date > start date
+    if !(eventDB.Enddate.After(eventDB.Startdate)) {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Event end date must be after start date"})
 	    return
     }
     // insert event into db
@@ -138,6 +150,13 @@ func UpdateEventItemDetails(c *gin.Context) {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+    // verify inputs
+    if errs := validate.Struct(event); errs != nil {
+	    c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		return
+    }
+
     if event.Startdate != "" {
         startdate, err := time.Parse(layout, event.Startdate)
         if err != nil {
@@ -167,6 +186,11 @@ func UpdateEventItemDetails(c *gin.Context) {
     }
     if event.Description != "" {
         eventDB.Description = event.Description
+    }
+    // verify event end date > start date
+    if !(eventDB.Enddate.After(eventDB.Startdate)) {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Event end date must be after start date"})
+	    return
     }
     // save event into db
     _, err = eventItems.UpdateOne(context.TODO(), bson.M{"_id": id}, bson.M{"$set": bson.M{"startdate": eventDB.Startdate, "enddate": eventDB.Enddate, "title": eventDB.Title, "description": eventDB.Description, "expirydate": eventDB.Expirydate}})
@@ -321,7 +345,7 @@ func SendEventRequest(c *gin.Context) {
 		return
     }
     // get user and group to send group request to
-    var eventMember FriendConnection
+    var eventMember UserIDStruct
     if err = c.ShouldBindJSON(&eventMember); err != nil {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -416,6 +440,11 @@ func UpdateEventStatus(c *gin.Context) {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+    // verify inputs
+    if errs := validate.Struct(status); errs != nil {
+	    c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		return
+    }
     // check if id is valid
     event_id, err := primitive.ObjectIDFromHex(id_param)
     if err != nil {
@@ -478,7 +507,7 @@ func DeleteEventMember(c *gin.Context) {
 		return
     }
     // get user and group to delete group member from
-    var eventMember FriendConnection
+    var eventMember UserIDStruct
     if err = c.ShouldBindJSON(&eventMember); err != nil {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
