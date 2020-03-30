@@ -274,6 +274,20 @@ func GetUserDetails(c *gin.Context) {
         c.JSON(http.StatusNotFound, gin.H{"error": "User " + id_param + " not found"})
 		return
     }
+    // check user's privacy settings
+    if session.Values["_id"].(*primitive.ObjectID).Hex() != id.Hex() {
+        if user.Privacysettings.Profile == "private" {
+            c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
+		    return
+        } else if user.Privacysettings.Profile == "friends-only" {
+            var friendConnectionDB FriendConnectionDB
+            err = friendConnections.FindOne(context.TODO(), bson.M{"status": "accepted", "$or": []bson.M{bson.M{"user1": session.Values["_id"], "user2": id,},bson.M{"user1": id, "user2": session.Values["_id"],},},}).Decode(&friendConnectionDB)
+            if err != nil {
+                c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
+		        return
+            }
+        }
+    }
     // send response
     c.JSON(http.StatusOK, gin.H{
         "_id": id,
