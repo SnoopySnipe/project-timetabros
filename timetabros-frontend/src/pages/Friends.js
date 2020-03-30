@@ -63,7 +63,6 @@ class Friends extends React.Component {
         event.preventDefault();
         console.log(this.state);
 
-        // WHAT THE FUCK IS GOING ON?????? this doesnt actually work...
         axios.post(`http://localhost:3001/api/users`, {query: this.state.query})
             .then(res => {
                 this.setState({searchedUsers: res.data});

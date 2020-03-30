@@ -4,7 +4,7 @@ import (
     "context"
     "encoding/json"
     "net/http"
-    //"log"
+    "net/smtp"
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
@@ -23,6 +23,11 @@ func SignUp(c *gin.Context) {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+    // verify inputs
+    if errs := validate.StructPartial(user, "User.Username", "User.Email", "User.Password", "User.Firstname", "User.Lastname"); errs != nil {
+	    c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		return
+    }
     // check if user already exists
     var existingUser User
     err := users.FindOne(context.TODO(), bson.M{"username": user.Username}).Decode(&existingUser)
@@ -59,6 +64,24 @@ func SignUp(c *gin.Context) {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
     }
+
+
+
+    path := "/verify/" + insertedPendingUser.InsertedID.(primitive.ObjectID).Hex()
+    // send email
+    to := []string{user.Email}
+    msg := []byte("To: " + user.Email + "\r\n" +
+        "Subject: TimetaBros User SignUp\r\n" +
+		"\r\n" +
+		"You signed up for TimetaBros, please click " + site + path + " to verify your email.\r\n")
+    err = smtp.SendMail(email_setup.Host + ":" + email_setup.Port, auth, email_setup.Address, to, msg)
+	if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+
+
     // send back response with user data and token
     c.JSON(http.StatusOK, gin.H{
         "_id": insertedUser.InsertedID,
@@ -135,6 +158,11 @@ func SignIn(c *gin.Context) {
     email := data.Email
     if (username == "" && email == "") || password == "" {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Missing arguments"})
+		return
+    }
+    // verify inputs
+    if errs := validate.Struct(data); errs != nil {
+	    c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
 		return
     }
     // find user in db
@@ -259,7 +287,7 @@ func GetUserDetails(c *gin.Context) {
 }
 
 // update user details api
-// curl -b cookie.txt -c cookie.txt -X PATCH -H "Content-Type: application/json" -d @data.txt localhost:3001/api/users/id
+// curl -b cookie.txt -c cookie.txt -X PATCH -H "Content-Type: application/json" -d @data.txt localhost:3001/api/users
 func UpdateUserDetails(c *gin.Context) {
     // get session
     session, err := store.Get(c.Request, "session")
@@ -273,7 +301,7 @@ func UpdateUserDetails(c *gin.Context) {
 		return
     }
     // get id and check that its valid
-    id_param := c.Param("id")
+    id_param := session.Values["_id"].(*primitive.ObjectID).Hex()
     id, err := primitive.ObjectIDFromHex(id_param)
     if err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id " + id_param})
@@ -286,17 +314,17 @@ func UpdateUserDetails(c *gin.Context) {
         c.JSON(http.StatusNotFound, gin.H{"error": "User " + id_param + " not found"})
 		return
     }
-    // verify that updater is the user
-    if session.Values["_id"].(*primitive.ObjectID).String() != id.String() {
-        c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
-		return
-    }
     // get update credentials
     var updatedUser UserUpdate
     if err = c.ShouldBindJSON(&updatedUser); err != nil {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+    // verify inputs
+    if errs := validate.Struct(updatedUser); errs != nil {
+	    c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		return
+    }
     // create salted hash and store it instead of password in clear
     if updatedUser.Password != "" {
         hash, err := bcrypt.GenerateFromPassword([]byte(updatedUser.Password), bcrypt.DefaultCost)
@@ -345,6 +373,23 @@ func UpdateUserDetails(c *gin.Context) {
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		        return
             }
+
+
+            path := "/verify/" + token.Hex()
+            // send email
+            to := []string{user.Email}
+            msg := []byte("To: " + user.Email + "\r\n" +
+		            "Subject: TimetaBros User Email Updated\r\n" +
+		            "\r\n" +
+		            "Your email was updated, please click " + site + path + " to verify.\r\n")
+            err = smtp.SendMail(email_setup.Host + ":" + email_setup.Port, auth, email_setup.Address, to, msg)
+	        if err != nil {
+		        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		        return
+	        }
+
+
+
         }
     }
     if updatedUser.Firstname != "" {
@@ -405,6 +450,11 @@ func SearchUsers(c *gin.Context) {
 	    return
     }
     query := data.Query
+    // verify inputs
+    if errs := validate.Struct(data); errs != nil {
+	    c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		return
+    }
     // search users
     searchResults, err := userFind(bson.M{"$text": bson.M{"$search": query,},})
     if err != nil {

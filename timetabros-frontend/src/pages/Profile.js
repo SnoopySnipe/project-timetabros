@@ -9,26 +9,24 @@ class Profile extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            user: null,
+            userId: null,
             canEdit: false
         }
     }
     componentDidMount() {
         let id = this.props.match.params.id;
+        console.log(this.props);
+        console.log("Calender UserId");
         console.log(id);
         if(!id) {
             id = this.context.authenticatedUser._id;
             this.setState({canEdit: true});
         }
-        if(id) getUser(id).then(
-            (response) => {
-                this.setState({user: response.data})
-                console.log(this.state.user);
-            }
-        );
+        console.log(id);
+        if(id) this.setState({userId: id});
     }
     render(){
-        if (!this.state.user) {
+        if (!this.state.userId) {
             return <div />
         }
         return(
@@ -37,7 +35,7 @@ class Profile extends React.Component {
                 <h1>SCHEDULE</h1>
                 {/* <Calendar targetSchedule="5e692e2cac7ccf00b9e1d71b"/> */}
                 
-                <Calendar user={this.state.user} canEdit={this.state.canEdit}/>
+                <Calendar users={[this.state.userId]} canEdit={this.state.canEdit}/>
             </div>
             
         )

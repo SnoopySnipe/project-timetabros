@@ -22,7 +22,6 @@ const styles = {
 class Calendar extends Component {
   constructor(props) {
     super(props);
-    console.log(props);
     this.state = {
       selectedEvent: null,
       openCreateDialog: false,
@@ -50,7 +49,7 @@ class Calendar extends Component {
       onEventMoved: args => {
         updateEventItemTime(args.e.data.id, args.newStart.toDate(), args.newEnd.toDate()).then(
           () => {
-            this.fetchEventItems(this.props.user._id);
+            this.fetchUsersEventItems(this.props.users);
           }
         );
       },
@@ -75,7 +74,7 @@ class Calendar extends Component {
                     () => {
                       args.source.data.text = modal.result;
                       args.source.calendar.events.update(args.source);
-                      this.fetchEventItems(this.props.user._id);
+                      this.fetchUsersEventItems(this.props.users);
                     }
                   );
 
@@ -87,7 +86,7 @@ class Calendar extends Component {
                   if (!modal.result) { return; }
                   deleteEventItem(args.source.data.id).then(() => {
                     args.source.calendar.events.remove(modal);
-                    this.fetchEventItems(this.props.user._id);
+                    this.fetchUsersEventItems(this.props.users);
                   });
               });
             }
@@ -98,7 +97,6 @@ class Calendar extends Component {
   }
 
   authorizeCalendar(){
-    console.log(this.props);
     if(this.props.canEdit) return;
     this.setState({
       timeRangeSelectedHandling: "Disabled",
@@ -114,9 +112,15 @@ class Calendar extends Component {
       openCreateDialog: false
     })
   }
-
-  fetchEventItems = () => {
-    const userId = this.props.user._id;
+  fetchUsersEventItems = () => {
+    this.setState({
+      events:[]
+    })
+    for (let userId of this.props.users) {
+      this.fetchEventItems(userId);
+    }
+  }
+  fetchEventItems = (userId) => {
     //getEventItems(this.context.authenticatedUser._id).then((response) => {
     getEventItems(userId).then((response) => {      
       let events = response.data.scheduleitems ? response.data.scheduleitems.map((item) => {
@@ -137,8 +141,9 @@ class Calendar extends Component {
         end.setMilliseconds(0);
         return {start: start.toISOString(), end: end.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers};
       }) : [];
+      let properEvents = this.state.events.concat(events);
       this.setState({
-        events: events
+        events: properEvents
       });
     })
     // Not sure if we need this
@@ -152,9 +157,18 @@ class Calendar extends Component {
       startDate: (new Date()).toISOString()
     });
     this.authorizeCalendar();
-    this.fetchEventItems();
+    if (this.props.users){
+      this.fetchUsersEventItems(this.props.users);
+    }
   }
-
+  componentWillReceiveProps(){
+    this.setState({
+      events:[]
+    })
+    for (let userId of this.props.users) {
+      this.fetchEventItems(userId);
+    }
+  }
   updateWeekEventItems() {
 
   }
@@ -163,12 +177,12 @@ class Calendar extends Component {
     var {...config} = this.state;
     return (
       <div>
-        <ScheduleDialog open={this.state.openCreateDialog} handleClose={this.handleCloseCreateDialog} handleCreated={this.fetchEventItems} createStartDate={this.state.createStartDate} createEndDate={this.state.createEndDate} eventToUpdate={this.state.selectedEvent}></ScheduleDialog>
+        <ScheduleDialog open={this.state.openCreateDialog} handleClose={this.handleCloseCreateDialog} handleCreated={this.fetchUsersEventItems} createStartDate={this.state.createStartDate} createEndDate={this.state.createEndDate} eventToUpdate={this.state.selectedEvent}></ScheduleDialog>
         <IconButton onClick={()=>{
           const date = new Date(this.state.startDate);
           date.setDate(date.getDate() - 7);
           this.setState({startDate: date.toISOString()});
-          this.fetchEventItems();
+          //this.fetchEventItems(this.props.user._id);
           }}>
           <ArrowBackIosIcon />
         </IconButton>

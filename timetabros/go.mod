@@ -11,4 +11,5 @@ require (
 	github.com/gorilla/sessions v1.1.3
 	go.mongodb.org/mongo-driver v1.3.0
 	golang.org/x/crypto v0.0.0-20190530122614-20be4c3c3ed5
+	gopkg.in/go-playground/validator.v9 v9.29.1
 )
