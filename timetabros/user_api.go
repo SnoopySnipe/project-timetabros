@@ -24,7 +24,7 @@ func SignUp(c *gin.Context) {
 		return
 	}
     // verify inputs
-    if errs := validate.StructPartial(user, "User.Username", "User.Email", "User.Password", "User.Firstname", "User.Lastname"); errs != nil {
+    if errs := validate.Struct(user); errs != nil {
 	    c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
 		return
     }
@@ -162,7 +162,7 @@ func SignIn(c *gin.Context) {
     }
     // verify inputs
     if errs := validate.Struct(data); errs != nil {
-	    c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
+	    c.JSON(http.StatusUnauthorized, gin.H{"error": errs.Error()})
 		return
     }
     // find user in db
