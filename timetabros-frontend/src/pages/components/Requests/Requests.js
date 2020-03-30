@@ -20,7 +20,7 @@ class Requests extends React.Component {
         console.log(requestId);
         acceptFriendRequest(requestId).then(
             () => {
-                this.fetchFriendRequests();
+                this.props.onFriendRequestChange();
             }
         )
     }

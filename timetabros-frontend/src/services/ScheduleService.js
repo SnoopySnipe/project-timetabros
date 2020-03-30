@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-export const createEventItem = (title, startdate, enddate) => {
+export const createEventItem = (title, startdate, enddate, description='') => {
     console.log(startdate);
     return axios.post('http://localhost:3001/api/event_items', 
-    {title, startdate, enddate});
+    {title, startdate, enddate, description});
 }
 
 export const getEventItems = (userId) => {

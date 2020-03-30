@@ -5,6 +5,7 @@ import { IconButton } from '@material-ui/core';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import Moment from 'react-moment';
+import ScheduleDialog from '../ScheduleDialog/ScheduleDialog';
 
 //import "./CalendarStyles.css";
 
@@ -23,6 +24,10 @@ class Calendar extends Component {
     super(props);
     console.log(props);
     this.state = {
+      selectedEvent: null,
+      openCreateDialog: false,
+      createStartDate: null,
+      createEndDate: null,
       events: [],
       viewType: "Week",
       durationBarVisible: false,
@@ -30,42 +35,13 @@ class Calendar extends Component {
       headerDateFormat: "dddd MMMM d",
       onTimeRangeSelected: args => {
         let dp = this.calendar;
-        let title = "";
-        let desc = "";
-        DayPilot.Modal.prompt("Create a new event:", "").then((modal) => {
-            dp.clearSelection();
-            if (!modal.result) { return; }
-            title = modal.result;
-            DayPilot.Modal.prompt("Description:", "").then((modal) => {
-                dp.clearSelection();
-                if (!modal.result) { return; }
-                desc = modal.result;
-                createEventItem(title, args.start.toDate(), args.end.toDate()).then(
-                  (createdEventItem) => {
-                    console.log(this.events);
-                    this.setState({
-                      event: this.state.events.concat([{
-                        id: createdEventItem._id,
-                        text: createdEventItem.title, 
-                        startdate:createdEventItem.startdate, 
-                        enddate: createdEventItem.enddate
-                      }])
-                    });
-
-                    this.fetchEventItems(this.props.user._id);
-                    //this.fetchEventItems("5e692e2cac7ccf00b9e1d71b");
-                    // dp.events.add(new DayPilot.Event({
-                    //     start: args.start,
-                    //     end: args.end,
-                    //     id: createdEventItem._id,
-                    //     text: title,
-                    //     attendants:[],
-                    //     description: desc
-                    // }));
-                  }
-                );
-            });
-        });
+        this.setState({
+          openCreateDialog: true,
+          selectedEvent: null,
+          createStartDate: args.start.toDate(),
+          createEndDate: args.end.toDate()
+        })
+        dp.clearSelection();
       },
       eventDeleteHandling: "Update",
       onEventDeleted: function (args) {
@@ -79,7 +55,16 @@ class Calendar extends Component {
         );
       },
       onEventClick: args => {
-
+        console.log(args.e.data);
+        this.setState({
+          openCreateDialog: true,
+          selectedEvent: {
+            name: args.e.data.text,
+            description: args.e.data.description
+          },
+          createStartDate: args.e.data.start.toDate(),
+          createEndDate: args.e.data.end.toDate()
+        })
       },
       contextMenu: new DayPilot.Menu({
         items: [
@@ -124,7 +109,14 @@ class Calendar extends Component {
     })
   }
 
-  fetchEventItems(userId) {
+  handleCloseCreateDialog = () => {
+    this.setState({
+      openCreateDialog: false
+    })
+  }
+
+  fetchEventItems = () => {
+    const userId = this.props.user._id;
     //getEventItems(this.context.authenticatedUser._id).then((response) => {
     getEventItems(userId).then((response) => {      
       let events = response.data.scheduleitems ? response.data.scheduleitems.map((item) => {
@@ -143,7 +135,7 @@ class Calendar extends Component {
         end.setMinutes(itemEndDate.getMinutes());
         end.setSeconds(0);
         end.setMilliseconds(0);
-        return {start: start.toISOString(), end: end.toISOString(), text: item.title, id: item.ID};
+        return {start: start.toISOString(), end: end.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers};
       }) : [];
       this.setState({
         events: events
@@ -160,7 +152,7 @@ class Calendar extends Component {
       startDate: (new Date()).toISOString()
     });
     this.authorizeCalendar();
-    this.fetchEventItems(this.props.user._id);
+    this.fetchEventItems();
   }
 
   updateWeekEventItems() {
@@ -171,11 +163,12 @@ class Calendar extends Component {
     var {...config} = this.state;
     return (
       <div>
+        <ScheduleDialog open={this.state.openCreateDialog} handleClose={this.handleCloseCreateDialog} handleCreated={this.fetchEventItems} createStartDate={this.state.createStartDate} createEndDate={this.state.createEndDate} eventToUpdate={this.state.selectedEvent}></ScheduleDialog>
         <IconButton onClick={()=>{
           const date = new Date(this.state.startDate);
           date.setDate(date.getDate() - 7);
           this.setState({startDate: date.toISOString()});
-          this.fetchEventItems(this.props.user._id);
+          this.fetchEventItems();
           }}>
           <ArrowBackIosIcon />
         </IconButton>
@@ -187,7 +180,7 @@ class Calendar extends Component {
           const date = new Date(this.state.startDate);
           date.setDate(date.getDate() + 7);
           this.setState({startDate: date.toISOString()});
-          this.fetchEventItems(this.props.user._id);
+          this.fetchEventItems();
           }}>
           <ArrowForwardIosIcon />
         </IconButton>
