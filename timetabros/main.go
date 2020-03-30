@@ -94,7 +94,7 @@ func main() {
 
 
     // define api routes
-    // TODO sanitize inputs, check inputs are logically valid, limit user inputs
+
     // TODO check for settings
 
     // user apis
