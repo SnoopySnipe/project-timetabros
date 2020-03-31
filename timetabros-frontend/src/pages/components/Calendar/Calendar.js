@@ -6,18 +6,20 @@ import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import Moment from 'react-moment';
 import ScheduleDialog from '../ScheduleDialog/ScheduleDialog';
+import "./CalendarStyles.css";
 
-//import "./CalendarStyles.css";
-
-const styles = {
-  left: {
-    float: "left",
-    width: "220px"
-  },
-  main: {
-    marginLeft: "220px"
-  }
-};
+// const styles = {
+//   left: {
+//     float: "left",
+//     width: "220px"
+//   },
+//   main: {
+//     marginLeft: "220px"
+//   },
+//   events: {
+//     fontWeight: "bold"
+//   }
+// };
 
 class Calendar extends Component {
   constructor(props) {
@@ -95,6 +97,17 @@ class Calendar extends Component {
           },
         ]
       }),
+
+
+      onBeforeEventRender: args => {
+        args.data.cssClass = "events";
+        args.data.backColor = args.e.colour;
+        if (args.e.description) {
+          args.data.html = args.e.text + " - <br/>" + args.e.description;
+        } else {
+          args.data.html = args.e.text + " - <br/> No Description";
+        }
+      },
     }
   }
 
@@ -118,13 +131,12 @@ class Calendar extends Component {
     this.setState({
       events:[]
     })
-    for (let userId of this.props.users) {
-      this.fetchEventItems(userId);
+    for (let user of this.props.users) {
+      this.fetchEventItems(user);
     }
   }
-  fetchEventItems = (userId) => {
-    //getEventItems(this.context.authenticatedUser._id).then((response) => {
-    getEventItems(userId).then((response) => {      
+  fetchEventItems = (user) => {
+    getEventItems(user.id).then((response) => {      
       let events = response.data.scheduleitems ? response.data.scheduleitems.map((item) => {
 
         let start = new Date(this.state.startDate);
@@ -141,16 +153,15 @@ class Calendar extends Component {
         end.setMinutes(itemEndDate.getMinutes());
         end.setSeconds(0);
         end.setMilliseconds(0);
-        return {start: start.toISOString(), end: end.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers};
+        return {start: start.toISOString(), end: end.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers, colour: user.colour};
       }) : [];
-      let properEvents = this.state.events.concat(events);
       this.setState({
-        events: properEvents
+        events: this.state.events.concat(events)
       });
     })
     // Not sure if we need this
     .catch(error => {
-      console.error("userId "+userId+" does not exist", error);
+      console.error("userId "+user.id+" does not exist", error);
     });
   }
 
@@ -167,8 +178,8 @@ class Calendar extends Component {
     this.setState({
       events:[]
     })
-    for (let userId of this.props.users) {
-      this.fetchEventItems(userId);
+    for (let user of this.props.users) {
+      this.fetchEventItems(user);
     }
   }
   updateWeekEventItems() {
@@ -184,7 +195,7 @@ class Calendar extends Component {
           const date = new Date(this.state.startDate);
           date.setDate(date.getDate() - 7);
           this.setState({startDate: date.toISOString()});
-          //this.fetchEventItems(this.props.user._id);
+          this.fetchEventItems(this.props.user._id);
           }}>
           <ArrowBackIosIcon />
         </IconButton>

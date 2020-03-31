@@ -95,7 +95,7 @@ func main() {
 
     // define api routes
 
-    // TODO check for settings
+    // TODO account for group visibility
 
     // user apis
     router.POST("/signup", SignUp)

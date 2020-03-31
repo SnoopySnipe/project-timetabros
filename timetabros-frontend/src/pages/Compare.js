@@ -10,6 +10,10 @@ import Calendar from './components/Calendar/Calendar';
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
 
+const styles = {
+    container: {
+    }
+};
 
 class Compare extends React.Component {
     static contextType = AuthContext;
@@ -33,15 +37,14 @@ class Compare extends React.Component {
                         getUser(friendId).then(
                             (res) => {
                                 const user = res.data;
-                                console.log("this is state in fetch Friends")
-                                console.log(this.state);
                                 this.setState(
                                     {
                                         friendList : this.state.friendList.concat([{
                                             id: user._id,
                                             firstName: user.firstname,
                                             lastName: user.lastname,
-                                            username: user.username
+                                            username: user.username,
+                                            colour: this.getRandomColour(),
                                           }])
                                     }
                                 )
@@ -55,60 +58,108 @@ class Compare extends React.Component {
 
     componentWillMount(){
         this.fetchFriends();
-        this.setState({selectedFriends: [this.context.authenticatedUser._id]})
+        this.setState({selectedFriends: [{id:this.context.authenticatedUser._id, colour: null}]})
     }
 
-    toggleSelectFriend = userId => {
-        if(this.state.selectedFriends.includes(userId)){
-            const index = this.state.selectedFriends.indexOf(userId);
+    toggleSelectFriend = user => {
+        if(this.state.selectedFriends.includes(user)){
+            const index = this.state.selectedFriends.indexOf(user);
             let temp = this.state.selectedFriends;
             temp.splice(index,1);
             this.setState({selectedFriends: temp});
         } else {
             let temp = this.state.selectedFriends;
-            temp.push(userId);
+            temp.push(user);
             this.setState({selectedFriends: temp});
-        }       
+        }
+    }
+
+    getRandomColour() {
+        var letters = 'BCDEF'.split('');
+        var color = '#';
+        for (var i = 0; i < 6; i++ ) {
+            color += letters[Math.floor(Math.random() * letters.length)];
+        }
+        return color;
     }
 
     render() {
         const friends = this.state.friendList;
         const selectedFriends = this.state.selectedFriends;
         const friendItems = !friends ? [] : friends.map((user) => (
-            <ListItem button divider onClick={()=>this.toggleSelectFriend(user.id)}>
-                <ListItemAvatar>
-                    <Avatar>{user.firstName.charAt(0).toUpperCase()}</Avatar>
-                </ListItemAvatar>
-                <ListItemText 
-                    primary={`${user.firstName}  ${user.lastName}`}
-                    secondary={user.username}
-                >
+            <div>
+                { this.state.selectedFriends.some((request)=> request.id == user.id) 
+                    ? <ListItem button divider onClick={()=>this.toggleSelectFriend(user)} style={{backgroundColor: user.colour}}>
+                            <ListItemAvatar>
+                                <Avatar>{user.firstName.charAt(0).toUpperCase()}</Avatar>
+                            </ListItemAvatar>
+                            <ListItemText 
+                                primary={`${user.firstName}  ${user.lastName}`}
+                                secondary={user.username}
+                            >
+                        
+                            </ListItemText>
+                            <ListItemSecondaryAction>
+                                <IconButton size="small" aria-label="de-select" onClick={()=>this.toggleSelectFriend(user)}>
+                                    <CheckBoxIcon fontSize="small" />
+                                </IconButton>
+                            </ListItemSecondaryAction>
+                        </ListItem>
+                    : <ListItem button divider onClick={()=>this.toggleSelectFriend(user)}>
+                            <ListItemAvatar>
+                                <Avatar>{user.firstName.charAt(0).toUpperCase()}</Avatar>
+                            </ListItemAvatar>
+                            <ListItemText 
+                                primary={`${user.firstName}  ${user.lastName}`}
+                                secondary={user.username}
+                            >
+                        
+                            </ListItemText>
+                            <ListItemSecondaryAction>
+                                <IconButton size="small" aria-label="select" onClick={()=>this.toggleSelectFriend(user)}>
+                                    <CheckBoxOutlineBlankIcon fontSize="small" />
+                                </IconButton>
             
-                </ListItemText>
-                <ListItemSecondaryAction>
-                    { this.state.selectedFriends.some((request)=> request == user.id) 
-                    ? <IconButton size="small" aria-label="de-select" onClick={()=>this.toggleSelectFriend(user.id)}>
-                    <CheckBoxIcon fontSize="small" />
-                    </IconButton>
-                    : <IconButton size="small" aria-label="select" onClick={()=>this.toggleSelectFriend(user.id)}>
-                    <CheckBoxOutlineBlankIcon fontSize="small" />
-                    </IconButton>
-                    }
+                            </ListItemSecondaryAction>
+                        </ListItem>
+                }
+            </div>
+            // <ListItem button divider onClick={()=>this.toggleSelectFriend(user)}>
+            //     <ListItemAvatar>
+            //         <Avatar>{user.firstName.charAt(0).toUpperCase()}</Avatar>
+            //     </ListItemAvatar>
+            //     <ListItemText 
+            //         primary={`${user.firstName}  ${user.lastName}`}
+            //         secondary={user.username}
+            //     >
+            
+            //     </ListItemText>
+            //     <ListItemSecondaryAction>
+            //         { this.state.selectedFriends.some((request)=> request.id == user.id) 
+            //         ? <IconButton size="small" aria-label="de-select" onClick={()=>this.toggleSelectFriend(user)}>
+            //         <CheckBoxIcon fontSize="small" />
+            //         </IconButton>
+            //         : <IconButton size="small" aria-label="select" onClick={()=>this.toggleSelectFriend(user)}>
+            //         <CheckBoxOutlineBlankIcon fontSize="small" />
+            //         </IconButton>
+            //         }
 
-                </ListItemSecondaryAction>
-            </ListItem>
+            //     </ListItemSecondaryAction>
+            // </ListItem>
         ))
         return(
-            <Grid container spacing={4} >
-                <Grid item xs={12} md={6}>
-                    <h1>Friend list</h1>
-                    <List>
-                        {friendItems}
-                    </List>
-                    <h1>Schedule</h1>
-                    <Calendar users={selectedFriends} canEdit={false}></Calendar>
+            <div>
+                <Grid container spacing={4} >
+                    <Grid item xs={12} md={6}>
+                        <h1>Friend list</h1>
+                        <List>
+                            {friendItems}
+                        </List>
+                    </Grid>
                 </Grid>
-            </Grid>
+                <h1>Schedule</h1>
+                <Calendar users={selectedFriends} canEdit={false}></Calendar>
+            </div>
         )
 
     }
