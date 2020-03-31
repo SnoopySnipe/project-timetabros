@@ -19,15 +19,51 @@ import Checkbox from '@material-ui/core/Checkbox';
 import { getFriends } from '../../../services/FriendService';
 import { getUser } from '../../../services/UserService';
 import AuthContext from '../../../context/AuthContext';
-
+import { createGroup, updateGroup } from '../../../services/GroupService';
 const GroupDialog = (props) => {
     const context = useContext(AuthContext);
-    const [isRecurring, setIsRecurring] = React.useState(true);
+    const [groupName, setGroupName] = React.useState('');
+    const [groupAbout, setGroupAbout] = React.useState('');
+    const [visibility, setVisibility] = React.useState('private');
     const [isGroupEvent, setIsGroupEvent] = React.useState(false);
     const [checked, setChecked] = React.useState([]);
     const [friendList, setFriendList] = React.useState([]);
-    const handleSelectEventType = event => {
-        setIsRecurring(event.target.value);
+
+    const handleGroupMemberToggle = (value) => () => {
+      const currentIndex = checked.indexOf(value);
+      const newChecked = [...checked];
+  
+      if (currentIndex === -1) {
+        newChecked.push(value);
+      } else {
+        newChecked.splice(currentIndex, 1);
+      }
+  
+      setChecked(newChecked);
+    };
+    const handleSubmit = () => {
+      if(props.groupToUpdate) {
+        handleUpdateEvent();
+      } else {
+        handleCreateGroup();
+      }
+    }
+    const handleCreateGroup = () => {
+      createGroup(groupName, groupAbout, visibility, []).then(
+        () => {
+          props.handleGroupUpdate();
+          props.handleClose();
+        }
+      )
+    }
+
+    const handleUpdateEvent = () => {
+      updateGroup(props.groupToUpdate.ID, groupName, groupAbout, visibility).then(
+        () => {
+          props.handleGroupUpdate();
+          props.handleClose();
+        }
+      )
     }
     const toggleGroupChecked = () => {
         setIsGroupEvent(prev => !prev);
@@ -35,34 +71,41 @@ const GroupDialog = (props) => {
     };
       
     useEffect(() => {
-        getFriends(context.authenticatedUser._id).then((response) => {
-          console.log(response.data.friends);
-          if(response.data.friends) response.data.friends.forEach(
-              (item) => {
-                  const friendId = context.authenticatedUser._id === item.user1 ? item.user2 : item.user1;
-                  getUser(friendId).then(
-                      (res) => {
-                          const user = res.data;
-                          setFriendList(friendList => friendList.concat([{
-                            id: user._id,
-                            firstName: user.firstname,
-                            lastName: user.lastname,
-                            username: user.username
-                          }]));
-                       }
-                  )
-              }
-          );
+      if (!props.open) return;
+      setGroupName('');
+      setGroupAbout('');
+      if(props.groupToUpdate) {
+        setGroupName(props.groupToUpdate.name);
+        setGroupAbout(props.groupToUpdate.about);
+      }
+      getFriends(context.authenticatedUser._id).then((response) => {
+        console.log(response.data.friends);
+        if(response.data.friends) response.data.friends.forEach(
+            (item) => {
+                const friendId = context.authenticatedUser._id === item.user1 ? item.user2 : item.user1;
+                getUser(friendId).then(
+                    (res) => {
+                        const user = res.data;
+                        setFriendList(friendList => friendList.concat([{
+                          id: user._id,
+                          firstName: user.firstname,
+                          lastName: user.lastname,
+                          username: user.username
+                        }]));
+                      }
+                )
+            }
+        );
       });
-    }, []);
+    }, [props.open]);
   return (
     props.open &&
     <div>
       {/* <Button variant="outlined" color="primary" onClick={handleClickOpen}>
         Open form dialog
       </Button> */}
-      <Dialog open={props.open} onClose={props.handleClose} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title">Group Creation</DialogTitle>
+      <Dialog disableBackdropClick open={props.open} onClose={props.handleClose} aria-labelledby="form-dialog-title">
+        <DialogTitle id="form-dialog-title">{props.groupToUpdate ? 'Group Update' : 'Group Creation'}</DialogTitle>
         <DialogContent>
           {/* <DialogContentText>
             To subscribe to this website, please enter your email address here. We will send updates
@@ -72,39 +115,42 @@ const GroupDialog = (props) => {
             autoFocus
             margin="dense"
             id="name"
-            label="Name"
+            label="Group Name"
             fullWidth
+            value={groupName}
+            onChange={(event)=>{setGroupName(event.target.value)}}
           />
           <TextField
             margin="dense"
             id="description"
-            label="Description"
+            label="Group Description"
             fullWidth
+            value={groupAbout}
+            onChange={(event)=>{setGroupAbout(event.target.value)}}
           />
 
           <TextField
             margin="dense"
             id="item-type"
             select
-            label="Event frequency"
-            value={isRecurring}
-            onChange={handleSelectEventType}
+            label="Visibility"
+            value={visibility}
+            onChange={(event)=>{setVisibility(event.target.value)}}
           >
 
-            <MenuItem value={false}>
-              One time
+            <MenuItem value={'public'}>
+              Public
             </MenuItem>
-            <MenuItem value={true}>
-              Recurring Weekly
+            <MenuItem value={'private'}>
+              Private
             </MenuItem>
         </TextField>
-        <InputLabel> Group event <Switch size="small" checked={isGroupEvent} onChange={toggleGroupChecked} /></InputLabel>
-        {isGroupEvent &&
+        {
         <List>
           {
             friendList.map((friend) => {
               return (
-              <ListItem key={friend.id}>
+              <ListItem button key={friend.id} onClick={handleGroupMemberToggle(friend.id)}>
               <ListItemIcon>
                   <Checkbox
                       edge="start"
@@ -124,8 +170,8 @@ const GroupDialog = (props) => {
           <Button onClick={props.handleClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={props.handleClose} color="primary">
-            Create
+          <Button onClick={handleSubmit} color="primary">
+            {props.groupToUpdate ? 'Update' : 'Create'}
           </Button>
         </DialogActions>
       </Dialog>

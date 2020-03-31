@@ -22,6 +22,7 @@ const styles = {
 class Calendar extends Component {
   constructor(props) {
     super(props);
+    console.log(this.context);
     this.state = {
       selectedEvent: null,
       openCreateDialog: false,
@@ -59,7 +60,8 @@ class Calendar extends Component {
           openCreateDialog: true,
           selectedEvent: {
             name: args.e.data.text,
-            description: args.e.data.description
+            description: args.e.data.description,
+            id: args.e.data.id
           },
           createStartDate: args.e.data.start.toDate(),
           createEndDate: args.e.data.end.toDate()

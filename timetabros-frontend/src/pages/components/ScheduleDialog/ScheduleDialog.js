@@ -21,7 +21,7 @@ import { getUser } from '../../../services/UserService';
 import { getGroups } from '../../../services/GroupService';
 import AuthContext from '../../../context/AuthContext';
 import GroupDialog from '../GroupDialog/GroupDialog';
-import { createEventItem } from '../../../services/ScheduleService';
+import { createEventItem, updateEventItem } from '../../../services/ScheduleService';
 const ScheduleDialog = (props) => {
     const context = useContext(AuthContext);
     const [eventName, setEventName] = React.useState('');
@@ -38,6 +38,13 @@ const ScheduleDialog = (props) => {
     const handleSelectGroup = event => {
       setGroupId(event.target.value);
     }
+    const handleSubmit = () => {
+      if(props.eventToUpdate) {
+        handleUpdateEvent();
+      } else {
+        handleCreateEvent();
+      }
+    }
     const handleCreateEvent = () => {
       console.log(eventName);
       createEventItem(eventName, props.createStartDate, props.createEndDate, eventDescription).then(
@@ -47,6 +54,18 @@ const ScheduleDialog = (props) => {
         }
       )
     }
+
+    const handleUpdateEvent = () => {
+      console.log(props.eventToUpdate);
+      updateEventItem(props.eventToUpdate.id, eventName, eventDescription, props.createStartDate, props.createEndDate).then(
+        () => {
+          props.handleCreated();
+          props.handleClose();
+        }
+      )
+    }
+
+
       
     useEffect(() => {
       if (!props.open) return;
@@ -91,8 +110,8 @@ const ScheduleDialog = (props) => {
         Open form dialog
       </Button> */}
 
-      <Dialog open={props.open} onClose={props.handleClose} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title">Event Creation</DialogTitle>
+      <Dialog disableBackdropClick open={props.open} onClose={props.handleClose} aria-labelledby="form-dialog-title">
+        <DialogTitle id="form-dialog-title">{props.eventToUpdate ? 'Event Update' : 'Event Creation'}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
@@ -191,8 +210,8 @@ const ScheduleDialog = (props) => {
           <Button onClick={props.handleClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleCreateEvent} color="primary">
-            Create
+          <Button onClick={handleSubmit} color="primary">
+            {props.eventToUpdate ? 'Update' : 'Create'}
           </Button>
         </DialogActions>
       </Dialog>

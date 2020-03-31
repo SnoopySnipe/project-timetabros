@@ -5,10 +5,12 @@ import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import { Grid, List, ListItem, ListItemText, ListItemAvatar, Avatar, ListItemSecondaryAction, IconButton } from '@material-ui/core';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
+import GroupAddIcon from '@material-ui/icons/GroupAdd';
 import { getFriends, sendFriendRequest } from '../services/FriendService';
+import { getGroups } from '../services/GroupService';
 import { getUser } from '../services/UserService';
 import { Route } from 'react-router-dom';
-
+import GroupDialog from './components/GroupDialog/GroupDialog';
 class Friends extends React.Component {
     static contextType = AuthContext;
 
@@ -18,7 +20,10 @@ class Friends extends React.Component {
             searchedUsers: [],
             friendList: [],
             sentFriendRequests: [],
-            query: ""
+            groups: [],
+            query: "",
+            openGroupDialog: false,
+            selectedGroup: null
         };
         console.log(this.state);
     }
@@ -55,8 +60,20 @@ class Friends extends React.Component {
         );
     }
 
+    fetchGroups() {
+        this.setState({groups: []});
+        getGroups(this.context.authenticatedUser._id).then(
+            (response) => {
+              const ownedGroups = response.data.userownedgroups || [];
+              const memberGroups = response.data.usermembergroups || [];
+              this.setState({groups: this.state.groups.concat(memberGroups).concat(ownedGroups)});
+            }
+          )
+    }
+
     componentDidMount(){
         this.fetchFriends();
+        this.fetchGroups();
     }
 
     searchFriend = event => {
@@ -102,9 +119,9 @@ class Friends extends React.Component {
                 </ListItemText>
                 <ListItemSecondaryAction>
                     {this.state.sentFriendRequests.some((request)=> (request.user1 === user.ID || request.user2 === user.ID) && request.status === "pending") 
-                    ? <div>pending</div> 
+                    ? <div>Pending</div> 
                     : this.state.friendList.some((friend)=>friend.id === user.ID) 
-                    ? <div>friends</div> 
+                    ? <div>Friends</div> 
                     : <IconButton size="small" aria-label="accept" onClick={()=>this.handleAddUser(user.ID)}>
                     <PersonAddIcon fontSize="small" />
                     </IconButton>
@@ -127,25 +144,57 @@ class Friends extends React.Component {
                 </ListItemText>
             </ListItem>
         ))
+        const groups = this.state.groups;
+        const groupItems = !groups ? [] : groups.map((group) => (
+            <ListItem button divider onClick={()=>{this.setState({openGroupDialog: true, selectedGroup: group})}}>
+                {/* <ListItemAvatar>
+                    <Avatar>{user.firstName.charAt(0).toUpperCase()}</Avatar>
+                </ListItemAvatar> */}
+                <ListItemText 
+                    primary={`${group.name}`}
+                    // secondary={user.username}
+                >
+            
+                </ListItemText>
+            </ListItem>
+        ))
         return(
-            <Grid container spacing={4} >
-                <Grid item xs={12} md={6}>
-                    <h1>Find friends</h1>
-                    <form onSubmit={this.searchFriend}>
-                        <input type="text" name="searchQuery" onChange={this.setQuery}/>
-                        <button type="submit">Search</button>
-                    </form>
-                    <List>
-                        {listItems}
-                    </List>
+            <div>
+                <GroupDialog open={this.state.openGroupDialog} handleClose={()=>{this.setState({openGroupDialog: false})}} handleGroupUpdate={()=>{this.fetchGroups()}} groupToUpdate={this.state.selectedGroup}></GroupDialog>
+                <Grid container spacing={4} >
+                    <Grid item xs={12}>
+                        <h1>Find friends</h1>
+                        <form onSubmit={this.searchFriend}>
+                            <input type="text" name="searchQuery" onChange={this.setQuery}/>
+                            <button type="submit">Search</button>
+                        </form>
+                        <List>
+                            {listItems}
+                        </List>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                        <h1>Friend list</h1>
+                        <List>
+                            {friendItems}
+                        </List>
+
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                        <h1>Group list                     
+                            <IconButton aria-label="accept" onClick={()=>{this.setState({openGroupDialog: true})}}>
+                                <GroupAddIcon  />
+                            </IconButton>
+                        </h1>
+
+                        <List>
+                            {groupItems}
+                        </List>
+                    </Grid>
+
+
                 </Grid>
-                <Grid item xs={12} md={6}>
-                    <h1>Friend list</h1>
-                    <List>
-                        {friendItems}
-                    </List>
-                </Grid>
-            </Grid>
+            </div>
+
             // <div>
             //     <List>
             //         {listItems}
