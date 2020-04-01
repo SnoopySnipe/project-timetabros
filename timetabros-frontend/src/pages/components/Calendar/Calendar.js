@@ -52,7 +52,7 @@ class Calendar extends Component {
       onEventMoved: args => {
         updateEventItemTime(args.e.data.id, args.newStart.toDate(), args.newEnd.toDate()).then(
           () => {
-            this.fetchUsersEventItems(this.props.users);
+            this.fetchUsersEventItems();
           }
         );
       },
@@ -69,6 +69,14 @@ class Calendar extends Component {
           createEndDate: args.e.data.end.toDate()
         })
       },
+      eventResizeHandling: "Update",
+      onEventResized: (args) => {
+        updateEventItemTime(args.e.data.id, args.newStart.toDate(), args.newEnd.toDate()).then(
+          () => {
+            this.fetchUsersEventItems();
+          }
+        );
+      },
       contextMenu: new DayPilot.Menu({
         items: [
           { text: "Edit", onClick: (args) => {
@@ -78,7 +86,7 @@ class Calendar extends Component {
                     () => {
                       args.source.data.text = modal.result;
                       args.source.calendar.events.update(args.source);
-                      this.fetchUsersEventItems(this.props.users);
+                      this.fetchUsersEventItems();
                     }
                   );
 
@@ -90,7 +98,7 @@ class Calendar extends Component {
                   if (!modal.result) { return; }
                   deleteEventItem(args.source.data.id).then(() => {
                     args.source.calendar.events.remove(modal);
-                    this.fetchUsersEventItems(this.props.users);
+                    this.fetchUsersEventItems();
                   });
               });
             }
@@ -171,7 +179,8 @@ class Calendar extends Component {
     });
     this.authorizeCalendar();
     if (this.props.users){
-      this.fetchUsersEventItems(this.props.users);
+      console.log(this.props.users);
+      this.fetchUsersEventItems();
     }
   }
   componentWillReceiveProps(){
@@ -195,7 +204,7 @@ class Calendar extends Component {
           const date = new Date(this.state.startDate);
           date.setDate(date.getDate() - 7);
           this.setState({startDate: date.toISOString()});
-          this.fetchEventItems(this.props.user._id);
+          this.fetchUsersEventItems();
           }}>
           <ArrowBackIosIcon />
         </IconButton>
@@ -207,7 +216,7 @@ class Calendar extends Component {
           const date = new Date(this.state.startDate);
           date.setDate(date.getDate() + 7);
           this.setState({startDate: date.toISOString()});
-          this.fetchEventItems();
+          this.fetchUsersEventItems();
           }}>
           <ArrowForwardIosIcon />
         </IconButton>

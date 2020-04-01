@@ -33,7 +33,7 @@ class Profile extends React.Component {
             
             <div>
                 <h1>SCHEDULE</h1>                
-                <Calendar users={[this.state.userId]} canEdit={this.state.canEdit}/>
+                <Calendar users={[{id: this.state.userId}]} canEdit={this.state.canEdit}/>
             </div>
             
         )

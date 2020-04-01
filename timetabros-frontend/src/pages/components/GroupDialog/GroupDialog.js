@@ -72,6 +72,7 @@ const GroupDialog = (props) => {
       
     useEffect(() => {
       if (!props.open) return;
+      setFriendList([]);
       setGroupName('');
       setGroupAbout('');
       if(props.groupToUpdate) {
