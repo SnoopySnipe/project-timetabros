@@ -13,6 +13,14 @@ type EmailSetup struct {
     Password string
 }
 
+type ResetCredentials struct {
+    Email string `json:"email" binding:"required" validate:"email"`
+}
+
+type PasswordReset struct {
+    Password string `json:"password" binding:"required" validate:"printascii,min=8,max=30"`
+}
+
 type User struct {
     Username string `json:"username" binding:"required" validate:"alphanum,min=3,max=20"`
     Firstname string `json:"firstname" binding:"required" validate:"alpha,min=2,max=20"`

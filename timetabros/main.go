@@ -96,6 +96,7 @@ func main() {
     // define api routes
 
     // TODO account for group visibility
+    // TODO adjust responses
 
     // user apis
     router.POST("/signup", SignUp)
@@ -105,6 +106,8 @@ func main() {
     api.GET("/users/:id", GetUserDetails)
     api.PATCH("/users", UpdateUserDetails)
     api.POST("/users", SearchUsers)
+    router.POST("/reset", RequestPasswordReset)
+    router.PATCH("/reset/:token", ResetPassword)
 
     // event apis
     api.POST("/event_items", CreateEventItem)
