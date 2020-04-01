@@ -79,20 +79,6 @@ class Calendar extends Component {
       },
       contextMenu: new DayPilot.Menu({
         items: [
-          { text: "Edit", onClick: (args) => {
-              DayPilot.Modal.prompt("Update event text:", args.source.text()).then((modal) => {
-                  if (!modal.result) { return; }
-                  updateEventItemTitle(args.source.data.id, modal.result).then(
-                    () => {
-                      args.source.data.text = modal.result;
-                      args.source.calendar.events.update(args.source);
-                      this.fetchUsersEventItems();
-                    }
-                  );
-
-              });
-            }
-          },
           { text: "Delete", onClick: (args) => {
               DayPilot.Modal.confirm("Delete Event?").then((modal) => {
                   if (!modal.result) { return; }

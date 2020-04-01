@@ -49,7 +49,8 @@ const GroupDialog = (props) => {
       }
     }
     const handleCreateGroup = () => {
-      createGroup(groupName, groupAbout, visibility, []).then(
+      const groupMembers = checked.map((userId)=>{return {userid: userId, role: 'invited'}})
+      createGroup(groupName, groupAbout, visibility, groupMembers).then(
         () => {
           props.handleGroupUpdate();
           props.handleClose();
@@ -72,6 +73,7 @@ const GroupDialog = (props) => {
       
     useEffect(() => {
       if (!props.open) return;
+      setChecked([]);
       setFriendList([]);
       setGroupName('');
       setGroupAbout('');
@@ -83,6 +85,7 @@ const GroupDialog = (props) => {
         console.log(response.data.friends);
         if(response.data.friends) response.data.friends.forEach(
             (item) => {
+              if(item.status !== 'accepted') return;
                 const friendId = context.authenticatedUser._id === item.user1 ? item.user2 : item.user1;
                 getUser(friendId).then(
                     (res) => {
@@ -93,6 +96,10 @@ const GroupDialog = (props) => {
                           lastName: user.lastname,
                           username: user.username
                         }]));
+                        console.log(props.groupToUpdate);
+                        if(props.groupToUpdate && props.groupToUpdate.groupmembers.some((member)=>member.userid===friendId)) {
+                          setChecked(checked => checked.concat(friendId));
+                        }
                       }
                 )
             }

@@ -160,7 +160,7 @@ class Friends extends React.Component {
         ))
         return(
             <div>
-                <GroupDialog open={this.state.openGroupDialog} handleClose={()=>{this.setState({openGroupDialog: false})}} handleGroupUpdate={()=>{this.fetchGroups()}} groupToUpdate={this.state.selectedGroup}></GroupDialog>
+                <GroupDialog open={this.state.openGroupDialog} handleClose={()=>{this.setState({openGroupDialog: false, selectedGroup: null})}} handleGroupUpdate={()=>{this.fetchGroups()}} groupToUpdate={this.state.selectedGroup}></GroupDialog>
                 <Grid container spacing={4} >
                     <Grid item xs={12}>
                         <h1>Find friends</h1>
