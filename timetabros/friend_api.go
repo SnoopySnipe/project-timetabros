@@ -164,17 +164,23 @@ func GetFriends (c *gin.Context) {
         }
     }
     // get user's friends
-    friends, err := friendFind(bson.M{"status": "accepted", "$or": []bson.M{bson.M{"user1": id}, bson.M{"user2": id}}})
+    sentFriends, err := friendFind(bson.M{"status": "accepted", "user1": id}, 2)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
     }
-    sentFriendRequests, err := friendFind(bson.M{"status": "pending", "user1": id})
+    acceptedFriends, err := friendFind(bson.M{"status": "accepted", "user2": id}, 1)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
     }
-    receivedFriendRequests, err := friendFind(bson.M{"status": "pending", "user2": id})
+    friends := append(sentFriends, acceptedFriends...)
+    sentFriendRequests, err := friendFind(bson.M{"status": "pending", "user1": id}, 2)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    receivedFriendRequests, err := friendFind(bson.M{"status": "pending", "user2": id}, 1)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

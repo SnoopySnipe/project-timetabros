@@ -103,6 +103,7 @@ func main() {
     // TODO account for group visibility
     // TODO adjust responses
     // TODO change search users to a GET
+    // TODO ID being saved into database
 
     // user apis
     router.POST("/signup", SignUp)

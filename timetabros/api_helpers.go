@@ -98,9 +98,9 @@ func eventItemFind(filter bson.M) ([]EventItemDB, error) {
     return items, err
 }
 
-func friendFind(filter bson.M) ([]FriendConnectionDB, error) {
+func friendFind(filter bson.M, userProjection int) ([]UserIDStruct, error) {
     var err error
-    var friends []FriendConnectionDB
+    var friends []UserIDStruct
 
     cur, err := friendConnections.Find(context.Background(), filter)
     if err != nil {
@@ -115,7 +115,13 @@ func friendFind(filter bson.M) ([]FriendConnectionDB, error) {
         }
         raw := cur.Current
         friend.ID = raw.Lookup("_id").ObjectID()
-        friends = append(friends, friend)
+        var friendID UserIDStruct
+        if userProjection == 1 {
+            friendID.Userid = friend.User1.Hex()
+        } else if userProjection == 2 {
+            friendID.Userid = friend.User2.Hex()
+        }
+        friends = append(friends, friendID)
     }
     if err = cur.Err(); err != nil {
         return friends, err
