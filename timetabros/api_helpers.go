@@ -4,6 +4,7 @@ import (
     "context"
     "encoding/json"
     "time"
+    "sort"
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
@@ -98,9 +99,9 @@ func eventItemFind(filter bson.M) ([]EventItemDB, error) {
     return items, err
 }
 
-func friendFind(filter bson.M, userProjection int) ([]UserIDStruct, error) {
+func friendFind(filter bson.M, userProjection int) ([]FriendStruct, error) {
     var err error
-    var friends []UserIDStruct
+    var friends []FriendStruct
 
     cur, err := friendConnections.Find(context.Background(), filter)
     if err != nil {
@@ -115,11 +116,13 @@ func friendFind(filter bson.M, userProjection int) ([]UserIDStruct, error) {
         }
         raw := cur.Current
         friend.ID = raw.Lookup("_id").ObjectID()
-        var friendID UserIDStruct
+        var friendID FriendStruct
         if userProjection == 1 {
             friendID.Userid = friend.User1.Hex()
+            friendID.ID = friend.ID
         } else if userProjection == 2 {
             friendID.Userid = friend.User2.Hex()
+            friendID.ID = friend.ID
         }
         friends = append(friends, friendID)
     }
@@ -127,6 +130,75 @@ func friendFind(filter bson.M, userProjection int) ([]UserIDStruct, error) {
         return friends, err
     }
     return friends, err
+}
+
+func contains(s []string, e string) bool {
+    for _, a := range s {
+        if a == e {
+            return true
+        }
+    }
+    return false
+}
+
+func MutualFriendFind(userid string, friends []string, pending_friends []string) ([]MutualFriend, error) {
+    var err error
+    var mutualFriends []MutualFriend
+
+    var raw_mf []FriendStruct
+    for _, f := range friends {
+        
+        id, err := primitive.ObjectIDFromHex(f)
+        if err != nil {
+            return mutualFriends, err
+        }
+
+        sentFriends, err := friendFind(bson.M{"status": "accepted", "user1": id}, 2)
+        if err != nil {
+            return mutualFriends, err
+        }
+        acceptedFriends, err := friendFind(bson.M{"status": "accepted", "user2": id}, 1)
+        if err != nil {
+            return mutualFriends, err
+        }
+        raw_mf = append(raw_mf, sentFriends...)
+        raw_mf = append(raw_mf, acceptedFriends...)
+    }
+
+    var filtered_mf []string
+    for _, raw := range raw_mf {
+        found1 := contains(friends, raw.Userid)
+        found2 := contains(pending_friends, raw.Userid)
+        found3 := raw.Userid == userid
+        if !(found1 || found2 || found3) {
+            filtered_mf = append(filtered_mf, raw.Userid)
+        }
+    }
+
+    counter := make(map[string]int)
+    for _, mf := range filtered_mf {
+        _, exist := counter[mf]
+        if exist {
+            counter[mf] += 1
+        } else {
+            counter[mf] = 1
+        }
+    }
+
+    for k, v := range counter {
+        mf_id, err := primitive.ObjectIDFromHex(k)
+        if err != nil {
+            return mutualFriends, err
+        }
+        new_mf := MutualFriend{Userid: mf_id, Count: v}
+        mutualFriends = append(mutualFriends, new_mf)
+    }
+
+    sort.Slice(mutualFriends, func(i, j int) bool {
+      return mutualFriends[i].Count > mutualFriends[j].Count
+    })
+
+    return mutualFriends, err
 }
 
 func groupFind(filter bson.M) ([]Group, error) {

@@ -129,6 +129,16 @@ type UserIDStruct struct {
     Userid string `json:"userid" binding:"required"`
 }
 
+type FriendStruct struct {
+    ID primitive.ObjectID
+    Userid string
+}
+
+type MutualFriend struct {
+    Userid primitive.ObjectID `json:"userid"`
+    Count int `json:"count"`
+}
+
 type FriendConnectionDB struct {
     ID primitive.ObjectID `json:"ID"`
     User1 *primitive.ObjectID `json:"user1" binding:"required"`
