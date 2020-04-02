@@ -6,6 +6,7 @@ import (
     "encoding/gob"
     "net/http"
     "net/smtp"
+    "os"
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
@@ -26,6 +27,7 @@ var pendingUsers *mongo.Collection
 var eventItems *mongo.Collection
 var friendConnections *mongo.Collection
 var groups *mongo.Collection
+var profilePictures *mongo.Collection
 
 var store *sessions.CookieStore
 
@@ -36,6 +38,9 @@ var site string
 var validate *validator.Validate
 
 func main() {
+    // create uploads folder
+    err := os.MkdirAll("uploads", os.ModePerm)
+
     // setup input validation
     validate = validator.New()
 
@@ -61,7 +66,7 @@ func main() {
     eventItems = client.Database("timetabros").Collection("event_items")
     friendConnections = client.Database("timetabros").Collection("friend_connections")
     groups = client.Database("timetabros").Collection("groups")
-
+    profilePictures = client.Database("timetabros").Collection("profile_pictures")
 
 
     // setup email
@@ -97,6 +102,7 @@ func main() {
 
     // TODO account for group visibility
     // TODO adjust responses
+    // TODO change search users to a GET
 
     // user apis
     router.POST("/signup", SignUp)
@@ -108,6 +114,7 @@ func main() {
     api.POST("/users", SearchUsers)
     router.POST("/reset", RequestPasswordReset)
     router.PATCH("/reset/:token", ResetPassword)
+    api.GET("/users/:id/pfp", GetProfilePicture)
 
     // event apis
     api.POST("/event_items", CreateEventItem)

@@ -5,11 +5,16 @@ import (
     "encoding/json"
     "net/http"
     "net/smtp"
+    "time"
+    "fmt"
+    "log"
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
+    "go.mongodb.org/mongo-driver/mongo/options"
 
     "github.com/gin-gonic/gin"
+    "github.com/gin-gonic/gin/binding"
 
     "golang.org/x/crypto/bcrypt"
 )
@@ -275,7 +280,7 @@ func GetUserDetails(c *gin.Context) {
 		return
     }
     // check user's privacy settings
-    if session.Values["_id"].(*primitive.ObjectID).Hex() != id.Hex() {
+    /*if session.Values["_id"].(*primitive.ObjectID).Hex() != id.Hex() {
         if user.Privacysettings.Profile == "private" {
             c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		    return
@@ -287,7 +292,7 @@ func GetUserDetails(c *gin.Context) {
 		        return
             }
         }
-    }
+    }*/
     // send response
     c.JSON(http.StatusOK, gin.H{
         "_id": id,
@@ -298,6 +303,45 @@ func GetUserDetails(c *gin.Context) {
         "notificationsettings": user.Notificationsettings,
         "privacysettings": user.Privacysettings,
     })
+}
+
+// get user's profile picture api
+// curl -b cookie.txt -X GET localhost:3001/api/users/id/pfp
+func GetProfilePicture(c *gin.Context) {
+    // get session
+    /*session, err := store.Get(c.Request, "session")
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    // check if authenticated
+    if !(isAuthenticated(session)) {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
+		return
+    }*/
+    // get id and check that its valid
+    id_param := c.Param("id")
+    id, err := primitive.ObjectIDFromHex(id_param)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id " + id_param})
+		return
+    }
+    // find the matching user
+    var user User
+    err = users.FindOne(context.TODO(), bson.M{"_id": id}).Decode(&user)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "User " + id_param + " not found"})
+		return
+    }
+    // find the user profile picture
+    var profilePicture ProfilePicture
+    err = profilePictures.FindOne(context.TODO(), bson.M{"userid": id}).Decode(&profilePicture)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "User " + id_param + " has no profile picture"})
+		return
+    }
+    // send response
+    c.File("uploads/" + profilePicture.Picture.Filename)
 }
 
 // update user details api
@@ -330,7 +374,7 @@ func UpdateUserDetails(c *gin.Context) {
     }
     // get update credentials
     var updatedUser UserUpdate
-    if err = c.ShouldBindJSON(&updatedUser); err != nil {
+    if err = c.ShouldBindWith(&updatedUser, binding.FormMultipart); err != nil {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -417,6 +461,24 @@ func UpdateUserDetails(c *gin.Context) {
     }
     if updatedUser.Privacysettings.Profile != "" &&  updatedUser.Privacysettings.Schedule != ""  {
         user.Privacysettings = updatedUser.Privacysettings
+    }
+    // check if profile picture was updated
+    picture, err := c.FormFile("profilepicture")
+    if err == nil {
+        t := time.Now()
+        year, month, day := t.Date()
+        hour, min, sec := t.Clock()
+        picture.Filename = fmt.Sprintf("%d-%d-%d-%d-%d-%d_%s",year, month, day, hour, min, sec, picture.Filename)
+        err = c.SaveUploadedFile(picture, "uploads/" + picture.Filename)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	        return
+        }
+        _, err = profilePictures.UpdateOne(context.TODO(), bson.M{"userid": id}, bson.M{"$set": bson.M{"picture":picture}}, options.Update().SetUpsert(true))
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	        return
+        }
     }
     // save user into db
     _, err = users.UpdateOne(context.TODO(), bson.M{"_id": id}, bson.M{"$set": user})

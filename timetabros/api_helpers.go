@@ -164,7 +164,6 @@ func userFind(filter bson.M) ([]SearchUserResult, error) {
         result.Username = raw.Lookup("username").StringValue()
         result.Firstname = raw.Lookup("firstname").StringValue()
         result.Lastname = raw.Lookup("lastname").StringValue()
-        result.Email = raw.Lookup("email").StringValue()
         results = append(results, result)
     }
     if err = cur.Err(); err != nil {

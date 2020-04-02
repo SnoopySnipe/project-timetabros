@@ -4,6 +4,8 @@ import (
     "time"
 
     "go.mongodb.org/mongo-driver/bson/primitive"
+
+    "mime/multipart"
 )
 
 type EmailSetup struct {
@@ -11,6 +13,11 @@ type EmailSetup struct {
     Port string
     Address string
     Password string
+}
+
+type ProfilePicture struct {
+    Userid primitive.ObjectID
+    Picture multipart.FileHeader
 }
 
 type ResetCredentials struct {
@@ -47,7 +54,6 @@ type SearchUserResult struct {
     Username string `json:"username"`
     Firstname string `json:"firstname"`
     Lastname string `json:"lastname"`
-    Email string `json:"email"`
 }
 
 type SearchUserCredentials struct {
