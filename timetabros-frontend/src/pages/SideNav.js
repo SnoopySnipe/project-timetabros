@@ -20,6 +20,7 @@ import Schedule from '@material-ui/icons/Schedule';
 import People from '@material-ui/icons/People';
 import ListItem from '@material-ui/core/ListItem';
 import CompareIcon from '@material-ui/icons/Compare';
+import SettingsIcon from '@material-ui/icons/Settings';
 import Profile from './Profile';
 import Friends from './Friends';
 import Requests from './components/Requests/Requests';
@@ -211,6 +212,15 @@ export default function SideNav() {
                 <ListItemText primary="Compare"></ListItemText>
               </ListItem>
             </div></List>
+            <Divider />
+            <List>
+              <ListItem button selected={title==="Settings"} component={Link} to="/home/settings" onClick={onListItemClick('Settings')}>
+                  <ListItemIcon>
+                    <SettingsIcon/>
+                  </ListItemIcon>
+                  <ListItemText primary="Settings"></ListItemText>
+                </ListItem>
+            </List>
             <Divider />
             <List>
               <ListItem button onClick={handleSignOut}>
