@@ -5,11 +5,15 @@ import (
     "encoding/json"
     "net/http"
     "net/smtp"
+    "time"
+    "fmt"
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
+    "go.mongodb.org/mongo-driver/mongo/options"
 
     "github.com/gin-gonic/gin"
+    "github.com/gin-gonic/gin/binding"
 
     "golang.org/x/crypto/bcrypt"
 )
@@ -275,7 +279,7 @@ func GetUserDetails(c *gin.Context) {
 		return
     }
     // check user's privacy settings
-    if session.Values["_id"].(*primitive.ObjectID).Hex() != id.Hex() {
+    /*if session.Values["_id"].(*primitive.ObjectID).Hex() != id.Hex() {
         if user.Privacysettings.Profile == "private" {
             c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		    return
@@ -287,7 +291,7 @@ func GetUserDetails(c *gin.Context) {
 		        return
             }
         }
-    }
+    }*/
     // send response
     c.JSON(http.StatusOK, gin.H{
         "_id": id,
@@ -298,6 +302,45 @@ func GetUserDetails(c *gin.Context) {
         "notificationsettings": user.Notificationsettings,
         "privacysettings": user.Privacysettings,
     })
+}
+
+// get user's profile picture api
+// curl -b cookie.txt -X GET localhost:3001/api/users/id/pfp
+func GetProfilePicture(c *gin.Context) {
+    // get session
+    /*session, err := store.Get(c.Request, "session")
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    // check if authenticated
+    if !(isAuthenticated(session)) {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
+		return
+    }*/
+    // get id and check that its valid
+    id_param := c.Param("id")
+    id, err := primitive.ObjectIDFromHex(id_param)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id " + id_param})
+		return
+    }
+    // find the matching user
+    var user User
+    err = users.FindOne(context.TODO(), bson.M{"_id": id}).Decode(&user)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "User " + id_param + " not found"})
+		return
+    }
+    // find the user profile picture
+    var profilePicture ProfilePicture
+    err = profilePictures.FindOne(context.TODO(), bson.M{"userid": id}).Decode(&profilePicture)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "User " + id_param + " has no profile picture"})
+		return
+    }
+    // send response
+    c.File("uploads/" + profilePicture.Picture.Filename)
 }
 
 // update user details api
@@ -330,7 +373,7 @@ func UpdateUserDetails(c *gin.Context) {
     }
     // get update credentials
     var updatedUser UserUpdate
-    if err = c.ShouldBindJSON(&updatedUser); err != nil {
+    if err = c.ShouldBindWith(&updatedUser, binding.FormMultipart); err != nil {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -418,6 +461,24 @@ func UpdateUserDetails(c *gin.Context) {
     if updatedUser.Privacysettings.Profile != "" &&  updatedUser.Privacysettings.Schedule != ""  {
         user.Privacysettings = updatedUser.Privacysettings
     }
+    // check if profile picture was updated
+    picture, err := c.FormFile("profilepicture")
+    if err == nil {
+        t := time.Now()
+        year, month, day := t.Date()
+        hour, min, sec := t.Clock()
+        picture.Filename = fmt.Sprintf("%d-%d-%d-%d-%d-%d_%s",year, month, day, hour, min, sec, picture.Filename)
+        err = c.SaveUploadedFile(picture, "uploads/" + picture.Filename)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	        return
+        }
+        _, err = profilePictures.UpdateOne(context.TODO(), bson.M{"userid": id}, bson.M{"$set": bson.M{"picture":picture}}, options.Update().SetUpsert(true))
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	        return
+        }
+    }
     // save user into db
     _, err = users.UpdateOne(context.TODO(), bson.M{"_id": id}, bson.M{"$set": user})
     if err != nil {
@@ -479,4 +540,134 @@ func SearchUsers(c *gin.Context) {
     c.JSON(http.StatusOK, searchResults)
 }
 
+// request password reset api
+// curl -X POST -H "Content-Type: application/json" -d '{"email":"andrewleung.41898@outlook.com"}' localhost:3001/reset
+func RequestPasswordReset(c *gin.Context) {
+    // get email
+    var userEmail ResetCredentials
+    if err := c.ShouldBindJSON(&userEmail); err != nil {
+    	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+    // verify inputs
+    if errs := validate.Struct(userEmail); errs != nil {
+	    c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		return
+    }
+    // check if user exists
+    var existingUser User
+    err := users.FindOne(context.TODO(), bson.M{"email": userEmail.Email}).Decode(&existingUser)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Email " + userEmail.Email + " is not registered with TimetaBros"})
+	    return
+    }
+    // insert pending user into db
+    var pendingUser PendingUser
+    raw, err := users.FindOne(context.TODO(), bson.M{"email": userEmail.Email}).DecodeBytes()
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    pendingUser.Userid = raw.Lookup("_id").ObjectID()
+    insertedPendingUser, err := pendingUsers.InsertOne(context.TODO(), pendingUser)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+
+
+
+    path := "/reset/" + insertedPendingUser.InsertedID.(primitive.ObjectID).Hex()
+    // send email
+    to := []string{userEmail.Email}
+    msg := []byte("To: " + userEmail.Email + "\r\n" +
+        "Subject: TimetaBros Password Reset\r\n" +
+		"\r\n" +
+		"You requested a password reset on TimetaBros, please click " + site + path + " to do so.\r\n")
+    err = smtp.SendMail(email_setup.Host + ":" + email_setup.Port, auth, email_setup.Address, to, msg)
+	if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+
+
+    // send back response with user data and token
+    c.JSON(http.StatusOK, gin.H{
+        "_id": pendingUser.Userid,
+        "email": userEmail.Email,
+        "token": insertedPendingUser. InsertedID,
+    })
+}
+
+// reset password api
+// curl -X PATCH -H "Content-Type: application/json" -d '{"password":"password"}' localhost:3001/reset/token
+func ResetPassword(c *gin.Context) {
+    // get token and check that its valid
+    token := c.Param("token")
+    tokenObject, err := primitive.ObjectIDFromHex(token)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid token " + token})
+		return
+    }
+    // find the user that the token belongs to  
+    var pendingUser PendingUser
+    err = pendingUsers.FindOne(context.TODO(), bson.M{"_id": tokenObject}).Decode(&pendingUser)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Token " + token + " not found"})
+	    return
+    }
+    var user User
+    err = users.FindOne(context.TODO(), bson.M{"_id": pendingUser.Userid}).Decode(&user)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "User " + pendingUser.Userid.Hex() + " not found"})
+		return
+    }
+    // get update credentials
+    var passwordReset PasswordReset
+    if err = c.ShouldBindJSON(&passwordReset); err != nil {
+    	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+    // verify inputs
+    if errs := validate.Struct(passwordReset); errs != nil {
+	    c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		return
+    }
+    // create salted hash and store it instead of password in clear
+    hash, err := bcrypt.GenerateFromPassword([]byte(passwordReset.Password), bcrypt.DefaultCost)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	    return
+    }
+    user.Password = string(hash)
+    // remove the pending user record
+    _, err = pendingUsers.DeleteOne(context.TODO(), bson.M{"_id": tokenObject})
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    // update the user's password
+    _, err = users.UpdateOne(context.TODO(), bson.M{"_id": pendingUser.Userid}, bson.M{"$set": bson.M{"password": user.Password}})
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    // send email confirmation
+    to := []string{user.Email}
+    msg := []byte("To: " + user.Email + "\r\n" +
+        "Subject: TimetaBros Password Reset Confirmation\r\n" +
+		"\r\n" +
+		"You have recently reset your password on TimetaBros.\r\n")
+    err = smtp.SendMail(email_setup.Host + ":" + email_setup.Port, auth, email_setup.Address, to, msg)
+	if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+    // send back response with user data
+    c.JSON(http.StatusOK, gin.H{
+        "_id": pendingUser.Userid,
+        "email": user.Email,
+    })
+}
 

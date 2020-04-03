@@ -164,17 +164,23 @@ func GetFriends (c *gin.Context) {
         }
     }
     // get user's friends
-    friends, err := friendFind(bson.M{"status": "accepted", "$or": []bson.M{bson.M{"user1": id}, bson.M{"user2": id}}})
+    sentFriends, err := friendFind(bson.M{"status": "accepted", "user1": id}, 2)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
     }
-    sentFriendRequests, err := friendFind(bson.M{"status": "pending", "user1": id})
+    acceptedFriends, err := friendFind(bson.M{"status": "accepted", "user2": id}, 1)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
     }
-    receivedFriendRequests, err := friendFind(bson.M{"status": "pending", "user2": id})
+    friends := append(sentFriends, acceptedFriends...)
+    sentFriendRequests, err := friendFind(bson.M{"status": "pending", "user1": id}, 2)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    receivedFriendRequests, err := friendFind(bson.M{"status": "pending", "user2": id}, 1)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -185,6 +191,79 @@ func GetFriends (c *gin.Context) {
         "friends": friends,
         "sentfriendrequests": sentFriendRequests,
         "receivedfriendrequests": receivedFriendRequests,
+    })
+}
+
+// get mutual friend recommendations api
+// curl -b cookie.txt -X GET localhost:3001/api/mutual_friend_recommendations
+func GetMutualFriendRecommendations(c *gin.Context) {
+    // get session
+    session, err := store.Get(c.Request, "session")
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    // check if authenticated
+    if !(isAuthenticated(session)) {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
+		return
+    }
+    // get id and check that its valid
+    id_param := session.Values["_id"].(*primitive.ObjectID).Hex()
+    id, err := primitive.ObjectIDFromHex(id_param)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id " + id_param})
+		return
+    }
+    // find the matching user
+    var user User
+    err = users.FindOne(context.TODO(), bson.M{"_id": id}).Decode(&user)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "User " + id_param + " not found"})
+		return
+    }
+    // get user's friends
+    sentFriends, err := friendFind(bson.M{"status": "accepted", "user1": id}, 2)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    acceptedFriends, err := friendFind(bson.M{"status": "accepted", "user2": id}, 1)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    friends := append(sentFriends, acceptedFriends...)
+    var friends_str []string
+    for _, f := range friends {
+        friends_str = append(friends_str, f.Userid)
+    }
+    // get user's pending friends
+    sentFriendRequests, err := friendFind(bson.M{"status": "pending", "user1": id}, 2)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    receivedFriendRequests, err := friendFind(bson.M{"status": "pending", "user2": id}, 1)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    pending_friends := append(sentFriendRequests, receivedFriendRequests...)
+    var pending_friends_str []string
+    for _, pf := range pending_friends {
+        pending_friends_str = append(pending_friends_str, pf.Userid)
+    }
+    // get mutual friends
+    mutualFriends, err := MutualFriendFind(id_param, friends_str, pending_friends_str)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    // send response
+    c.JSON(http.StatusOK, gin.H{
+        "_id": id,
+        "mutualfriends": mutualFriends,
     })
 }
 
