@@ -97,7 +97,7 @@ const GroupDialog = (props) => {
                           username: user.username
                         }]));
                         console.log(props.groupToUpdate);
-                        if(props.groupToUpdate && props.groupToUpdate.groupmembers.some((member)=>member.userid===friendId)) {
+                        if(props.groupToUpdate && props.groupToUpdate.groupmembers && props.groupToUpdate.groupmembers.some((member)=>member.userid===friendId)) {
                           setChecked(checked => checked.concat(friendId));
                         }
                       }

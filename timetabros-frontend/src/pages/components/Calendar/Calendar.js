@@ -31,6 +31,7 @@ class Calendar extends Component {
       createStartDate: null,
       createEndDate: null,
       events: [],
+      users: [],
       viewType: "Week",
       durationBarVisible: false,
       timeRangeSelectedHandling: "Enabled",
@@ -125,7 +126,8 @@ class Calendar extends Component {
     this.setState({
       events:[]
     })
-    for (let user of this.props.users) {
+    console.log(this.state.users);
+    for (let user of this.state.users) {
       this.fetchEventItems(user);
     }
   }
@@ -152,6 +154,7 @@ class Calendar extends Component {
       this.setState({
         events: this.state.events.concat(events)
       });
+      console.log(this.state.events);
     })
     // Not sure if we need this
     .catch(error => {
@@ -159,24 +162,44 @@ class Calendar extends Component {
     });
   }
 
+  usersEqual(arr1, arr2) {
+    if (arr1.length !== arr2.length) return false;
+    for (var i = 0; i < arr1.length; i++) {
+      if(arr1[i] !== arr2[i]) return false;
+    }
+    return true;
+  }
+
   componentDidMount() {
+    
+
+    console.log('did mount');
     this.setState({
       startDate: (new Date()).toISOString()
     });
     this.authorizeCalendar();
     if (this.props.users){
-      console.log(this.props.users);
-      this.fetchUsersEventItems();
+      this.setState({users:this.props.users}, ()=>this.fetchUsersEventItems());
+      console.log(this.state.users);
+      
     }
   }
-  componentWillReceiveProps(){
-    this.setState({
-      events:[]
-    })
-    for (let user of this.props.users) {
-      this.fetchEventItems(user);
+  componentDidUpdate(prevProps){
+    console.log('receive props');
+    console.log(this.state.users);
+
+    // console.log(prevProps);
+    // console.log(this.props.users);
+    if(this.props.users && prevProps.users && !this.usersEqual(prevProps.users, this.props.users)) {
+      this.setState({users: this.props.users}, ()=>this.fetchUsersEventItems());
+
     }
   }
+
+  // componentWillUpdate() {
+  //   this.fetchUsersEventItems();
+
+  // }
   updateWeekEventItems() {
 
   }

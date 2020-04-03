@@ -57,6 +57,7 @@ class Compare extends React.Component {
     }
 
     componentWillMount(){
+        console.log('compare will mount');
         this.fetchFriends();
         this.setState({selectedFriends: [{id:this.context.authenticatedUser._id, colour: null}]})
     }
@@ -64,12 +65,11 @@ class Compare extends React.Component {
     toggleSelectFriend = user => {
         if(this.state.selectedFriends.includes(user)){
             const index = this.state.selectedFriends.indexOf(user);
-            let temp = this.state.selectedFriends;
-            temp.splice(index,1);
+            console.log(this.state.selectedFriends);
+            let temp = this.state.selectedFriends.slice(0, index).concat(this.state.selectedFriends.slice(index+1));
             this.setState({selectedFriends: temp});
         } else {
-            let temp = this.state.selectedFriends;
-            temp.push(user);
+            let temp = this.state.selectedFriends.concat([user]);
             this.setState({selectedFriends: temp});
         }
     }
@@ -88,7 +88,7 @@ class Compare extends React.Component {
         const selectedFriends = this.state.selectedFriends;
         const friendItems = !friends ? [] : friends.map((user) => (
             <div>
-                { this.state.selectedFriends.some((request)=> request.id == user.id) 
+                { this.state.selectedFriends.some((request)=> request.id === user.id) 
                     ? <ListItem button divider onClick={()=>this.toggleSelectFriend(user)} style={{backgroundColor: user.colour}}>
                             <ListItemAvatar>
                                 <Avatar>{user.firstName.charAt(0).toUpperCase()}</Avatar>

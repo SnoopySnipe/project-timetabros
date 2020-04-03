@@ -18,6 +18,11 @@ export const getUser = (userid) => {
     return axios.get(`http://localhost:3001/api/users/${userid}`);
 }
 
+export const updateUser = (username, firstname, lastname, email, profileprivacy, scheduleprivacy) => {
+    return axios.patch(`http://localhost:3001/api/users`,
+    {username, firstname, lastname, email, privacysettings: {profile: profileprivacy, schedule: scheduleprivacy}});
+}
+
 export const verifyToken = (token) => {
     return axios.get(`http://localhost:3001/verify/${token}`);
 }
