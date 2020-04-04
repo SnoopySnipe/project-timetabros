@@ -58,14 +58,11 @@ class Calendar extends Component {
         );
       },
       onEventClick: args => {
-        console.log(args.e.data);
+        let event = args.e.data;
+        event.name = args.e.data.text;
         this.setState({
           openCreateDialog: true,
-          selectedEvent: {
-            name: args.e.data.text,
-            description: args.e.data.description,
-            id: args.e.data.id
-          },
+          selectedEvent: event,
           createStartDate: args.e.data.start.toDate(),
           createEndDate: args.e.data.end.toDate()
         })
@@ -133,7 +130,7 @@ class Calendar extends Component {
   }
   fetchEventItems = (user) => {
     getEventItems(user.id).then((response) => {      
-      let events = response.data.scheduleitems ? response.data.scheduleitems.map((item) => {
+      let scheduleItems = response.data.scheduleitems ? response.data.scheduleitems.map((item) => {
 
         let start = new Date(this.state.startDate);
         let itemStartDate = new Date(item.startdate);
@@ -151,8 +148,14 @@ class Calendar extends Component {
         end.setMilliseconds(0);
         return {start: start.toISOString(), end: end.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers, colour: user.colour};
       }) : [];
+      const eventOwnedItems = response.data.eventowneritems ? response.data.eventowneritems.map((item) => {
+
+        let itemStartDate = new Date(item.startdate);
+        let itemEndDate = new Date(item.enddate);
+        return {start: itemStartDate.toISOString(), end: itemEndDate.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers,  creatorstatus: item.creatorstatus, colour: user.colour};
+      }) : [];
       this.setState({
-        events: this.state.events.concat(events)
+        events: this.state.events.concat(scheduleItems).concat(eventOwnedItems)
       });
       console.log(this.state.events);
     })

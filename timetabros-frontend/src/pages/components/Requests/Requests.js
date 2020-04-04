@@ -7,6 +7,7 @@ import AuthContext from '../../../context/AuthContext';
 import styles from './RequestsStyles';
 import { acceptFriendRequest, getFriends } from '../../../services/FriendService';
 import { getUser } from '../../../services/UserService';
+import { updateEventStatus } from '../../../services/ScheduleService';
 import { withRouter } from 'react-router-dom';
 
 class Requests extends React.Component {
@@ -21,6 +22,14 @@ class Requests extends React.Component {
         acceptFriendRequest(requestId).then(
             () => {
                 this.props.onFriendRequestChange();
+            }
+        )
+    }
+
+    handleAcceptEvent = (eventId) => {
+        updateEventStatus(eventId, 'going').then(
+            () => {
+                this.props.onEventRequestChange();
             }
         )
     }
@@ -55,6 +64,25 @@ class Requests extends React.Component {
                 </ListItemSecondaryAction>
             </ListItem>
         ))
+        const eventRequestList = this.props.eventRequests;
+        const eventItems = !eventRequestList ? [] : eventRequestList.map((event) => (
+            <ListItem divider>
+                <ListItemText 
+                    primary={`${event.title} - ${event.description}`}
+                    secondary={`${(new Date(event.startdate)).toLocaleString()} - ${(new Date(event.enddate)).toLocaleString()}`}
+                >
+                
+                </ListItemText>
+                <ListItemSecondaryAction>
+                    <IconButton size="small" aria-label="accept" onClick={()=>{this.handleAcceptEvent(event.ID)}}>
+                      <CheckIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton size="small" aria-label="decline">
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                </ListItemSecondaryAction>
+            </ListItem>
+        ))
         return  (
                 <Grid container spacing={4} >
                     <Grid item xs={12} md={6}>
@@ -66,7 +94,7 @@ class Requests extends React.Component {
                     <Grid item xs={12} md={6}>
                         <h1>Event requests</h1>
                         <List>
-                            {/* {listItems} */}
+                            {eventItems}
                         </List>
                     </Grid>
                 </Grid>
