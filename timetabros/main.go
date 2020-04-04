@@ -129,6 +129,7 @@ func main() {
     api.PATCH("/friends/:id", AcceptFriendRequest)
     api.GET("/users/:id/friends", GetFriends)
     api.GET("/mutual_friend_recommendations", GetMutualFriendRecommendations)
+    api.GET("/schedule_friend_recommendations", GetScheduleFriendRecommendations)
     api.DELETE("/friends", DeleteFriendConnection)
 
     // group apis

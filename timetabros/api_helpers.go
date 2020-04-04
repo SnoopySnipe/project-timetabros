@@ -70,6 +70,9 @@ func ConvertEventItem(event EventItem) (EventItemDB, error) {
         eventmemberDB.Status = eventmember.Status
         eventDB.Eventmembers = append(eventDB.Eventmembers, eventmemberDB)
     }
+
+    eventDB.Iscobalt = 0
+    eventDB.Iscobalt = event.Iscobalt
     
     return eventDB, nil
 }
@@ -199,6 +202,61 @@ func MutualFriendFind(userid string, friends []string, pending_friends []string)
     })
 
     return mutualFriends, err
+}
+
+func ScheduleFriendFind(userid string, connections []string, courses []string) ([]ScheduleFriend, error) {
+    var err error
+    var scheduleFriends []ScheduleFriend
+    var filteredScheduleFriends []ScheduleFriend
+
+    var raw_sf []EventItemDB
+    for _, course := range courses {
+        sf, err := eventItemFind(bson.M{"title": course, "creatorstatus": "", "expirydate": time.Time{}, "eventmembers": nil, "iscobalt": 1})
+        if err != nil {
+            return filteredScheduleFriends, err
+        }
+        raw_sf = append(raw_sf, sf...)
+    }
+
+    for _, raw := range raw_sf {
+        found1 := contains(connections, raw.Createdby.Hex())
+        found2 := userid == raw.Createdby.Hex()
+        found3 := false
+        if !(found1 || found2) {
+            i := 0
+            for _, scheduleFriend := range scheduleFriends {
+                if scheduleFriend.Userid.Hex() == raw.Createdby.Hex() {
+                    if !(contains(scheduleFriend.Courses, raw.Title)) {
+                        scheduleFriend.Courses = append(scheduleFriend.Courses, raw.Title)
+                        scheduleFriend.Count += 1
+                        scheduleFriends[i] = scheduleFriend
+                    }
+                    found3 = true
+                    break
+                }
+                i += 1
+            }
+            if !found3 {
+                sf_id, err := primitive.ObjectIDFromHex(raw.Createdby.Hex())
+                if err != nil {
+                    return filteredScheduleFriends, err
+                }
+                new_sf := ScheduleFriend{Userid: sf_id, Count: 1, Courses: []string{raw.Title}}
+                scheduleFriends = append(scheduleFriends, new_sf)
+            }
+        }
+    }
+
+    check := 1
+    if len(courses) > 1 {
+        check = len(courses) - 1
+    }
+    for _, filtered_sf := range scheduleFriends {
+        if filtered_sf.Count >= check {
+            filteredScheduleFriends = append(filteredScheduleFriends, filtered_sf)
+        }
+    }
+    return filteredScheduleFriends, err
 }
 
 func groupFind(filter bson.M) ([]Group, error) {

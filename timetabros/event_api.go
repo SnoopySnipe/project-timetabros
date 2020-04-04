@@ -66,6 +66,7 @@ func CreateEventItem(c *gin.Context) {
         "description": eventDB.Description,
         "expirydate": eventDB.Expirydate,
         "eventmembers": eventDB.Eventmembers,
+        "iscobalt": eventDB.Iscobalt,
     })
 }
 
@@ -108,6 +109,7 @@ func GetEventItemDetails(c *gin.Context) {
         "description": event.Description,
         "expirydate": event.Expirydate,
         "eventmembers": event.Eventmembers,
+        "iscobalt": event.Iscobalt,
     })
 }
 
@@ -209,6 +211,7 @@ func UpdateEventItemDetails(c *gin.Context) {
         "description": eventDB.Description,
         "expirydate": eventDB.Expirydate,
         "eventmembers": eventDB.Eventmembers,
+        "iscobalt": eventDB.Iscobalt,
     })
 }
 
@@ -262,6 +265,7 @@ func DeleteEventItem(c *gin.Context) {
         "description": eventDB.Description,
         "expirydate": eventDB.Expirydate,
         "eventmembers": eventDB.Eventmembers,
+        "iscobalt": eventDB.Iscobalt,
     })
 }
 
@@ -429,6 +433,7 @@ func SendEventRequest(c *gin.Context) {
         "description": event.Description,
         "expirydate": event.Expirydate,
         "eventmembers": event.Eventmembers,
+        "iscobalt": event.Iscobalt,
     })
 }
 
@@ -503,6 +508,7 @@ func UpdateEventStatus(c *gin.Context) {
         "description": event.Description,
         "expirydate": event.Expirydate,
         "eventmembers": ems,
+        "iscobalt": event.Iscobalt,
     })
 }
 
@@ -594,6 +600,7 @@ func DeleteEventMember(c *gin.Context) {
         "description": event.Description,
         "expirydate": event.Expirydate,
         "eventmembers": ems,
+        "iscobalt": event.Iscobalt,
     })
 }
 

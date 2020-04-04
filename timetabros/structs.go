@@ -89,6 +89,7 @@ type EventItem struct {
     Description string `json:"description" validate:"omitempty,printascii,max=2000"`
     Expirydate string `json:"expirydate"`
     Eventmembers string `json:"eventmembers" validate:"omitempty"`
+    Iscobalt int `json:"iscobalt"`
 }
 
 type EventItemUpdate struct {
@@ -109,6 +110,7 @@ type EventItemDB struct {
     Description string `json:"description"`
     Expirydate time.Time `json:"expirydate"`
     Eventmembers []EventMemberDB `json:"eventmembers"`
+    Iscobalt int `json:"iscobalt"`
 }
 
 type UpdateEventStatusCredentials struct {
@@ -137,6 +139,12 @@ type FriendStruct struct {
 type MutualFriend struct {
     Userid primitive.ObjectID `json:"userid"`
     Count int `json:"count"`
+}
+
+type ScheduleFriend struct {
+    Userid primitive.ObjectID `json:"userid"`
+    Count int `json:"count"`
+    Courses []string `json:"courses"`
 }
 
 type FriendConnectionDB struct {

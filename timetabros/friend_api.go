@@ -3,6 +3,7 @@ package main
 import (
     "context"
     "net/http"
+    "time"
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
@@ -264,6 +265,78 @@ func GetMutualFriendRecommendations(c *gin.Context) {
     c.JSON(http.StatusOK, gin.H{
         "_id": id,
         "mutualfriends": mutualFriends,
+    })
+}
+
+// get schedule friend recommendations api
+// curl -b cookie.txt -X GET localhost:3001/api/schedule_friend_recommendations
+func GetScheduleFriendRecommendations(c *gin.Context) {
+    // get session
+    session, err := store.Get(c.Request, "session")
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    // check if authenticated
+    if !(isAuthenticated(session)) {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
+		return
+    }
+    // get id and check that its valid
+    id_param := session.Values["_id"].(*primitive.ObjectID).Hex()
+    id, err := primitive.ObjectIDFromHex(id_param)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id " + id_param})
+		return
+    }
+    // find the matching user
+    var user User
+    err = users.FindOne(context.TODO(), bson.M{"_id": id}).Decode(&user)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "User " + id_param + " not found"})
+		return
+    }
+    // get user's connections
+    connections1, err := friendFind(bson.M{"user1": id}, 2)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    connections2, err := friendFind(bson.M{"user2": id}, 1)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    connections := append(connections1, connections2...)
+    var connections_str []string
+    for _, connection := range connections {
+        connections_str = append(connections_str, connection.Userid)
+    }
+    // get user's courses
+    userCourses, err := eventItemFind(bson.M{"createdby": id, "creatorstatus": "", "expirydate": time.Time{}, "eventmembers": nil, "iscobalt": 1})
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    var courses []string
+    for _, course := range userCourses {
+        if !(contains(courses, course.Title)) {
+            courses = append(courses, course.Title)
+        }
+    }
+    // get schedule friends
+    var scheduleFriends []ScheduleFriend
+    if len(courses) >= 1 {
+        scheduleFriends, err = ScheduleFriendFind(id_param, connections_str, courses)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		    return
+        }
+    }
+    // send response
+    c.JSON(http.StatusOK, gin.H{
+        "_id": id,
+        "schedulefriends": scheduleFriends,
     })
 }
 
