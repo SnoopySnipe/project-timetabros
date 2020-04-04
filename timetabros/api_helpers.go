@@ -201,7 +201,7 @@ func MutualFriendFind(userid string, friends []string, pending_friends []string)
       return mutualFriends[i].Count > mutualFriends[j].Count
     })
 
-    return mutualFriends, err
+    return mutualFriends[:10], err
 }
 
 func ScheduleFriendFind(userid string, connections []string, courses []string) ([]ScheduleFriend, error) {
@@ -256,7 +256,10 @@ func ScheduleFriendFind(userid string, connections []string, courses []string) (
             filteredScheduleFriends = append(filteredScheduleFriends, filtered_sf)
         }
     }
-    return filteredScheduleFriends, err
+    sort.Slice(filteredScheduleFriends, func(i, j int) bool {
+      return filteredScheduleFriends[i].Count > FilteredScheduleFriends[j].Count
+    })
+    return filteredScheduleFriends[:10], err
 }
 
 func groupFind(filter bson.M) ([]Group, error) {

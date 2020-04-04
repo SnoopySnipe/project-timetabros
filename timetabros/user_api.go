@@ -7,6 +7,7 @@ import (
     "net/smtp"
     "time"
     "fmt"
+    "strings"
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
@@ -88,12 +89,7 @@ func SignUp(c *gin.Context) {
 
     // send back response with user data and token
     c.JSON(http.StatusOK, gin.H{
-        "_id": insertedUser.InsertedID,
-        "username": user.Username,
-        "firstname": user.Firstname,
-        "lastname": user.Lastname,
-        "email": user.Email,
-        "token": insertedPendingUser.InsertedID,
+        "message": "Successfully signed up"
     })
 }
 
@@ -134,11 +130,7 @@ func Verify(c *gin.Context) {
     }
     // send back response with user data
     c.JSON(http.StatusOK, gin.H{
-        "_id": pendingUser.Userid,
-        "username": user.Username,
-        "firstname": user.Firstname,
-        "lastname": user.Lastname,
-        "email": user.Email,
+        "message":"Successfully verified"
     })
 }
 
@@ -218,6 +210,8 @@ func SignIn(c *gin.Context) {
         "firstname": user.Firstname,
         "lastname": user.Lastname,
         "email": user.Email,
+        "notificationsettings": user.Notificationsettings,
+        "privacysettings": user.Privacysettings,
     })
 }
 
@@ -278,20 +272,6 @@ func GetUserDetails(c *gin.Context) {
         c.JSON(http.StatusNotFound, gin.H{"error": "User " + id_param + " not found"})
 		return
     }
-    // check user's privacy settings
-    /*if session.Values["_id"].(*primitive.ObjectID).Hex() != id.Hex() {
-        if user.Privacysettings.Profile == "private" {
-            c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
-		    return
-        } else if user.Privacysettings.Profile == "friends-only" {
-            var friendConnectionDB FriendConnectionDB
-            err = friendConnections.FindOne(context.TODO(), bson.M{"status": "accepted", "$or": []bson.M{bson.M{"user1": session.Values["_id"], "user2": id,},bson.M{"user1": id, "user2": session.Values["_id"],},},}).Decode(&friendConnectionDB)
-            if err != nil {
-                c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
-		        return
-            }
-        }
-    }*/
     // send response
     c.JSON(http.StatusOK, gin.H{
         "_id": id,
@@ -308,7 +288,7 @@ func GetUserDetails(c *gin.Context) {
 // curl -b cookie.txt -X GET localhost:3001/api/users/id/pfp
 func GetProfilePicture(c *gin.Context) {
     // get session
-    /*session, err := store.Get(c.Request, "session")
+    session, err := store.Get(c.Request, "session")
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -317,7 +297,7 @@ func GetProfilePicture(c *gin.Context) {
     if !(isAuthenticated(session)) {
         c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
 		return
-    }*/
+    }
     // get id and check that its valid
     id_param := c.Param("id")
     id, err := primitive.ObjectIDFromHex(id_param)
@@ -340,7 +320,7 @@ func GetProfilePicture(c *gin.Context) {
 		return
     }
     // send response
-    c.File("uploads/" + profilePicture.Picture.Filename)
+    c.File(upload_destination + "/" + profilePicture.Picture.Filename)
 }
 
 // update user details api
@@ -468,7 +448,7 @@ func UpdateUserDetails(c *gin.Context) {
         year, month, day := t.Date()
         hour, min, sec := t.Clock()
         picture.Filename = fmt.Sprintf("%d-%d-%d-%d-%d-%d_%s",year, month, day, hour, min, sec, picture.Filename)
-        err = c.SaveUploadedFile(picture, "uploads/" + picture.Filename)
+        err = c.SaveUploadedFile(picture, upload_destination + "/" + picture.Filename)
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	        return
@@ -494,7 +474,6 @@ func UpdateUserDetails(c *gin.Context) {
         "email": user.Email,
         "notificationsettings": user.Notificationsettings,
         "privacysettings": user.Privacysettings,
-        "token": token,
     })
 }
 
@@ -513,17 +492,8 @@ func SearchUsers(c *gin.Context) {
 		return
     }
     // get search query
-    byte_data, err := c.GetRawData()
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-    }
     data := &SearchUserCredentials{}
-    err = json.Unmarshal(byte_data, data)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	    return
-    }
+    data.Query = strings.ReplaceAll(c.Query("q"), "%20", " ")
     query := data.Query
     // verify inputs
     if errs := validate.Struct(data); errs != nil {
@@ -594,9 +564,7 @@ func RequestPasswordReset(c *gin.Context) {
 
     // send back response with user data and token
     c.JSON(http.StatusOK, gin.H{
-        "_id": pendingUser.Userid,
-        "email": userEmail.Email,
-        "token": insertedPendingUser. InsertedID,
+        "message":"Successfully sent email"
     })
 }
 
@@ -666,8 +634,7 @@ func ResetPassword(c *gin.Context) {
 	}
     // send back response with user data
     c.JSON(http.StatusOK, gin.H{
-        "_id": pendingUser.Userid,
-        "email": user.Email,
+        "message":"Successfully updated password"
     })
 }
 

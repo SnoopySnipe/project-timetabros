@@ -33,19 +33,18 @@ var store *sessions.CookieStore
 
 var auth smtp.Auth
 var email_setup EmailSetup
-var site string
 
 var validate *validator.Validate
 
 func main() {
     // create uploads folder
-    err := os.MkdirAll("uploads", os.ModePerm)
+    err := os.MkdirAll(upload_destination, os.ModePerm)
 
     // setup input validation
     validate = validator.New()
 
     // connect to mongodb
-    clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+    clientOptions := options.Client().ApplyURI(mongo_destination)
     client, err := mongo.Connect(context.TODO(), clientOptions)
     if err != nil {
         log.Fatal(err)
@@ -70,7 +69,6 @@ func main() {
 
 
     // setup email
-    site = "http://localhost:3001"
     email_setup = EmailSetup{Host: "smtp.gmail.com", Port: "587", Address: email_address, Password: email_password}
     auth = smtp.PlainAuth("", email_setup.Address, email_setup.Password, email_setup.Host)
 
@@ -81,12 +79,12 @@ func main() {
 
     // setup cors headers
     config := cors.DefaultConfig()
-    config.AllowOrigins = []string{"http://localhost:3000"}
+    config.AllowOrigins = []string{front_site}
     config.AllowCredentials = true
     router.Use(cors.New(config))
     
 
-    store = sessions.NewCookieStore([]byte("pleasechangeandstoreinconf"))
+    store = sessions.NewCookieStore([]byte(cookie_secret))
     gob.Register(&primitive.ObjectID{})
     //router.Use(static.Serve("/", static.LocalFile("./frontend", true)))
     api := router.Group("/api")
@@ -100,11 +98,6 @@ func main() {
 
     // define api routes
 
-    // TODO account for group visibility
-    // TODO adjust responses
-    // TODO change search users to a GET
-    // TODO ID being saved into database
-
     // user apis
     router.POST("/signup", SignUp)
     router.GET("/verify/:token", Verify)
@@ -112,7 +105,7 @@ func main() {
     router.GET("/signout", SignOut)
     api.GET("/users/:id", GetUserDetails)
     api.PATCH("/users", UpdateUserDetails)
-    api.POST("/users", SearchUsers)
+    api.GET("/users", SearchUsers)
     router.POST("/reset", RequestPasswordReset)
     router.PATCH("/reset/:token", ResetPassword)
     api.GET("/users/:id/pfp", GetProfilePicture)

@@ -38,7 +38,7 @@ func CreateGroup(c *gin.Context) {
 		return
     }
     // insert group into db
-    insertedGroup, err := groups.InsertOne(context.TODO(), group)
+    insertedGroup, err := groups.InsertOne(context.TODO(), bson.M{"createdby": group.Createdby,"creatorrole": group.Creatorrole,"name": group.Name,"about": group.About,"visibility": group.Visibility,"groupmembers": group.Groupmembers})
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	    return
@@ -362,13 +362,7 @@ func SendGroupRequest(c *gin.Context) {
     }
     // send back response
     c.JSON(http.StatusOK, gin.H{
-        "_id": group_id,
-        "createdby": group.Createdby,
-        "creatorrole": group.Creatorrole,
-        "name": group.Name,
-        "about": group.About,
-        "visibility": group.Visibility, 
-        "groupmembers": group.Groupmembers,
+        "message":"Successfully sent invite"
     })
 }
 
@@ -423,13 +417,7 @@ func AcceptGroupRequest(c *gin.Context) {
     }
     // send back response
     c.JSON(http.StatusOK, gin.H{
-        "_id": group_id,
-        "createdby": group.Createdby,
-        "creatorrole": group.Creatorrole,
-        "name": group.Name,
-        "about": group.About,
-        "visibility": group.Visibility, 
-        "groupmembers": gms,
+        "message":"Successfully joined group"
     })
 }
 
@@ -512,13 +500,7 @@ func DeleteGroupMember(c *gin.Context) {
     }
     // send back response
     c.JSON(http.StatusOK, gin.H{
-        "_id": group_id,
-        "createdby": group.Createdby,
-        "creatorrole": group.Creatorrole,
-        "name": group.Name,
-        "about": group.About,
-        "visibility": group.Visibility, 
-        "groupmembers": gms,
+        "message":"Successfully removed from group"
     })
 }
 

@@ -50,7 +50,7 @@ func CreateEventItem(c *gin.Context) {
 	    return
     }
     // insert event into db
-    insertedEvent, err := eventItems.InsertOne(context.TODO(), eventDB)
+    insertedEvent, err := eventItems.InsertOne(context.TODO(), bson.M{"createdby": eventDB.Createdby,"creatorstatus": eventDB.Creatorstatus,"startdate": eventDB.Startdate,"enddate": eventDB.Enddate,"title": eventDB.Title,"description": eventDB.Description,"expirydate": eventDB.Expirydate,"eventmembers": eventDB.Eventmembers,"iscobalt": eventDB.Iscobalt})
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	    return
@@ -312,27 +312,32 @@ func GetUserEvents(c *gin.Context) {
         }
     }
     // get user's events
-    userScheduleItems, err := eventItemFind(bson.M{"createdby": id, "creatorstatus": "", "expirydate": time.Time{}, "eventmembers": nil})
+    userScheduleItems, err := eventItemFind(bson.M{"createdby": id, "creatorstatus": "", "expirydate": time.Time{}, "eventmembers": nil, "iscobalt": 0})
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
     }
-    userTempScheduleItems, err := eventItemFind(bson.M{"createdby": id, "creatorstatus": "", "expirydate": bson.M{"$ne": time.Time{}}, "eventmembers": nil})
+    courses, err := eventItemFind(bson.M{"createdby": id, "creatorstatus": "", "expirydate": time.Time{}, "eventmembers": nil, "iscobalt": 1})
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
     }
-    userEventOwnerItems, err := eventItemFind(bson.M{"createdby": id, "creatorstatus": bson.M{"$ne": ""}, "expirydate": time.Time{}})
+    userTempScheduleItems, err := eventItemFind(bson.M{"createdby": id, "creatorstatus": "", "expirydate": bson.M{"$ne": time.Time{}}, "eventmembers": nil, "iscobalt": 0})
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
     }
-    userEventMemberItems, err := eventItemFind(bson.M{"createdby": bson.M{"$ne": id}, "creatorstatus": bson.M{"$ne": ""}, "expirydate": time.Time{}, "eventmembers": bson.M{"$elemMatch": bson.M{"userid": id, "status": bson.M{"$ne": "invited"}}}})
+    userEventOwnerItems, err := eventItemFind(bson.M{"createdby": id, "creatorstatus": bson.M{"$ne": ""}, "expirydate": time.Time{}, "iscobalt": 0})
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
     }
-    userEventRequestItems, err := eventItemFind(bson.M{"createdby": bson.M{"$ne": id}, "creatorstatus": bson.M{"$ne": ""}, "expirydate": time.Time{}, "eventmembers": bson.M{"$elemMatch": bson.M{"userid": id, "status": "invited"}}})
+    userEventMemberItems, err := eventItemFind(bson.M{"createdby": bson.M{"$ne": id}, "creatorstatus": bson.M{"$ne": ""}, "expirydate": time.Time{}, "iscobalt": 0, "eventmembers": bson.M{"$elemMatch": bson.M{"userid": id, "status": bson.M{"$ne": "invited"}}}})
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    userEventRequestItems, err := eventItemFind(bson.M{"createdby": bson.M{"$ne": id}, "creatorstatus": bson.M{"$ne": ""}, "expirydate": time.Time{}, "iscobalt": 0, "eventmembers": bson.M{"$elemMatch": bson.M{"userid": id, "status": "invited"}}})
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -341,6 +346,7 @@ func GetUserEvents(c *gin.Context) {
     c.JSON(http.StatusOK, gin.H{
         "_id": id,
         "scheduleitems": userScheduleItems,
+        "courses": courses,
         "tempscheduleitems": userTempScheduleItems,
         "eventowneritems": userEventOwnerItems,
         "eventmemberitems": userEventMemberItems,
@@ -424,16 +430,7 @@ func SendEventRequest(c *gin.Context) {
     }
     // send back response
     c.JSON(http.StatusOK, gin.H{
-        "_id": event_id,
-        "createdby": event.Createdby,
-        "creatorstatus": event.Creatorstatus,
-        "startdate": event.Startdate,
-        "enddate": event.Enddate,
-        "title": event.Title,
-        "description": event.Description,
-        "expirydate": event.Expirydate,
-        "eventmembers": event.Eventmembers,
-        "iscobalt": event.Iscobalt,
+        "message":"Successfully sent invite"
     })
 }
 
@@ -499,16 +496,7 @@ func UpdateEventStatus(c *gin.Context) {
     }
     // send back response
     c.JSON(http.StatusOK, gin.H{
-        "_id": event_id,
-        "createdby": event.Createdby,
-        "creatorstatus": event.Creatorstatus,
-        "startdate": event.Startdate,
-        "enddate": event.Enddate,
-        "title": event.Title,
-        "description": event.Description,
-        "expirydate": event.Expirydate,
-        "eventmembers": ems,
-        "iscobalt": event.Iscobalt,
+        "message":"Successfully updated status"
     })
 }
 
@@ -591,16 +579,7 @@ func DeleteEventMember(c *gin.Context) {
     }
     // send back response
     c.JSON(http.StatusOK, gin.H{
-        "_id": event_id,
-        "createdby": event.Createdby,
-        "creatorstatus": event.Creatorstatus,
-        "startdate": event.Startdate,
-        "enddate": event.Enddate,
-        "title": event.Title,
-        "description": event.Description,
-        "expirydate": event.Expirydate,
-        "eventmembers": ems,
-        "iscobalt": event.Iscobalt,
+        "message":"Successfully removed from event"
     })
 }
 
