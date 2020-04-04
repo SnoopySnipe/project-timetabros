@@ -30,6 +30,7 @@ import AuthContext from '../context/AuthContext';
 import { signOut } from '../services/UserService';
 import { getFriends } from '../services/FriendService';
 import { getUser } from '../services/UserService';
+import { getEventItems } from '../services/ScheduleService';
 const drawerWidth = 240;
 const useStyles = makeStyles(theme => ({
   yeet: {
@@ -108,6 +109,8 @@ export default function SideNav() {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [title, setTitle] = React.useState('');
   const [friendRequests, setFriendRequests] = React.useState([]);
+  const [groupRequests, setGroupRequests] = React.useState([]);
+  const [eventRequests, setEventRequests] = React.useState([]);
   const context = useContext(AuthContext);
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
@@ -124,6 +127,7 @@ export default function SideNav() {
   }
   useEffect(() => {
     fetchFriendRequests();
+    fetchEventRequests();
   }, []);
 
 
@@ -151,7 +155,20 @@ export default function SideNav() {
                 });
         }
     )
+
   }
+
+  const fetchEventRequests = () => {
+    setEventRequests([]);
+    getEventItems(context.authenticatedUser._id).then(
+      (response) => {
+        const eventRequests = response.data.eventrequestitems || [];
+        setEventRequests(eventRequests);
+      }
+
+    )
+  }
+
 
   return (
     <Router>
@@ -170,7 +187,7 @@ export default function SideNav() {
                 TimetaBros
               </Typography>
               <IconButton component={Link} to={{pathname: "/home/requests"}} onClick={onListItemClick('')}>
-                <Badge badgeContent={friendRequests.length} color="secondary">
+                <Badge badgeContent={friendRequests.length+eventRequests.length} color="secondary">
                   <NotificationsIcon/>
                 </Badge>
               </IconButton>
@@ -238,7 +255,7 @@ export default function SideNav() {
             <Route exact path="/home/profile" component={Profile}/>
               <Route path="/home/profile/:id" component={Profile}/>
               <Route path="/home/friends" component={Friends} />
-              <Route path="/home/requests" render={(props) => <Requests friendRequests={friendRequests} onFriendRequestChange={fetchFriendRequests} />} />
+              <Route path="/home/requests" render={(props) => <Requests friendRequests={friendRequests} onFriendRequestChange={fetchFriendRequests} groupRequests={groupRequests} eventRequests={eventRequests} onEventRequestChange={fetchEventRequests}/>} />
               <Route path="/home/compare" component={Compare} />
             </Container>
 
