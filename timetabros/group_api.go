@@ -362,7 +362,7 @@ func SendGroupRequest(c *gin.Context) {
     }
     // send back response
     c.JSON(http.StatusOK, gin.H{
-        "message":"Successfully sent invite"
+        "message":"Successfully sent invite",
     })
 }
 
@@ -417,7 +417,7 @@ func AcceptGroupRequest(c *gin.Context) {
     }
     // send back response
     c.JSON(http.StatusOK, gin.H{
-        "message":"Successfully joined group"
+        "message":"Successfully joined group",
     })
 }
 
@@ -500,7 +500,7 @@ func DeleteGroupMember(c *gin.Context) {
     }
     // send back response
     c.JSON(http.StatusOK, gin.H{
-        "message":"Successfully removed from group"
+        "message":"Successfully removed from group",
     })
 }
 

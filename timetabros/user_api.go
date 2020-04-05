@@ -89,7 +89,7 @@ func SignUp(c *gin.Context) {
 
     // send back response with user data and token
     c.JSON(http.StatusOK, gin.H{
-        "message": "Successfully signed up"
+        "message": "Successfully signed up",
     })
 }
 
@@ -130,7 +130,7 @@ func Verify(c *gin.Context) {
     }
     // send back response with user data
     c.JSON(http.StatusOK, gin.H{
-        "message":"Successfully verified"
+        "message":"Successfully verified",
     })
 }
 
@@ -564,7 +564,7 @@ func RequestPasswordReset(c *gin.Context) {
 
     // send back response with user data and token
     c.JSON(http.StatusOK, gin.H{
-        "message":"Successfully sent email"
+        "message":"Successfully sent email",
     })
 }
 
@@ -634,7 +634,7 @@ func ResetPassword(c *gin.Context) {
 	}
     // send back response with user data
     c.JSON(http.StatusOK, gin.H{
-        "message":"Successfully updated password"
+        "message":"Successfully updated password",
     })
 }
 

@@ -63,14 +63,14 @@ func SendFriendRequest (c *gin.Context) {
     friendConnectionDB.User1 = session.Values["_id"].(*primitive.ObjectID)
     friendConnectionDB.User2 = id
     friendConnectionDB.Status = "pending"
-    insertedFriendConnection, err := friendConnections.InsertOne(context.TODO(), bson.M{"user1":friendConnectionDB.User1, "user2":friendConnectionDB.User2, "status":friendConnectionDB.Status})
+    _, err = friendConnections.InsertOne(context.TODO(), bson.M{"user1":friendConnectionDB.User1, "user2":friendConnectionDB.User2, "status":friendConnectionDB.Status})
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
     }
     // send back response with user data and token
     c.JSON(http.StatusOK, gin.H{
-        "message":"Successfully sent friend request"
+        "message":"Successfully sent friend request",
     })
 }
 
@@ -115,7 +115,7 @@ func AcceptFriendRequest (c *gin.Context) {
     }
     // send back response with user data
     c.JSON(http.StatusOK, gin.H{
-        "message":"Successfully accepted friend request"
+        "message":"Successfully accepted friend request",
     })
 }
 
@@ -390,7 +390,7 @@ func DeleteFriendConnection (c *gin.Context) {
     }
     // send back response
     c.JSON(http.StatusOK, gin.H{
-        "message":"Successfully removed friend"
+        "message":"Successfully removed friend",
     })
 }
 

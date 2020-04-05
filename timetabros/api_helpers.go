@@ -257,7 +257,7 @@ func ScheduleFriendFind(userid string, connections []string, courses []string) (
         }
     }
     sort.Slice(filteredScheduleFriends, func(i, j int) bool {
-      return filteredScheduleFriends[i].Count > FilteredScheduleFriends[j].Count
+      return filteredScheduleFriends[i].Count > filteredScheduleFriends[j].Count
     })
     return filteredScheduleFriends[:10], err
 }

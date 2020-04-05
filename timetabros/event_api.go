@@ -430,7 +430,7 @@ func SendEventRequest(c *gin.Context) {
     }
     // send back response
     c.JSON(http.StatusOK, gin.H{
-        "message":"Successfully sent invite"
+        "message":"Successfully sent invite",
     })
 }
 
@@ -496,7 +496,7 @@ func UpdateEventStatus(c *gin.Context) {
     }
     // send back response
     c.JSON(http.StatusOK, gin.H{
-        "message":"Successfully updated status"
+        "message":"Successfully updated status",
     })
 }
 
@@ -579,7 +579,7 @@ func DeleteEventMember(c *gin.Context) {
     }
     // send back response
     c.JSON(http.StatusOK, gin.H{
-        "message":"Successfully removed from event"
+        "message":"Successfully removed from event",
     })
 }
 
