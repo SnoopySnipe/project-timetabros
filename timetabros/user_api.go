@@ -8,6 +8,7 @@ import (
     "time"
     "fmt"
     "strings"
+    "log"
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
@@ -324,7 +325,7 @@ func GetProfilePicture(c *gin.Context) {
 }
 
 // update user details api
-// curl -b cookie.txt -c cookie.txt -X PATCH -H "Content-Type: application/json" -d @data.txt localhost:3001/api/users
+// curl -b cookie.txt -c cookie.txt -X PATCH -H "Content-Type: multipart/form-data" -F profilepicture=@unknown.png -F firstname=Yeet localhost:3001/api/users
 func UpdateUserDetails(c *gin.Context) {
     // get session
     session, err := store.Get(c.Request, "session")
@@ -357,6 +358,7 @@ func UpdateUserDetails(c *gin.Context) {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+    log.Println(updatedUser)
     // verify inputs
     if errs := validate.Struct(updatedUser); errs != nil {
 	    c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})

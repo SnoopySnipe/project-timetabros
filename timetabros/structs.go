@@ -40,13 +40,13 @@ type User struct {
 }
 
 type UserUpdate struct {
-    Username string `json:"username" validate:"omitempty,alphanum,min=3,max=20"`
-    Firstname string `json:"firstname" validate:"omitempty,alpha,min=2,max=20"`
-    Lastname string `json:"lastname" validate:"omitempty,alpha,min=2,max=20"`
-    Email string `json:"email" validate:"omitempty,email"`
-    Password string `json:"password" validate:"omitempty,printascii,min=8,max=30"`
-    Notificationsettings NotificationSettings `json:"notificationsettings" validate:"omitempty"`
-    Privacysettings PrivacySettings `json:"privacysettings" validate:"omitempty"`
+    Username string `form:"username" validate:"omitempty,alphanum,min=3,max=20"`
+    Firstname string `form:"firstname" validate:"omitempty,alpha,min=2,max=20"`
+    Lastname string `form:"lastname" validate:"omitempty,alpha,min=2,max=20"`
+    Email string `form:"email" validate:"omitempty,email"`
+    Password string `form:"password" validate:"omitempty,printascii,min=8,max=30"`
+    Notificationsettings NotificationSettings `form:"notificationsettings" validate:"omitempty"`
+    Privacysettings PrivacySettings `form:"privacysettings" validate:"omitempty"`
 }
 
 type SearchUserResult struct {
