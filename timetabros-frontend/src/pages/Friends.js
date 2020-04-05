@@ -37,7 +37,7 @@ class Friends extends React.Component {
                 this.setState({sentFriendRequests: sentRequests? sentRequests : []});
                 if(response.data.friends) response.data.friends.forEach(
                     (item) => {
-                        const friendId = this.context.authenticatedUser._id === item.user1 ? item.user2 : item.user1;
+                        const friendId = item.Userid;
                         getUser(friendId).then(
                             (res) => {
                                 const user = res.data;
@@ -80,7 +80,7 @@ class Friends extends React.Component {
         event.preventDefault();
         console.log(this.state);
 
-        axios.post(`http://localhost:3001/api/users`, {query: this.state.query})
+        axios.get(`http://localhost:3001/api/users`, {params: {q: this.state.query}})
             .then(res => {
                 this.setState({searchedUsers: res.data});
                 console.log(res);
@@ -109,7 +109,7 @@ class Friends extends React.Component {
         const listItems = !searchedList ? [] : searchedList.map((user) => (
             <ListItem divider>
                 <ListItemAvatar>
-                    <Avatar>{user.firstname.charAt(0).toUpperCase()}</Avatar>
+                    <Avatar src={`http://localhost:3001/api/users/${user.ID}/pfp`}>{user.firstname.charAt(0).toUpperCase()}</Avatar>
                 </ListItemAvatar>
                 <ListItemText 
                     primary={`${user.firstname}  ${user.lastname}`}
@@ -118,7 +118,7 @@ class Friends extends React.Component {
             
                 </ListItemText>
                 <ListItemSecondaryAction>
-                    {this.state.sentFriendRequests.some((request)=> (request.user1 === user.ID || request.user2 === user.ID) && request.status === "pending") 
+                    {this.state.sentFriendRequests.some((request)=> request.Userid === user.ID) 
                     ? <div>Pending</div> 
                     : this.state.friendList.some((friend)=>friend.id === user.ID) 
                     ? <div>Friends</div> 
@@ -134,7 +134,7 @@ class Friends extends React.Component {
         const friendItems = !friends ? [] : friends.map((user) => (
             <ListItem button divider onClick={()=>this.handleSelectFriend(user.id)}>
                 <ListItemAvatar>
-                    <Avatar>{user.firstName.charAt(0).toUpperCase()}</Avatar>
+                    <Avatar src={`http://localhost:3001/api/users/${user.id}/pfp`}>{user.firstName.charAt(0).toUpperCase()}</Avatar>
                 </ListItemAvatar>
                 <ListItemText 
                     primary={`${user.firstName}  ${user.lastName}`}

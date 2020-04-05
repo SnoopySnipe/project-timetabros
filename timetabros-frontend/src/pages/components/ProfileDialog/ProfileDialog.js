@@ -15,6 +15,8 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import Avatar from '@material-ui/core/Avatar';
+import Grid from '@material-ui/core/Grid';
 import { Alert } from '@material-ui/lab';
 import { updateUser } from '../../../services/UserService';
 const ProfileDialog = (props) => {
@@ -25,10 +27,16 @@ const ProfileDialog = (props) => {
     const [password, setPassword] = React.useState('');
     const [profilePrivacy, setProfilePrivacy] = React.useState('public');
     const [schedulePrivacy, setSchedulePrivacy] = React.useState('public');
+    const [profilePicture, setProfilePicture] = React.useState(null);
+    const [profilePicturePreview, setProfilePicturePreview] = React.useState(null);
     const [error, setError] = React.useState('');
-
+    const handleFileSelect = (event) => {
+      setProfilePicturePreview(URL.createObjectURL(event.target.files[0]));
+      setProfilePicture(event.target.files[0]);
+      console.log(event);
+    }
     const handleSubmit = () => {
-      updateUser(username, firstName, lastName, email, profilePrivacy, schedulePrivacy).then(
+      updateUser(username, firstName, lastName, email, profilePrivacy, schedulePrivacy, profilePicture).then(
         () => {
           setError('');
           props.onUpdate();
@@ -64,49 +72,76 @@ const ProfileDialog = (props) => {
           <Dialog disableBackdropClick open={props.open} onClose={props.handleClose} aria-labelledby="form-dialog-title">
             <DialogTitle id="form-dialog-title">Profile Edit</DialogTitle>
             <DialogContent>
-              {/* <DialogContentText>
-                To subscribe to this website, please enter your email address here. We will send updates
-                occasionally.
-              </DialogContentText> */}
-              <TextField
-                autoFocus
-                margin="dense"
-                id="firstName"
-                label="First Name"
-                fullWidth
-                value={firstName}
-                onChange={(event)=>{setFirstName(event.target.value)}}
-              />
-              <TextField
-                margin="dense"
-                id="lastName"
-                label="Last Name"
-                fullWidth
-                value={lastName}
-                onChange={(event)=>{setLastName(event.target.value)}}
-              />
-              <TextField
-                margin="dense"
-                id="username"
-                label="Username"
-                fullWidth
-                value={username}
-                onChange={(event)=>{setUsername(event.target.value)}}
-              />
-              <TextField
-                margin="dense"
-                id="email"
-                label="Email"
-                fullWidth
-                value={email}
-                onChange={(event)=>{setEmail(event.target.value)}}
-              />
-              {
-                error && 
-                <Alert variant="outlined" severity="error">
-                    {error}
-                </Alert>
-              }
+              <Grid container spacing={4} justify="center" alignItems="center">
+
+                    <Grid item xs={12} md={3} >
+                      <Avatar alt="Remy Sharp" src={profilePicturePreview} style={{width:'100px', height:'100px'}}/>
+                      <input
+                        accept="image/*"
+                        id="contained-button-file"
+                        multiple
+                        type="file"
+                        style={{display:'none'}}
+                        onChange={handleFileSelect}
+                      />
+                      <label htmlFor="contained-button-file">
+                        <Button variant="contained" color="primary" component="span">
+                          Upload
+                        </Button>
+                      </label>
+
+
+                    </Grid>
+                    <Grid item xs={12} md={8}>
+                        
+                      {/* <DialogContentText>
+                        To subscribe to this website, please enter your email address here. We will send updates
+                        occasionally.
+                      </DialogContentText> */}
+                      <TextField
+                        autoFocus
+                        margin="dense"
+                        id="firstName"
+                        label="First Name"
+                        fullWidth
+                        value={firstName}
+                        onChange={(event)=>{setFirstName(event.target.value)}}
+                      />
+                      <TextField
+                        margin="dense"
+                        id="lastName"
+                        label="Last Name"
+                        fullWidth
+                        value={lastName}
+                        onChange={(event)=>{setLastName(event.target.value)}}
+                      />
+                      <TextField
+                        margin="dense"
+                        id="username"
+                        label="Username"
+                        fullWidth
+                        value={username}
+                        onChange={(event)=>{setUsername(event.target.value)}}
+                      />
+                      <TextField
+                        margin="dense"
+                        id="email"
+                        label="Email"
+                        fullWidth
+                        value={email}
+                        onChange={(event)=>{setEmail(event.target.value)}}
+                      />
+                      {
+                        error && 
+                        <Alert variant="outlined" severity="error">
+                            {error}
+                        </Alert>
+                      }
+                    </Grid>
+
+
+                </Grid>
+
             </DialogContent>
 
             <DialogActions>

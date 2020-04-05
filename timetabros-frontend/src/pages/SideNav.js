@@ -140,7 +140,7 @@ export default function SideNav() {
             }
             response.data.receivedfriendrequests.forEach(
                 (friendRequest) => {
-                    getUser(friendRequest.user1).then(
+                    getUser(friendRequest.Userid).then(
                         (res) => {
                            const user = res.data;
                            setFriendRequests(friendRequests.concat([{

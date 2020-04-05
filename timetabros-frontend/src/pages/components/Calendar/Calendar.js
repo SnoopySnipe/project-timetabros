@@ -24,7 +24,6 @@ import "./CalendarStyles.css";
 class Calendar extends Component {
   constructor(props) {
     super(props);
-    console.log(this.context);
     this.state = {
       selectedEvent: null,
       openCreateDialog: false,
@@ -129,7 +128,8 @@ class Calendar extends Component {
     }
   }
   fetchEventItems = (user) => {
-    getEventItems(user.id).then((response) => {      
+    getEventItems(user.id).then((response) => {    
+      console.log(response);  
       let scheduleItems = response.data.scheduleitems ? response.data.scheduleitems.map((item) => {
 
         let start = new Date(this.state.startDate);
@@ -168,15 +168,12 @@ class Calendar extends Component {
   usersEqual(arr1, arr2) {
     if (arr1.length !== arr2.length) return false;
     for (var i = 0; i < arr1.length; i++) {
-      if(arr1[i] !== arr2[i]) return false;
+      if(arr1[i].id !== arr2[i].id) return false;
     }
     return true;
   }
 
   componentDidMount() {
-    
-
-    console.log('did mount');
     this.setState({
       startDate: (new Date()).toISOString()
     });
@@ -188,8 +185,7 @@ class Calendar extends Component {
     }
   }
   componentDidUpdate(prevProps){
-    console.log('receive props');
-    console.log(this.state.users);
+
 
     // console.log(prevProps);
     // console.log(this.props.users);

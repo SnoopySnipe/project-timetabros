@@ -1,5 +1,6 @@
 import React, { useEffect, useContext } from 'react';
 import Button from '@material-ui/core/Button';
+import ButtonGroup from '@material-ui/core/ButtonGroup';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -73,10 +74,12 @@ const ScheduleDialog = (props) => {
                 )
               }
             )
+          } else {
+            props.handleCreated();
+            props.handleClose();
           }
 
-          // props.handleCreated();
-          // props.handleClose();
+
         }
       )
     }
@@ -221,6 +224,15 @@ const ScheduleDialog = (props) => {
             })
           }
         </TextField>
+        <h3>yeet</h3>
+        <div>
+        <ButtonGroup color="primary" aria-label="outlined primary button group">
+        <Button>One</Button>
+        <Button>Two</Button>
+        <Button>Three</Button>
+        </ButtonGroup>
+        </div>
+
         {/* <InputLabel> Group event <Switch size="small" checked={isGroupEvent} onChange={toggleGroupChecked} /></InputLabel>
         {isGroupEvent &&
         <List>

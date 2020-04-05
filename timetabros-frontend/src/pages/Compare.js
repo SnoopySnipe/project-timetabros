@@ -33,7 +33,7 @@ class Compare extends React.Component {
             (response) => {
                 if(response.data.friends) response.data.friends.forEach(
                     (item) => {
-                        const friendId = this.context.authenticatedUser._id === item.user1 ? item.user2 : item.user1;
+                        const friendId = item.Userid;
                         getUser(friendId).then(
                             (res) => {
                                 const user = res.data;

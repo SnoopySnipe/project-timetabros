@@ -1,9 +1,9 @@
 import React from 'react';
 import Calendar from './components/Calendar/Calendar';
 import { withRouter } from "react-router-dom";
-import { getUser } from '../services/UserService';
+import { getUser, getProfilePicture } from '../services/UserService';
 import AuthContext from '../context/AuthContext';
-import { Button } from '@material-ui/core';
+import { Button, Avatar } from '@material-ui/core';
 import ProfileDialog from './components/ProfileDialog/ProfileDialog';
 class Profile extends React.Component {
     static contextType = AuthContext;
@@ -12,7 +12,9 @@ class Profile extends React.Component {
         this.state = {
             user: null,
             canEdit: false,
-            openProfileEdit: false
+            openProfileEdit: false,
+            // profilePicture: null,
+            // profilePictureAlt: '',
         }
     }
     fetchUser() {
@@ -25,9 +27,14 @@ class Profile extends React.Component {
         if(id) {
             getUser(id).then(
                 (response) => {
-                    this.setState({user: response.data});
+                    this.setState({user: response.data, profilePictureAlt: response.data.firstname.charAt(0)});
                 }
             )
+            // getProfilePicture(id).then(
+            //     (response) => {
+            //         this.setState({profilePicture: URL.createObjectURL(response.data)})
+            //     }
+            // );
         }
     }
     componentWillMount() {
@@ -44,7 +51,7 @@ class Profile extends React.Component {
                 <h1>Schedule of {this.state.user.firstname} {this.state.user.lastname}  {' '}
                     {this.state.canEdit && <Button variant="outlined" size="small" onClick={()=>{this.setState({openProfileEdit: true})}}>Edit Profile</Button> }
                 </h1>
-               
+               <Avatar src={`http://localhost:3001/api/users/${this.state.user._id}/pfp`}>123</Avatar>
                 <Calendar users={[{id: this.state.user._id}]} canEdit={this.state.canEdit}/>
             </div>
             
