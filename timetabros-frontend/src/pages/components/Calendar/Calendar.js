@@ -146,16 +146,22 @@ class Calendar extends Component {
         end.setMinutes(itemEndDate.getMinutes());
         end.setSeconds(0);
         end.setMilliseconds(0);
-        return {start: start.toISOString(), end: end.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers, colour: user.colour};
+        return {start: start.toISOString(), end: end.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers, createdby: item.createdby, colour: user.colour};
       }) : [];
       const eventOwnedItems = response.data.eventowneritems ? response.data.eventowneritems.map((item) => {
 
         let itemStartDate = new Date(item.startdate);
         let itemEndDate = new Date(item.enddate);
-        return {start: itemStartDate.toISOString(), end: itemEndDate.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers,  creatorstatus: item.creatorstatus, colour: user.colour};
+        return {start: itemStartDate.toISOString(), end: itemEndDate.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers,  createdby: item.createdby, creatorstatus: item.creatorstatus, colour: user.colour};
+      }) : [];
+      const eventMemberItems = response.data.eventmemberitems ? response.data.eventmemberitems.map((item) => {
+
+        let itemStartDate = new Date(item.startdate);
+        let itemEndDate = new Date(item.enddate);
+        return {start: itemStartDate.toISOString(), end: itemEndDate.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers,  createdby: item.createdby, creatorstatus: item.creatorstatus, colour: user.colour};
       }) : [];
       this.setState({
-        events: this.state.events.concat(scheduleItems).concat(eventOwnedItems)
+        events: this.state.events.concat(scheduleItems).concat(eventOwnedItems).concat(eventMemberItems)
       });
       console.log(this.state.events);
     })

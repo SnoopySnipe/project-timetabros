@@ -19,7 +19,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import { getFriends } from '../../../services/FriendService';
 import { getUser } from '../../../services/UserService';
 import AuthContext from '../../../context/AuthContext';
-import { createGroup, updateGroup } from '../../../services/GroupService';
+import { createGroup, getGroup, updateGroup } from '../../../services/GroupService';
 const GroupDialog = (props) => {
     const context = useContext(AuthContext);
     const [groupName, setGroupName] = React.useState('');
@@ -59,12 +59,34 @@ const GroupDialog = (props) => {
     }
 
     const handleUpdateEvent = () => {
-      updateGroup(props.groupToUpdate.ID, groupName, groupAbout, visibility).then(
-        () => {
-          props.handleGroupUpdate();
-          props.handleClose();
+      getGroup(props.groupToUpdate.ID).then(
+        (response) => {
+          console.log(response.data);
+          const existingGroupMembers = response.data.groupmembers || [];
+          const groupMembers = checked.map((userId)=>{
+            const foundMember = existingGroupMembers.some((member) =>
+            {
+              if(member.userid === userId) {
+                return member;
+              }
+            }) 
+            if(foundMember)
+            {
+              console.log('found');
+              return {userid: userId, role: foundMember.role}
+            } else {
+              return {userid: userId, role: 'invited'}
+            }
+          })
+          updateGroup(props.groupToUpdate.ID, groupName, groupAbout, visibility, groupMembers).then(
+            () => {
+              props.handleGroupUpdate();
+              props.handleClose();
+            }
+          )
         }
       )
+
     }
     const toggleGroupChecked = () => {
         setIsGroupEvent(prev => !prev);
@@ -85,8 +107,7 @@ const GroupDialog = (props) => {
         console.log(response.data.friends);
         if(response.data.friends) response.data.friends.forEach(
             (item) => {
-              if(item.status !== 'accepted') return;
-                const friendId = context.authenticatedUser._id === item.user1 ? item.user2 : item.user1;
+                const friendId = item.Userid;
                 getUser(friendId).then(
                     (res) => {
                         const user = res.data;

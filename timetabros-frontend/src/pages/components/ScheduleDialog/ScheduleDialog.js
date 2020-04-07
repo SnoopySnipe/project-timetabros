@@ -1,6 +1,7 @@
 import React, { useEffect, useContext } from 'react';
 import Button from '@material-ui/core/Button';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -19,6 +20,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import Typography from '@material-ui/core/Typography';
 import { getFriends } from '../../../services/FriendService';
 import { getUser } from '../../../services/UserService';
 import { getGroups, getGroup } from '../../../services/GroupService';
@@ -36,6 +38,19 @@ const ScheduleDialog = (props) => {
     const [friendList, setFriendList] = React.useState([]);
     const [groupList, setGroupList] = React.useState([]);
     const [groupId, setGroupId] = React.useState('none');
+    const [statusToEvent, setStatusToEvent] = React.useState('');
+    const handleEventMemberToggle = (value) => () => {
+      const currentIndex = checked.indexOf(value);
+      const newChecked = [...checked];
+  
+      if (currentIndex === -1) {
+        newChecked.push(value);
+      } else {
+        newChecked.splice(currentIndex, 1);
+      }
+  
+      setChecked(newChecked);
+    };
     function a11yProps(index) {
       return {
         id: `simple-tab-${index}`,
@@ -62,7 +77,7 @@ const ScheduleDialog = (props) => {
       createEventItem(eventName, props.createStartDate, props.createEndDate, eventDescription, creatorStatus).then(
         (response) => {
           const eventId = response.data._id;
-          if(tabIndex === 1) {
+          if(tabIndex === 1 && groupId !== 'none') {
             getGroup(groupId).then(
               (response) => {
                 const groupMembers = response.data.groupmembers || [];
@@ -72,6 +87,8 @@ const ScheduleDialog = (props) => {
                     addEventMember(eventId, member.userid);
                   }
                 )
+                props.handleCreated();
+                props.handleClose();
               }
             )
           } else {
@@ -83,7 +100,9 @@ const ScheduleDialog = (props) => {
         }
       )
     }
-
+    const handleStatusToEvent = (event, newStatus) => {
+      setStatusToEvent(newStatus);
+    }
     const handleUpdateEvent = () => {
       console.log(props.eventToUpdate);
       updateEventItem(props.eventToUpdate.id, eventName, eventDescription, props.createStartDate, props.createEndDate).then(
@@ -112,26 +131,28 @@ const ScheduleDialog = (props) => {
           setGroupList(ownedGroups.concat(memberGroups));
         }
       )
-      //   getFriends(context.authenticatedUser._id).then((response) => {
-      //     console.log(response.data.friends);
-      //     if(response.data.friends) response.data.friends.forEach(
-      //         (item) => {
-      //             const friendId = context.authenticatedUser._id === item.user1 ? item.user2 : item.user1;
-      //             getUser(friendId).then(
-      //                 (res) => {
-      //                     const user = res.data;
-      //                     setFriendList(friendList => friendList.concat([{
-      //                       id: user._id,
-      //                       firstName: user.firstname,
-      //                       lastName: user.lastname,
-      //                       username: user.username
-      //                     }]));
-      //                  }
-      //             )
-      //         }
-      //     );
-      // });
+      setFriendList([]);
+        getFriends(context.authenticatedUser._id).then((response) => {
+          console.log(response.data.friends);
+          if(response.data.friends) response.data.friends.forEach(
+              (item) => {
+                  const friendId = item.Userid;
+                  getUser(friendId).then(
+                      (res) => {
+                          const user = res.data;
+                          setFriendList(friendList => friendList.concat([{
+                            id: user._id,
+                            firstName: user.firstname,
+                            lastName: user.lastname,
+                            username: user.username
+                          }]));
+                       }
+                  )
+              }
+          );
+      });
     }, [props.open]);
+    const ownsEvent = !props.eventToUpdate || props.eventToUpdate.createdby === context.authenticatedUser._id;
   return (
     props.open &&
     <div>
@@ -176,7 +197,9 @@ const ScheduleDialog = (props) => {
             label="Selected start time"
             defaultValue={props.createStartDate.toString()}
             fullWidth
-            disabled
+            InputProps={{
+              readOnly: true,
+            }}
           />
           <TextField
             margin="dense"
@@ -184,7 +207,9 @@ const ScheduleDialog = (props) => {
             label="Selected end time"
             defaultValue={props.createEndDate.toString()}
             fullWidth
-            disabled
+            InputProps={{
+              readOnly: true,
+            }}
           />
           {/* <TextField
             margin="dense"
@@ -202,6 +227,7 @@ const ScheduleDialog = (props) => {
               Recurring Weekly
             </MenuItem>
         </TextField> */}
+        { tabIndex === 1 && !props.eventToUpdate &&
         <TextField
             margin="dense"
             id="item-type"
@@ -209,6 +235,7 @@ const ScheduleDialog = (props) => {
             label="Group"
             value={groupId}
             onChange={handleSelectGroup}
+            helperText="Choose a group of friends to invite, you can individually add more later"
           >
 
             <MenuItem value={'none'}>
@@ -224,15 +251,55 @@ const ScheduleDialog = (props) => {
             })
           }
         </TextField>
-        <h3>yeet</h3>
+        }
+        {tabIndex === 1 && props.eventToUpdate &&
+        <List>
+          <h4>Manage Event Members</h4>
+          {
+            friendList.map((friend) => {
+              return (
+              <ListItem button key={friend.id} onClick={handleEventMemberToggle(friend.id)}>
+              <ListItemIcon>
+                  <Checkbox
+                      edge="start"
+                      checked={checked.indexOf(friend.id) !== -1}
+                      disableRipple
+                  />
+              </ListItemIcon>
+              <ListItemText primary={`${friend.firstName} ${friend.lastName}`} secondary={friend.username}/>
+              </ListItem>
+              
+              )
+            })
+          }
+        </List>}
+        { tabIndex === 1 &&
         <div>
-        <ButtonGroup color="primary" aria-label="outlined primary button group">
-        <Button>One</Button>
-        <Button>Two</Button>
-        <Button>Three</Button>
-        </ButtonGroup>
+        <h4>Status</h4>
+          <ToggleButtonGroup
+            value={statusToEvent}
+            exclusive
+            onChange={handleStatusToEvent}
+            style={{color:'black'}}
+          >
+            <ToggleButton value="going">
+              <Typography color='primary'>
+                      Going
+              </Typography>
+            </ToggleButton>
+            <ToggleButton value="interested">
+              <Typography color='primary'>
+                      Interested
+              </Typography>
+            </ToggleButton>
+            <ToggleButton value="not-going">
+              <Typography color='primary'>
+                      Not Going
+              </Typography>
+            </ToggleButton>
+          </ToggleButtonGroup>
         </div>
-
+        }
         {/* <InputLabel> Group event <Switch size="small" checked={isGroupEvent} onChange={toggleGroupChecked} /></InputLabel>
         {isGroupEvent &&
         <List>
@@ -259,9 +326,11 @@ const ScheduleDialog = (props) => {
           <Button onClick={props.handleClose} color="primary">
             Cancel
           </Button>
+          {ownsEvent ? 
           <Button onClick={handleSubmit} color="primary">
             {props.eventToUpdate ? 'Update' : 'Create'}
-          </Button>
+          </Button> : <div></div>
+          }
         </DialogActions>
       </Dialog>
       <GroupDialog open={false}></GroupDialog>

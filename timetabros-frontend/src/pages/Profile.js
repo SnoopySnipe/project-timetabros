@@ -19,7 +19,7 @@ class Profile extends React.Component {
     }
     fetchUser() {
         let id = this.props.match.params.id;
-        if(!id) {
+        if(!id || id === this.context.authenticatedUser._id) {
             id = this.context.authenticatedUser._id;
             this.setState({canEdit: true});
         }
@@ -51,7 +51,7 @@ class Profile extends React.Component {
                 <h1>Schedule of {this.state.user.firstname} {this.state.user.lastname}  {' '}
                     {this.state.canEdit && <Button variant="outlined" size="small" onClick={()=>{this.setState({openProfileEdit: true})}}>Edit Profile</Button> }
                 </h1>
-               <Avatar src={`http://localhost:3001/api/users/${this.state.user._id}/pfp`}>123</Avatar>
+               <Avatar src={`http://localhost:3001/api/users/${this.state.user._id}/pfp`}>{this.state.user.firstname.charAt(0).toUpperCase()}</Avatar>
                 <Calendar users={[{id: this.state.user._id}]} canEdit={this.state.canEdit}/>
             </div>
             

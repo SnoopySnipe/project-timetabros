@@ -20,6 +20,7 @@ class Friends extends React.Component {
             searchedUsers: [],
             friendList: [],
             sentFriendRequests: [],
+            receivedFriendRequests: [],
             groups: [],
             query: "",
             openGroupDialog: false,
@@ -35,6 +36,7 @@ class Friends extends React.Component {
             (response) => {
                 const sentRequests = response.data.sentfriendrequests;
                 this.setState({sentFriendRequests: sentRequests? sentRequests : []});
+                this.setState({receivedFriendRequests: response.data.receivedfriendrequests || []});
                 if(response.data.friends) response.data.friends.forEach(
                     (item) => {
                         const friendId = item.Userid;
@@ -107,7 +109,7 @@ class Friends extends React.Component {
         console.log(friendList);
         console.log(searchedList);
         const listItems = !searchedList ? [] : searchedList.map((user) => (
-            <ListItem divider>
+            <ListItem divider button onClick={()=>this.handleSelectFriend(user.ID)}>
                 <ListItemAvatar>
                     <Avatar src={`http://localhost:3001/api/users/${user.ID}/pfp`}>{user.firstname.charAt(0).toUpperCase()}</Avatar>
                 </ListItemAvatar>
@@ -118,12 +120,18 @@ class Friends extends React.Component {
             
                 </ListItemText>
                 <ListItemSecondaryAction>
-                    {this.state.sentFriendRequests.some((request)=> request.Userid === user.ID) 
+                    {
+                    this.context.authenticatedUser._id === user.ID
+                    ? <div></div>
+                    : this.state.sentFriendRequests.some((request)=> request.Userid === user.ID) 
                     ? <div>Pending</div> 
                     : this.state.friendList.some((friend)=>friend.id === user.ID) 
                     ? <div>Friends</div> 
-                    : <IconButton size="small" aria-label="accept" onClick={()=>this.handleAddUser(user.ID)}>
-                    <PersonAddIcon fontSize="small" />
+                    : this.state.receivedFriendRequests.some((request)=> request.Userid === user.ID)
+                    ? <div>Requested</div>
+                    :
+                    <IconButton aria-label="accept" onClick={()=>this.handleAddUser(user.ID)}>
+                        <PersonAddIcon  />
                     </IconButton>
                     }
 
