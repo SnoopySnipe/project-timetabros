@@ -1,5 +1,4 @@
 import React from 'react';
-import Profile from './Profile';
 import '../styles/pages/Friends.css';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
@@ -9,7 +8,6 @@ import GroupAddIcon from '@material-ui/icons/GroupAdd';
 import { getFriends, sendFriendRequest } from '../services/FriendService';
 import { getGroups } from '../services/GroupService';
 import { getUser } from '../services/UserService';
-import { Route } from 'react-router-dom';
 import GroupDialog from './components/GroupDialog/GroupDialog';
 class Friends extends React.Component {
     static contextType = AuthContext;

@@ -5,8 +5,7 @@ import CheckIcon from '@material-ui/icons/Check';
 import CloseIcon from '@material-ui/icons/Close';
 import AuthContext from '../../../context/AuthContext';
 import styles from './RequestsStyles';
-import { acceptFriendRequest, getFriends } from '../../../services/FriendService';
-import { getUser } from '../../../services/UserService';
+import { acceptFriendRequest } from '../../../services/FriendService';
 import { updateEventStatus } from '../../../services/ScheduleService';
 import { withRouter } from 'react-router-dom';
 
@@ -40,7 +39,6 @@ class Requests extends React.Component {
     // }
     // this.context.authenticatedUser
     render() {
-        const { classes } = this.props;
         console.log(this.context.authenticatedUser);
         const friendRequestList = this.props.friendRequests;
         const listItems = !friendRequestList ? [] : friendRequestList.map((request) => (

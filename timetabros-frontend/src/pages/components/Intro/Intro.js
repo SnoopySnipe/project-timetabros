@@ -3,9 +3,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { Grid, Button } from '@material-ui/core';
 import AuthContext from '../../../context/AuthContext';
 import styles from './IntroStyles';
-import SignIn from '../../components/SignIn/SignIn';
-import { Route, Link } from 'react-router-dom';
-import SignUp from '../../components/SignUp/SignUp';
+import { Link } from 'react-router-dom';
 
 class Landing extends React.Component {
     static contextType = AuthContext;

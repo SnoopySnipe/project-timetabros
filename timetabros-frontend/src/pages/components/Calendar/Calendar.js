@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {DayPilot, DayPilotCalendar} from "daypilot-pro-react";
-import { getEventItems, createEventItem, deleteEventItem, updateEventItemTime, updateEventItemTitle } from '../../../services/ScheduleService';
+import { getEventItems, deleteEventItem, updateEventItemTime} from '../../../services/ScheduleService';
 import { IconButton } from '@material-ui/core';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';

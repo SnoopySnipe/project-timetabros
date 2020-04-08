@@ -1,10 +1,9 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import { Grid, IconButton } from '@material-ui/core';
 import AuthContext from '../../context/AuthContext';
 import styles from './LandingStyles';
 import SignIn from '../components/SignIn/SignIn';
-import { Route, Link } from 'react-router-dom';
+import { Route} from 'react-router-dom';
 import SignUp from '../components/SignUp/SignUp';
 import Intro from '../components/Intro/Intro';
 

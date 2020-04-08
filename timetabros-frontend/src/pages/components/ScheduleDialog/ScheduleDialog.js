@@ -6,19 +6,13 @@ import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
-import Switch from '@material-ui/core/Switch';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import InputLabel from '@material-ui/core/InputLabel';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
@@ -35,14 +29,14 @@ const ScheduleDialog = (props) => {
     const [tabIndex, setTabIndex] = React.useState(0);
     const [eventName, setEventName] = React.useState('');
     const [eventDescription, setEventDescription] = React.useState('');
-    const [isRecurring, setIsRecurring] = React.useState(true);
-    const [isGroupEvent, setIsGroupEvent] = React.useState(false);
+    // const [isRecurring, setIsRecurring] = React.useState(true);
+    // const [isGroupEvent, setIsGroupEvent] = React.useState(false);
     const [checked, setChecked] = React.useState([]);
     const [friendList, setFriendList] = React.useState([]);
     const [groupList, setGroupList] = React.useState([]);
     const [groupId, setGroupId] = React.useState('none');
     const [statusToEvent, setStatusToEvent] = React.useState('');
-    const [eventMembers, setEventMembers] = React.useState([]);
+    //const [eventMembers, setEventMembers] = React.useState([]);
     const handleEventMemberToggle = (value) => () => {
       const currentIndex = checked.indexOf(value);
       const newChecked = [...checked];
@@ -61,9 +55,9 @@ const ScheduleDialog = (props) => {
         'aria-controls': `simple-tabpanel-${index}`,
       };
     }
-    const handleSelectEventType = event => {
-        setIsRecurring(event.target.value);
-    }
+    // const handleSelectEventType = event => {
+    //     setIsRecurring(event.target.value);
+    // }
     const handleSelectGroup = event => {
       setGroupId(event.target.value);
     }
@@ -155,7 +149,6 @@ const ScheduleDialog = (props) => {
       setFriendList([]);
       setChecked([]);
       getFriends(context.authenticatedUser._id).then((response) => {
-        const promises = [];
         if(response.data.friends) response.data.friends.forEach(
             (item) => {
                 const friendId = item.Userid;

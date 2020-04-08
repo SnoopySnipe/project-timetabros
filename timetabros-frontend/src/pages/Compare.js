@@ -1,19 +1,12 @@
 import React from 'react';
 import '../styles/pages/Friends.css';
-import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import { Grid, List, ListItem, ListItemText, ListItemAvatar, Avatar, ListItemSecondaryAction, IconButton } from '@material-ui/core';
 import { getFriends} from '../services/FriendService';
 import { getUser } from '../services/UserService';
-import { Route } from 'react-router-dom';
 import Calendar from './components/Calendar/Calendar';
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
-
-const styles = {
-    container: {
-    }
-};
 
 class Compare extends React.Component {
     static contextType = AuthContext;

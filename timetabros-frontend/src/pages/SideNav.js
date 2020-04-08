@@ -109,7 +109,8 @@ export default function SideNav() {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [title, setTitle] = React.useState('');
   const [friendRequests, setFriendRequests] = React.useState([]);
-  const [groupRequests, setGroupRequests] = React.useState([]);
+  const [groupRequests] = React.useState([]);
+  //const [groupRequests, setGroupRequests] = React.useState([]);
   const [eventRequests, setEventRequests] = React.useState([]);
   const context = useContext(AuthContext);
   const toggleDrawer = () => {

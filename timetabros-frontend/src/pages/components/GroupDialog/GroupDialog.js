@@ -4,13 +4,8 @@ import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import MenuItem from '@material-ui/core/MenuItem';
-import Switch from '@material-ui/core/Switch';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import InputLabel from '@material-ui/core/InputLabel';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -25,7 +20,7 @@ const GroupDialog = (props) => {
     const [groupName, setGroupName] = React.useState('');
     const [groupAbout, setGroupAbout] = React.useState('');
     const [visibility, setVisibility] = React.useState('private');
-    const [isGroupEvent, setIsGroupEvent] = React.useState(false);
+    //const [isGroupEvent, setIsGroupEvent] = React.useState(false);
     const [checked, setChecked] = React.useState([]);
     const [friendList, setFriendList] = React.useState([]);
 
@@ -88,10 +83,10 @@ const GroupDialog = (props) => {
       )
 
     }
-    const toggleGroupChecked = () => {
-        setIsGroupEvent(prev => !prev);
-        console.log(isGroupEvent);
-    };
+    // const toggleGroupChecked = () => {
+    //     setIsGroupEvent(prev => !prev);
+    //     console.log(isGroupEvent);
+    // };
       
     useEffect(() => {
       if (!props.open) return;
@@ -183,7 +178,7 @@ const GroupDialog = (props) => {
               <ListItemIcon>
                   <Checkbox
                       edge="start"
-                      checked={checked.indexOf(friend.id) != -1}
+                      checked={checked.indexOf(friend.id) !== -1}
                       disableRipple
                   />
               </ListItemIcon>

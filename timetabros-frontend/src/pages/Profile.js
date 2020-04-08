@@ -1,7 +1,7 @@
 import React from 'react';
 import Calendar from './components/Calendar/Calendar';
 import { withRouter } from "react-router-dom";
-import { getUser, getProfilePicture } from '../services/UserService';
+import { getUser} from '../services/UserService';
 import AuthContext from '../context/AuthContext';
 import { Button, Avatar, Grid } from '@material-ui/core';
 import ProfileDialog from './components/ProfileDialog/ProfileDialog';
