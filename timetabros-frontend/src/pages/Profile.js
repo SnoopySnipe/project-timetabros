@@ -3,7 +3,7 @@ import Calendar from './components/Calendar/Calendar';
 import { withRouter } from "react-router-dom";
 import { getUser, getProfilePicture } from '../services/UserService';
 import AuthContext from '../context/AuthContext';
-import { Button, Avatar } from '@material-ui/core';
+import { Button, Avatar, Grid } from '@material-ui/core';
 import ProfileDialog from './components/ProfileDialog/ProfileDialog';
 class Profile extends React.Component {
     static contextType = AuthContext;
@@ -13,7 +13,8 @@ class Profile extends React.Component {
             user: null,
             canEdit: false,
             openProfileEdit: false,
-            // profilePicture: null,
+            profilePicture: '',
+            profilePictureHash: ''
             // profilePictureAlt: '',
         }
     }
@@ -30,11 +31,7 @@ class Profile extends React.Component {
                     this.setState({user: response.data, profilePictureAlt: response.data.firstname.charAt(0)});
                 }
             )
-            // getProfilePicture(id).then(
-            //     (response) => {
-            //         this.setState({profilePicture: URL.createObjectURL(response.data)})
-            //     }
-            // );
+            this.setState({profilePicture: `http://localhost:3001/api/users/${id}/pfp`, profilePictureHash: Date.now()});
         }
     }
     componentWillMount() {
@@ -48,10 +45,23 @@ class Profile extends React.Component {
             
             <div>
                 <ProfileDialog userToUpdate={this.state.user} open={this.state.openProfileEdit} handleClose={()=>{this.setState({openProfileEdit: false})}} onUpdate={()=>{this.fetchUser()}}></ProfileDialog>
-                <h1>Schedule of {this.state.user.firstname} {this.state.user.lastname}  {' '}
+                <Grid direction='column' container alignItems="center">
+                    <Grid item xs={12}>
+                        <Avatar style={{height:'100px', width: '100px'}} src={`${this.state.profilePicture}?${this.state.profilePictureHash}`}>{this.state.user.firstname.charAt(0).toUpperCase()}</Avatar>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <h1>{`${this.state.user.firstname} ${this.state.user.lastname} (${this.state.user.username})`}
+                        </h1>
+                    </Grid>
+                    <Grid item xs={12}>
                     {this.state.canEdit && <Button variant="outlined" size="small" onClick={()=>{this.setState({openProfileEdit: true})}}>Edit Profile</Button> }
-                </h1>
-               <Avatar src={`http://localhost:3001/api/users/${this.state.user._id}/pfp`}>{this.state.user.firstname.charAt(0).toUpperCase()}</Avatar>
+
+                    </Grid>
+
+                </Grid>
+                
+
+               
                 <Calendar users={[{id: this.state.user._id}]} canEdit={this.state.canEdit}/>
             </div>
             

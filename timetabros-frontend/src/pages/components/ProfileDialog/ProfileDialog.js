@@ -56,6 +56,7 @@ const ProfileDialog = (props) => {
       setLastName('');
       setEmail('');
       if(props.userToUpdate) {
+        setProfilePicturePreview(`http://localhost:3001/api/users/${props.userToUpdate._id}/pfp`);
         setUsername(props.userToUpdate.username);
         setFirstName(props.userToUpdate.firstname);
         setLastName(props.userToUpdate.lastname);
@@ -75,7 +76,7 @@ const ProfileDialog = (props) => {
               <Grid container spacing={4} justify="center" alignItems="center">
 
                     <Grid item xs={12} md={3} >
-                      <Avatar alt="Remy Sharp" src={profilePicturePreview} style={{width:'100px', height:'100px'}}/>
+                      <Avatar src={profilePicturePreview} style={{width:'100px', height:'100px'}}>{firstName.charAt(0).toUpperCase()}</Avatar>
                       <input
                         accept="image/*"
                         id="contained-button-file"

@@ -152,18 +152,17 @@ class Calendar extends Component {
 
         let itemStartDate = new Date(item.startdate);
         let itemEndDate = new Date(item.enddate);
-        return {start: itemStartDate.toISOString(), end: itemEndDate.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers,  createdby: item.createdby, creatorstatus: item.creatorstatus, colour: user.colour};
+        return {start: itemStartDate.toISOString(), end: itemEndDate.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers,  createdby: item.createdby, creatorstatus: item.creatorstatus, eventmembers: item.eventmembers, colour: user.colour};
       }) : [];
       const eventMemberItems = response.data.eventmemberitems ? response.data.eventmemberitems.map((item) => {
 
         let itemStartDate = new Date(item.startdate);
         let itemEndDate = new Date(item.enddate);
-        return {start: itemStartDate.toISOString(), end: itemEndDate.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers,  createdby: item.createdby, creatorstatus: item.creatorstatus, colour: user.colour};
+        return {start: itemStartDate.toISOString(), end: itemEndDate.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers,  createdby: item.createdby, creatorstatus: item.creatorstatus, eventmembers: item.eventmembers, colour: user.colour};
       }) : [];
       this.setState({
         events: this.state.events.concat(scheduleItems).concat(eventOwnedItems).concat(eventMemberItems)
       });
-      console.log(this.state.events);
     })
     // Not sure if we need this
     .catch(error => {
@@ -185,9 +184,7 @@ class Calendar extends Component {
     });
     this.authorizeCalendar();
     if (this.props.users){
-      this.setState({users:this.props.users}, ()=>this.fetchUsersEventItems());
-      console.log(this.state.users);
-      
+      this.setState({users:this.props.users}, ()=>this.fetchUsersEventItems());  
     }
   }
   componentDidUpdate(prevProps){

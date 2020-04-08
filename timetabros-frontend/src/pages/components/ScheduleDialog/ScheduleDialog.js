@@ -8,6 +8,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
@@ -26,7 +27,9 @@ import { getUser } from '../../../services/UserService';
 import { getGroups, getGroup } from '../../../services/GroupService';
 import AuthContext from '../../../context/AuthContext';
 import GroupDialog from '../GroupDialog/GroupDialog';
-import { addEventMember, createEventItem, updateEventItem } from '../../../services/ScheduleService';
+import AddIcon from '@material-ui/icons/Add';
+import RemoveIcon from '@material-ui/icons/Remove';
+import { addEventMember, removeEventMember, createEventItem, updateEventItem } from '../../../services/ScheduleService';
 const ScheduleDialog = (props) => {
     const context = useContext(AuthContext);
     const [tabIndex, setTabIndex] = React.useState(0);
@@ -39,6 +42,7 @@ const ScheduleDialog = (props) => {
     const [groupList, setGroupList] = React.useState([]);
     const [groupId, setGroupId] = React.useState('none');
     const [statusToEvent, setStatusToEvent] = React.useState('');
+    const [eventMembers, setEventMembers] = React.useState([]);
     const handleEventMemberToggle = (value) => () => {
       const currentIndex = checked.indexOf(value);
       const newChecked = [...checked];
@@ -71,7 +75,6 @@ const ScheduleDialog = (props) => {
       }
     }
     const handleCreateEvent = () => {
-      console.log(eventName);
       let creatorStatus = '';
       if(tabIndex === 1) creatorStatus = 'going';
       createEventItem(eventName, props.createStartDate, props.createEndDate, eventDescription, creatorStatus).then(
@@ -81,7 +84,6 @@ const ScheduleDialog = (props) => {
             getGroup(groupId).then(
               (response) => {
                 const groupMembers = response.data.groupmembers || [];
-                console.log(groupMembers);
                 groupMembers.forEach(
                   (member) => {
                     addEventMember(eventId, member.userid);
@@ -104,25 +106,95 @@ const ScheduleDialog = (props) => {
       setStatusToEvent(newStatus);
     }
     const handleUpdateEvent = () => {
-      console.log(props.eventToUpdate);
       updateEventItem(props.eventToUpdate.id, eventName, eventDescription, props.createStartDate, props.createEndDate).then(
         () => {
-          props.handleCreated();
-          props.handleClose();
+          const promises = [];
+          for (let i = 0 ; i < friendList.length; i++) {
+            setTimeout(() => {
+              const isChecked = checked.some((id) => id===friendList[i].id);
+              const isMember = friendList[i].status === 'going' || friendList[i].status === 'invited' || friendList[i].status === 'not-going' || friendList[i].status === 'interested';
+              if(isChecked && !isMember) {
+                promises.push(addEventMember(props.eventToUpdate.id, friendList[i].id));
+              } else if (!isChecked && isMember) {
+                promises.push(removeEventMember(props.eventToUpdate.id, friendList[i].id));
+              }
+          }, 1000);
+            console.log(friendList[i]);
+
+          }
+
+          Promise.all(promises).then((res) => {
+            console.log(res);
+            props.handleCreated();
+            props.handleClose();
+          });
+
         }
       )
     }
 
+    const handleAddMember = (friend) => {
+      addEventMember(props.eventToUpdate.id, friend.id).then(()=>{
+        friend.status = 'invited';
+        handleMemberUpdate();
+      });
+    }
 
+    const handleRemoveMember = (friend) => {
+      removeEventMember(props.eventToUpdate.id, friend.id).then(()=>{
+        friend.status = '';
+        handleMemberUpdate();
+      });
+    }
+
+    const handleMemberUpdate = () => {
+      props.handleCreated();
+    }
+
+    const fetchFriends = () => {
+      setFriendList([]);
+      setChecked([]);
+      getFriends(context.authenticatedUser._id).then((response) => {
+        const promises = [];
+        if(response.data.friends) response.data.friends.forEach(
+            (item) => {
+                const friendId = item.Userid;
+                getUser(friendId).then(
+                    (res) => {
+                        const user = res.data;
+                        const foundMember = props.eventToUpdate && (props.eventToUpdate.eventmembers || []).find(
+                          (member) => {
+                            return member.userid === friendId
+                        });
+                        const status = foundMember ? foundMember.status : '';
+                        console.log(foundMember);
+                        if(foundMember) setChecked(checked => checked.concat(friendId));
+                        setFriendList(friendList => friendList.concat([{
+                          id: user._id,
+                          firstName: user.firstname,
+                          lastName: user.lastname,
+                          username: user.username,
+                          status: status
+                        }]));
+                     }
+                )
+            }
+        );
+      });
+    }
       
     useEffect(() => {
+      console.log('yeet');
       if (!props.open) return;
       setEventName('');
       setEventDescription('');
+      // setEventMembers([]);
       if(props.eventToUpdate) {
         setTabIndex(props.eventToUpdate.creatorstatus? 1 : 0);
         setEventName(props.eventToUpdate.name);
         setEventDescription(props.eventToUpdate.description);
+        // setEventMembers(props.eventToUpdate.eventmembers);
+        // console.log(props.eventToUpdate.eventmembers);
       }
       getGroups(context.authenticatedUser._id).then(
         (response) => {
@@ -131,28 +203,18 @@ const ScheduleDialog = (props) => {
           setGroupList(ownedGroups.concat(memberGroups));
         }
       )
-      setFriendList([]);
-        getFriends(context.authenticatedUser._id).then((response) => {
-          console.log(response.data.friends);
-          if(response.data.friends) response.data.friends.forEach(
-              (item) => {
-                  const friendId = item.Userid;
-                  getUser(friendId).then(
-                      (res) => {
-                          const user = res.data;
-                          setFriendList(friendList => friendList.concat([{
-                            id: user._id,
-                            firstName: user.firstname,
-                            lastName: user.lastname,
-                            username: user.username
-                          }]));
-                       }
-                  )
-              }
-          );
-      });
+
+        fetchFriends();
+
     }, [props.open]);
     const ownsEvent = !props.eventToUpdate || props.eventToUpdate.createdby === context.authenticatedUser._id;
+    function compare(a, b) {
+      console.log(a);
+      if (a.id > b.id) return 1;
+      if (b.id > a.id) return -1;
+    
+      return 0;
+    }
   return (
     props.open &&
     <div>
@@ -252,27 +314,6 @@ const ScheduleDialog = (props) => {
           }
         </TextField>
         }
-        {tabIndex === 1 && props.eventToUpdate &&
-        <List>
-          <h4>Manage Event Members</h4>
-          {
-            friendList.map((friend) => {
-              return (
-              <ListItem button key={friend.id} onClick={handleEventMemberToggle(friend.id)}>
-              <ListItemIcon>
-                  <Checkbox
-                      edge="start"
-                      checked={checked.indexOf(friend.id) !== -1}
-                      disableRipple
-                  />
-              </ListItemIcon>
-              <ListItemText primary={`${friend.firstName} ${friend.lastName}`} secondary={friend.username}/>
-              </ListItem>
-              
-              )
-            })
-          }
-        </List>}
         { tabIndex === 1 &&
         <div>
         <h4>Status</h4>
@@ -300,6 +341,42 @@ const ScheduleDialog = (props) => {
           </ToggleButtonGroup>
         </div>
         }
+        <DialogActions>
+          <Button onClick={props.handleClose} color="primary">
+            Cancel
+          </Button>
+          {ownsEvent ? 
+          <Button onClick={handleSubmit} color="primary">
+            {props.eventToUpdate ? 'Update' : 'Create'}
+          </Button> : <div></div>
+          }
+        </DialogActions>
+        {tabIndex === 1 && props.eventToUpdate &&
+        <List>
+          <h4>Manage Event Members</h4>
+          {
+            
+            friendList.slice().sort(compare).map((friend) => {
+              return (
+              <ListItem button key={friend.id} onClick={handleEventMemberToggle(friend.id)}>
+              {!friend.status && <ListItemIcon>
+                      <IconButton aria-label="accept"onClick={()=>handleAddMember(friend)}>
+                                <AddIcon  />
+                      </IconButton>
+              </ListItemIcon>}
+              {friend.status && <ListItemIcon>
+                      <IconButton aria-label="accept" onClick={()=>handleRemoveMember(friend)}>
+                                <RemoveIcon  />
+                      </IconButton>
+              </ListItemIcon>}
+              <ListItemText primary={`${friend.firstName} ${friend.lastName} ${friend.status}`} secondary={friend.username}/>
+              </ListItem>
+              
+              )
+            })
+          }
+        </List>}
+        
         {/* <InputLabel> Group event <Switch size="small" checked={isGroupEvent} onChange={toggleGroupChecked} /></InputLabel>
         {isGroupEvent &&
         <List>
@@ -322,16 +399,7 @@ const ScheduleDialog = (props) => {
           }
         </List>} */}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={props.handleClose} color="primary">
-            Cancel
-          </Button>
-          {ownsEvent ? 
-          <Button onClick={handleSubmit} color="primary">
-            {props.eventToUpdate ? 'Update' : 'Create'}
-          </Button> : <div></div>
-          }
-        </DialogActions>
+
       </Dialog>
       <GroupDialog open={false}></GroupDialog>
     </div>
