@@ -14,7 +14,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import { getFriends } from '../../../services/FriendService';
 import { getUser } from '../../../services/UserService';
 import AuthContext from '../../../context/AuthContext';
-import { createGroup, getGroup, updateGroup } from '../../../services/GroupService';
+import { createGroup } from '../../../services/GroupService';
 const GroupDialog = (props) => {
     const context = useContext(AuthContext);
     const [groupName, setGroupName] = React.useState('');
@@ -38,7 +38,7 @@ const GroupDialog = (props) => {
     };
     const handleSubmit = () => {
       if(props.groupToUpdate) {
-        handleUpdateEvent();
+        // handleUpdateEvent();
       } else {
         handleCreateGroup();
       }
@@ -53,36 +53,37 @@ const GroupDialog = (props) => {
       )
     }
 
-    const handleUpdateEvent = () => {
-      getGroup(props.groupToUpdate.ID).then(
-        (response) => {
-          console.log(response.data);
-          const existingGroupMembers = response.data.groupmembers || [];
-          const groupMembers = checked.map((userId)=>{
-            const foundMember = existingGroupMembers.some((member) =>
-            {
-              if(member.userid === userId) {
-                return member;
-              }
-            }) 
-            if(foundMember)
-            {
-              console.log('found');
-              return {userid: userId, role: foundMember.role}
-            } else {
-              return {userid: userId, role: 'invited'}
-            }
-          })
-          updateGroup(props.groupToUpdate.ID, groupName, groupAbout, visibility, groupMembers).then(
-            () => {
-              props.handleGroupUpdate();
-              props.handleClose();
-            }
-          )
-        }
-      )
+    // const handleUpdateEvent = () => {
+    //   getGroup(props.groupToUpdate.ID).then(
+    //     (response) => {
+    //       console.log(response.data);
+    //       const existingGroupMembers = response.data.groupmembers || [];
+    //       const groupMembers = checked.map((userId)=>{
+    //         const foundMember = existingGroupMembers.some((member) =>
+    //         {
+    //           if(member.userid === userId) {
+    //             return member;
+    //           }
+    //         });
+    //         console.log(foundMember);
+    //         if(foundMember)
+    //         {
+    //           console.log('found');
+    //           return {userid: userId, role: foundMember.role}
+    //         } else {
+    //           return {userid: userId, role: 'invited'}
+    //         }
+    //       })
+    //       updateGroup(props.groupToUpdate.ID, groupName, groupAbout, visibility, groupMembers).then(
+    //         () => {
+    //           props.handleGroupUpdate();
+    //           props.handleClose();
+    //         }
+    //       )
+    //     }
+    //   )
 
-    }
+    // }
     // const toggleGroupChecked = () => {
     //     setIsGroupEvent(prev => !prev);
     //     console.log(isGroupEvent);
@@ -121,7 +122,7 @@ const GroupDialog = (props) => {
             }
         );
       });
-    }, [props.open]);
+    }, [props.open, props.groupToUpdate, context.authenticatedUser]);
   return (
     props.open &&
     <div>

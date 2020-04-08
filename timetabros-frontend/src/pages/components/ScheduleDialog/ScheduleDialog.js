@@ -23,6 +23,7 @@ import AuthContext from '../../../context/AuthContext';
 import GroupDialog from '../GroupDialog/GroupDialog';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
+import moment from 'moment';
 import { addEventMember, removeEventMember, createEventItem, updateEventItem } from '../../../services/ScheduleService';
 const ScheduleDialog = (props) => {
     const context = useContext(AuthContext);
@@ -31,24 +32,25 @@ const ScheduleDialog = (props) => {
     const [eventDescription, setEventDescription] = React.useState('');
     // const [isRecurring, setIsRecurring] = React.useState(true);
     // const [isGroupEvent, setIsGroupEvent] = React.useState(false);
-    const [checked, setChecked] = React.useState([]);
+    // const [checked, setChecked] = React.useState([]);
     const [friendList, setFriendList] = React.useState([]);
     const [groupList, setGroupList] = React.useState([]);
     const [groupId, setGroupId] = React.useState('none');
-    const [statusToEvent, setStatusToEvent] = React.useState('');
+    // const [statusToEvent, setStatusToEvent] = React.useState('');
     //const [eventMembers, setEventMembers] = React.useState([]);
-    const handleEventMemberToggle = (value) => () => {
-      const currentIndex = checked.indexOf(value);
-      const newChecked = [...checked];
+    const [creatorStatus, setCreatorStatus] = React.useState('');
+    // const handleEventMemberToggle = (value) => () => {
+    //   const currentIndex = checked.indexOf(value);
+    //   const newChecked = [...checked];
   
-      if (currentIndex === -1) {
-        newChecked.push(value);
-      } else {
-        newChecked.splice(currentIndex, 1);
-      }
+    //   if (currentIndex === -1) {
+    //     newChecked.push(value);
+    //   } else {
+    //     newChecked.splice(currentIndex, 1);
+    //   }
   
-      setChecked(newChecked);
-    };
+    //   setChecked(newChecked);
+    // };
     function a11yProps(index) {
       return {
         id: `simple-tab-${index}`,
@@ -69,9 +71,9 @@ const ScheduleDialog = (props) => {
       }
     }
     const handleCreateEvent = () => {
-      let creatorStatus = '';
-      if(tabIndex === 1) creatorStatus = 'going';
-      createEventItem(eventName, props.createStartDate, props.createEndDate, eventDescription, creatorStatus).then(
+      let eventCreatorStatus = creatorStatus;
+      if(tabIndex === 1) eventCreatorStatus = eventCreatorStatus === '' ? 'invited' : eventCreatorStatus;
+      createEventItem(eventName, props.createStartDate, props.createEndDate, JSON.stringify([{Userid: context.authenticatedUser._id, status: eventCreatorStatus}]), eventDescription, eventCreatorStatus).then(
         (response) => {
           const eventId = response.data._id;
           if(tabIndex === 1 && groupId !== 'none') {
@@ -96,33 +98,19 @@ const ScheduleDialog = (props) => {
         }
       )
     }
-    const handleStatusToEvent = (event, newStatus) => {
-      setStatusToEvent(newStatus);
+    const handleCreatorStatusToEvent = (event, newStatus) => {
+      console.log(event);
+      console.log(newStatus);
+      setCreatorStatus(newStatus);
     }
+    // const handleStatusToEvent = (event, newStatus) => {
+    //   setStatusToEvent(newStatus);
+    // }
     const handleUpdateEvent = () => {
-      updateEventItem(props.eventToUpdate.id, eventName, eventDescription, props.createStartDate, props.createEndDate).then(
+      updateEventItem(props.eventToUpdate.id, eventName, eventDescription, creatorStatus, props.createStartDate, props.createEndDate).then(
         () => {
-          const promises = [];
-          for (let i = 0 ; i < friendList.length; i++) {
-            setTimeout(() => {
-              const isChecked = checked.some((id) => id===friendList[i].id);
-              const isMember = friendList[i].status === 'going' || friendList[i].status === 'invited' || friendList[i].status === 'not-going' || friendList[i].status === 'interested';
-              if(isChecked && !isMember) {
-                promises.push(addEventMember(props.eventToUpdate.id, friendList[i].id));
-              } else if (!isChecked && isMember) {
-                promises.push(removeEventMember(props.eventToUpdate.id, friendList[i].id));
-              }
-          }, 1000);
-            console.log(friendList[i]);
-
-          }
-
-          Promise.all(promises).then((res) => {
-            console.log(res);
-            props.handleCreated();
-            props.handleClose();
-          });
-
+          props.handleCreated();
+          props.handleClose();
         }
       )
     }
@@ -145,47 +133,20 @@ const ScheduleDialog = (props) => {
       props.handleCreated();
     }
 
-    const fetchFriends = () => {
-      setFriendList([]);
-      setChecked([]);
-      getFriends(context.authenticatedUser._id).then((response) => {
-        if(response.data.friends) response.data.friends.forEach(
-            (item) => {
-                const friendId = item.Userid;
-                getUser(friendId).then(
-                    (res) => {
-                        const user = res.data;
-                        const foundMember = props.eventToUpdate && (props.eventToUpdate.eventmembers || []).find(
-                          (member) => {
-                            return member.userid === friendId
-                        });
-                        const status = foundMember ? foundMember.status : '';
-                        console.log(foundMember);
-                        if(foundMember) setChecked(checked => checked.concat(friendId));
-                        setFriendList(friendList => friendList.concat([{
-                          id: user._id,
-                          firstName: user.firstname,
-                          lastName: user.lastname,
-                          username: user.username,
-                          status: status
-                        }]));
-                     }
-                )
-            }
-        );
-      });
-    }
+
       
     useEffect(() => {
       console.log('yeet');
       if (!props.open) return;
       setEventName('');
       setEventDescription('');
+      setCreatorStatus('');
       // setEventMembers([]);
       if(props.eventToUpdate) {
         setTabIndex(props.eventToUpdate.creatorstatus? 1 : 0);
         setEventName(props.eventToUpdate.name);
         setEventDescription(props.eventToUpdate.description);
+        setCreatorStatus(props.eventToUpdate.creatorstatus);
         // setEventMembers(props.eventToUpdate.eventmembers);
         // console.log(props.eventToUpdate.eventmembers);
       }
@@ -196,10 +157,39 @@ const ScheduleDialog = (props) => {
           setGroupList(ownedGroups.concat(memberGroups));
         }
       )
+      const fetchFriends = () => {
+        setFriendList([]);
+        // setChecked([]);
+        getFriends(context.authenticatedUser._id).then((response) => {
+          if(response.data.friends) response.data.friends.forEach(
+              (item) => {
+                  const friendId = item.Userid;
+                  getUser(friendId).then(
+                      (res) => {
+                          const user = res.data;
+                          const foundMember = props.eventToUpdate && (props.eventToUpdate.eventmembers || []).find(
+                            (member) => {
+                              return member.userid === friendId
+                          });
+                          const status = foundMember ? foundMember.status : '';
+                          console.log(foundMember);
+                          // if(foundMember) setChecked(checked => checked.concat(friendId));
+                          setFriendList(friendList => friendList.concat([{
+                            id: user._id,
+                            firstName: user.firstname,
+                            lastName: user.lastname,
+                            username: user.username,
+                            status: status
+                          }]));
+                       }
+                  )
+              }
+          );
+        });
+      }
+      fetchFriends();
 
-        fetchFriends();
-
-    }, [props.open]);
+    }, [props.open, props.eventToUpdate, context.authenticatedUser]);
     const ownsEvent = !props.eventToUpdate || props.eventToUpdate.createdby === context.authenticatedUser._id;
     function compare(a, b) {
       console.log(a);
@@ -250,7 +240,7 @@ const ScheduleDialog = (props) => {
             margin="dense"
             id="start"
             label="Selected start time"
-            defaultValue={props.createStartDate.toString()}
+            defaultValue={moment(props.createStartDate).utcOffset(0).format("dddd, MMMM Do YYYY, h:mm a")}
             fullWidth
             InputProps={{
               readOnly: true,
@@ -260,7 +250,7 @@ const ScheduleDialog = (props) => {
             margin="dense"
             id="end"
             label="Selected end time"
-            defaultValue={props.createEndDate.toString()}
+            defaultValue={moment(props.createEndDate).utcOffset(0).format("dddd, MMMM Do YYYY, h:mm a")}
             fullWidth
             InputProps={{
               readOnly: true,
@@ -311,9 +301,9 @@ const ScheduleDialog = (props) => {
         <div>
         <h4>Status</h4>
           <ToggleButtonGroup
-            value={statusToEvent}
+            value={creatorStatus}
             exclusive
-            onChange={handleStatusToEvent}
+            onChange={handleCreatorStatusToEvent}
             style={{color:'black'}}
           >
             <ToggleButton value="going">
@@ -351,7 +341,7 @@ const ScheduleDialog = (props) => {
             
             friendList.slice().sort(compare).map((friend) => {
               return (
-              <ListItem button key={friend.id} onClick={handleEventMemberToggle(friend.id)}>
+              <ListItem key={friend.id}>
               {!friend.status && <ListItemIcon>
                       <IconButton aria-label="accept"onClick={()=>handleAddMember(friend)}>
                                 <AddIcon  />

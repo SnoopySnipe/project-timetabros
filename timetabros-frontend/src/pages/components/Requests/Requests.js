@@ -8,6 +8,7 @@ import styles from './RequestsStyles';
 import { acceptFriendRequest } from '../../../services/FriendService';
 import { updateEventStatus } from '../../../services/ScheduleService';
 import { withRouter } from 'react-router-dom';
+import moment from 'moment';
 
 class Requests extends React.Component {
     static contextType = AuthContext;
@@ -67,7 +68,7 @@ class Requests extends React.Component {
             <ListItem divider>
                 <ListItemText 
                     primary={`${event.title} - ${event.description}`}
-                    secondary={`${(new Date(event.startdate)).toLocaleString()} - ${(new Date(event.enddate)).toLocaleString()}`}
+                    secondary={`${moment((new Date(event.startdate))).utcOffset(0).format("dddd, MMMM Do YYYY, h:mm a")} - ${moment((new Date(event.enddate))).utcOffset(0).format("dddd, MMMM Do YYYY, h:mm a")}`}
                 >
                 
                 </ListItemText>

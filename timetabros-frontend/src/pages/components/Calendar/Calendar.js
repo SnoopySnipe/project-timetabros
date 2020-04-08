@@ -146,7 +146,7 @@ class Calendar extends Component {
         end.setMinutes(itemEndDate.getMinutes());
         end.setSeconds(0);
         end.setMilliseconds(0);
-        return {start: start.toISOString(), end: end.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers, createdby: item.createdby, colour: user.colour};
+        return {start: start.toISOString(), end: end.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers, createdby: item.createdby, creatorstatus: item.creatorstatus, colour: user.colour};
       }) : [];
       const eventOwnedItems = response.data.eventowneritems ? response.data.eventowneritems.map((item) => {
 

@@ -129,6 +129,7 @@ export default function SideNav() {
   useEffect(() => {
     fetchFriendRequests();
     fetchEventRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 

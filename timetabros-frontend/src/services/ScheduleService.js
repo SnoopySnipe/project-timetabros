@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-export const createEventItem = (title, startdate, enddate, description='', creatorstatus='') => {
+export const createEventItem = (title, startdate, enddate, eventmembers, description, creatorstatus) => {
     return axios.post('http://localhost:3001/api/event_items', 
-    {title, startdate, enddate, description, creatorstatus});
+    {title, startdate, enddate, description, creatorstatus, eventmembers});
 }
 
 export const getEventItems = (userId) => {
@@ -13,9 +13,9 @@ export const deleteEventItem = (eventItemId) => {
     return axios.delete(`http://localhost:3001/api/event_items/${eventItemId}`);
 }
 
-export const updateEventItem = (eventItemId, title, description, startdate, enddate) => {
+export const updateEventItem = (eventItemId, title, description, creatorstatus, startdate, enddate) => {
     return axios.patch(`http://localhost:3001/api/event_items/${eventItemId}`, 
-    {title, description, startdate, enddate});
+    {title, description, creatorstatus, startdate, enddate});
 }
 
 export const updateEventItemTime = (eventItemId, startdate, enddate) => {

@@ -55,7 +55,7 @@ const ProfileDialog = (props) => {
         setEmail(props.userToUpdate.email);
       }
 
-    }, [props.open]);
+    }, [props.open, props.userToUpdate]);
     return (
         props.open && props.userToUpdate &&
         <div>
