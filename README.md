@@ -9,7 +9,7 @@ The goal of TimetaBros is to form new connections as well as strengthen existing
 ## Technologies
 
 - Golang (back-end)
-- Flutter (front-end)
+- React (front-end)
 
 ## Beta version features
 
