@@ -131,9 +131,7 @@ func Verify(c *gin.Context) {
 		return
     }
     // send back response with user data
-    c.JSON(http.StatusOK, gin.H{
-        "message":"Successfully verified",
-    })
+    c.Redirect(http.StatusOK, front_site + "/landing/signin")
 }
 
 // signin api
