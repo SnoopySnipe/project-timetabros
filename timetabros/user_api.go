@@ -131,7 +131,7 @@ func Verify(c *gin.Context) {
 		return
     }
     // send back response with user data
-    c.Redirect(http.StatusOK, front_site + "/landing/signin")
+    c.Redirect(http.StatusFound, front_site + "/landing/signin")
 }
 
 // signin api
