@@ -9,6 +9,10 @@ export const getEventItems = (userId) => {
     return axios.get(`http://localhost:3001/api/users/${userId}/event_items`);
 }
 
+export const getEventItem = (eventId) => {
+    return axios.get(`http://localhost:3001/api/event_items/${eventId}`);
+}
+
 export const deleteEventItem = (eventItemId) => {
     return axios.delete(`http://localhost:3001/api/event_items/${eventItemId}`);
 }

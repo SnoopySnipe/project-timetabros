@@ -121,7 +121,7 @@ class Calendar extends Component {
   fetchUsersEventItems = () => {
     this.setState({
       events:[]
-    })
+    });
     console.log(this.state.users);
     for (let user of this.state.users) {
       this.fetchEventItems(user);

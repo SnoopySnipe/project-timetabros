@@ -10,42 +10,72 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import AddIcon from '@material-ui/icons/Add';
+import RemoveIcon from '@material-ui/icons/Remove';
+import IconButton from '@material-ui/core/IconButton';
 import { getFriends } from '../../../services/FriendService';
 import { getUser } from '../../../services/UserService';
 import AuthContext from '../../../context/AuthContext';
-import { createGroup } from '../../../services/GroupService';
+import { createGroup, addGroupMember, removeGroupMember, getGroup, updateGroup } from '../../../services/GroupService';
+
 const GroupDialog = (props) => {
     const context = useContext(AuthContext);
     const [groupName, setGroupName] = React.useState('');
     const [groupAbout, setGroupAbout] = React.useState('');
     const [visibility, setVisibility] = React.useState('private');
     //const [isGroupEvent, setIsGroupEvent] = React.useState(false);
-    const [checked, setChecked] = React.useState([]);
-    const [friendList, setFriendList] = React.useState([]);
+    // const [checked, setChecked] = React.useState([]);
+    const [uninvitedFriends, setUninvitedFriendList] = React.useState([]);
+    const [groupMembers, setGroupMembers] = React.useState([]);
 
-    const handleGroupMemberToggle = (value) => () => {
-      const currentIndex = checked.indexOf(value);
-      const newChecked = [...checked];
+    // const handleGroupMemberToggle = (value) => () => {
+    //   const currentIndex = checked.indexOf(value);
+    //   const newChecked = [...checked];
   
-      if (currentIndex === -1) {
-        newChecked.push(value);
-      } else {
-        newChecked.splice(currentIndex, 1);
-      }
+    //   if (currentIndex === -1) {
+    //     newChecked.push(value);
+    //   } else {
+    //     newChecked.splice(currentIndex, 1);
+    //   }
   
-      setChecked(newChecked);
-    };
+    //   setChecked(newChecked);
+    // };
     const handleSubmit = () => {
       if(props.groupToUpdate) {
-        // handleUpdateEvent();
+        handleUpdateEvent();
       } else {
         handleCreateGroup();
       }
     }
+
+    const handleAddGroupMember = (friend) => {
+      addGroupMember(props.groupToUpdate.ID, friend._id).then(()=>{
+        friend.role = 'invited';
+        handleMemberUpdate();
+      });
+    }
+
+    const handleRemoveGroupMember = (groupMember) => {
+      removeGroupMember(props.groupToUpdate.ID, groupMember._id).then(()=>{
+        groupMember.role = '';
+        handleMemberUpdate();
+      });
+    }
+
+    const handleMemberUpdate = () => {
+      getGroup(props.groupToUpdate.ID).then(
+        (res) => {
+          console.log(res);
+          fetchGroupMembers(res.data.groupmembers || []);
+        }
+      )
+      props.handleGroupUpdate();
+    }
+
     const handleCreateGroup = () => {
-      const groupMembers = checked.map((userId)=>{return {userid: userId, role: 'invited'}})
-      createGroup(groupName, groupAbout, visibility, groupMembers).then(
+      // const groupMembers = checked.map((userId)=>{return {userid: userId, role: 'invited'}})
+      createGroup(groupName, groupAbout, visibility, []).then(
         () => {
           props.handleGroupUpdate();
           props.handleClose();
@@ -53,89 +83,87 @@ const GroupDialog = (props) => {
       )
     }
 
-    // const handleUpdateEvent = () => {
-    //   getGroup(props.groupToUpdate.ID).then(
-    //     (response) => {
-    //       console.log(response.data);
-    //       const existingGroupMembers = response.data.groupmembers || [];
-    //       const groupMembers = checked.map((userId)=>{
-    //         const foundMember = existingGroupMembers.some((member) =>
-    //         {
-    //           if(member.userid === userId) {
-    //             return member;
-    //           }
-    //         });
-    //         console.log(foundMember);
-    //         if(foundMember)
-    //         {
-    //           console.log('found');
-    //           return {userid: userId, role: foundMember.role}
-    //         } else {
-    //           return {userid: userId, role: 'invited'}
-    //         }
-    //       })
-    //       updateGroup(props.groupToUpdate.ID, groupName, groupAbout, visibility, groupMembers).then(
-    //         () => {
-    //           props.handleGroupUpdate();
-    //           props.handleClose();
-    //         }
-    //       )
-    //     }
-    //   )
+    const handleUpdateEvent = () => {
+      updateGroup(props.groupToUpdate.ID, groupName, groupAbout, visibility).then(
+        () => {
+          props.handleGroupUpdate();
+          props.handleClose();
+        }
+      );
+    }
 
-    // }
-    // const toggleGroupChecked = () => {
-    //     setIsGroupEvent(prev => !prev);
-    //     console.log(isGroupEvent);
-    // };
-      
+    const fetchGroupMembers = (members) => {
+      const promises = [];
+      const roles = [];
+      members.forEach(
+        (member) => {
+          promises.push(getUser(member.userid));
+          roles.push(member.role);
+        }
+      );
+      let newGroupMembers = [];
+      Promise.all(promises).then(
+        (responses) => {
+          for(let i = 0; i < promises.length; i++) {
+            const user = responses[i].data;
+            user.role = roles[i];
+            newGroupMembers = newGroupMembers.concat(user);
+          }
+          if(props.groupToUpdate.createdby === context.authenticatedUser._id) {
+            getFriends(context.authenticatedUser._id).then(
+              (response) => {
+                const friendList = response.data.friends || [];
+                const promises = [];
+                let newUninvitedFriends = [];
+                for (const item of friendList) {
+                  const friendId = item.Userid;
+                  if (!members.some((member) => member.userid === friendId)) promises.push(getUser(friendId));
+                }
+                Promise.all(promises).then(
+                  (responses) => {
+                    for (const res of responses) {
+                      newUninvitedFriends = newUninvitedFriends.concat(res.data);
+                    }
+                    console.log(newGroupMembers);
+                    console.log(newUninvitedFriends);
+                    setGroupMembers(newGroupMembers);
+                    setUninvitedFriendList(newUninvitedFriends);
+                  }
+                )
+              }
+
+            )
+          } else {
+            setGroupMembers(newGroupMembers);
+          }
+        }
+      )
+    }
+
     useEffect(() => {
       if (!props.open) return;
-      setChecked([]);
-      setFriendList([]);
       setGroupName('');
       setGroupAbout('');
       if(props.groupToUpdate) {
         setGroupName(props.groupToUpdate.name);
         setGroupAbout(props.groupToUpdate.about);
+        fetchGroupMembers(props.groupToUpdate.groupmembers || []);
       }
-      getFriends(context.authenticatedUser._id).then((response) => {
-        console.log(response.data.friends);
-        if(response.data.friends) response.data.friends.forEach(
-            (item) => {
-                const friendId = item.Userid;
-                getUser(friendId).then(
-                    (res) => {
-                        const user = res.data;
-                        setFriendList(friendList => friendList.concat([{
-                          id: user._id,
-                          firstName: user.firstname,
-                          lastName: user.lastname,
-                          username: user.username
-                        }]));
-                        console.log(props.groupToUpdate);
-                        if(props.groupToUpdate && props.groupToUpdate.groupmembers && props.groupToUpdate.groupmembers.some((member)=>member.userid===friendId)) {
-                          setChecked(checked => checked.concat(friendId));
-                        }
-                      }
-                )
-            }
-        );
-      });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.open, props.groupToUpdate, context.authenticatedUser]);
+    function compare(a, b) {
+      console.log(a);
+      if (a._id > b._id) return 1;
+      if (b._id > a._id) return -1;
+  
+      return 0;
+    }
   return (
     props.open &&
     <div>
-      {/* <Button variant="outlined" color="primary" onClick={handleClickOpen}>
-        Open form dialog
-      </Button> */}
       <Dialog disableBackdropClick open={props.open} onClose={props.handleClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">{props.groupToUpdate ? 'Group Update' : 'Group Creation'}</DialogTitle>
         <DialogContent>
-          {/* <DialogContentText>
-            To subscribe to this website, please enter your email address here. We will send updates
-            occasionally.
-          </DialogContentText> */}
           <TextField
             autoFocus
             margin="dense"
@@ -170,24 +198,42 @@ const GroupDialog = (props) => {
               Private
             </MenuItem>
         </TextField>
-        {
+        {props.groupToUpdate &&
         <List>
-          {
-            friendList.map((friend) => {
+          {groupMembers.slice().sort(compare).map(
+              (groupMember) =>
+                <ListItem key={groupMember._id}>
+                  {<ListItemIcon>
+                      <IconButton aria-label="accept" onClick={()=>handleRemoveGroupMember(groupMember)}>
+                                <RemoveIcon  />
+                      </IconButton>
+                  </ListItemIcon>}
+                  <ListItemText primary={`${groupMember.firstname} ${groupMember.lastname}`} secondary={groupMember.username} />
+                  <ListItemSecondaryAction>
+                    {groupMember.role}
+                  </ListItemSecondaryAction>
+                </ListItem>
+              )
+          }
+          {  props.groupToUpdate.createdby === context.authenticatedUser._id ?
+            uninvitedFriends.map((friend) => {
               return (
-              <ListItem button key={friend.id} onClick={handleGroupMemberToggle(friend.id)}>
-              <ListItemIcon>
-                  <Checkbox
-                      edge="start"
-                      checked={checked.indexOf(friend.id) !== -1}
-                      disableRipple
-                  />
-              </ListItemIcon>
-              <ListItemText primary={`${friend.firstName} ${friend.lastName}`} secondary={friend.username}/>
+              // <ListItem button key={friend.id} onClick={handleGroupMemberToggle(friend.id)}>
+              <ListItem button key={friend._id} >
+              {<ListItemIcon>
+                      <IconButton aria-label="accept"onClick={()=>handleAddGroupMember(friend)}>
+                                <AddIcon  />
+                      </IconButton>
+              </ListItemIcon>}
+
+              <ListItemText primary={`${friend.firstname} ${friend.lastname}`} secondary={friend.username}/>
+              <ListItemSecondaryAction>
+                {friend.role}
+              </ListItemSecondaryAction>
               </ListItem>
               
               )
-            })
+            }) : <div></div>
           }
         </List>}
         </DialogContent>
