@@ -6,12 +6,12 @@ import (
     "encoding/gob"
     "net/http"
     "net/smtp"
-    "os"
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
+    "go.mongodb.org/mongo-driver/mongo/gridfs"
 
     "github.com/gin-gonic/gin"
     "github.com/gorilla/sessions"
@@ -28,6 +28,8 @@ var eventItems *mongo.Collection
 var friendConnections *mongo.Collection
 var groups *mongo.Collection
 var profilePictures *mongo.Collection
+var client *mongo.Client
+var bucket *gridfs.Bucket
 
 var store *sessions.CookieStore
 
@@ -37,9 +39,6 @@ var email_setup EmailSetup
 var validate *validator.Validate
 
 func main() {
-    // create uploads folder
-    err := os.MkdirAll(upload_destination, os.ModePerm)
-
     // setup input validation
     validate = validator.New()
 
@@ -66,6 +65,13 @@ func main() {
     friendConnections = client.Database("timetabros").Collection("friend_connections")
     groups = client.Database("timetabros").Collection("groups")
     profilePictures = client.Database("timetabros").Collection("profile_pictures")
+    // create new mongodb gridfs bucket to store image uploads
+    bucket, err = gridfs.NewBucket(
+        client.Database("timetabros"),
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
 
 
     // setup email
