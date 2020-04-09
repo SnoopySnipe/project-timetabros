@@ -13,9 +13,9 @@ export const deleteEventItem = (eventItemId) => {
     return axios.delete(`http://localhost:3001/api/event_items/${eventItemId}`);
 }
 
-export const updateEventItem = (eventItemId, title, description, creatorstatus, startdate, enddate) => {
+export const updateEventItem = (eventItemId, title, description, startdate, enddate) => {
     return axios.patch(`http://localhost:3001/api/event_items/${eventItemId}`, 
-    {title, description, creatorstatus, startdate, enddate});
+    {title, description, startdate, enddate});
 }
 
 export const updateEventItemTime = (eventItemId, startdate, enddate) => {

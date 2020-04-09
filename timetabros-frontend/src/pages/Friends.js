@@ -158,7 +158,7 @@ class Friends extends React.Component {
                 </ListItemAvatar> */}
                 <ListItemText 
                     primary={`${group.name}`}
-                    // secondary={user.username}
+                    secondary={`${group.createdby === this.context.authenticatedUser._id ? 'Admin' : 'Member'}`}
                 >
             
                 </ListItemText>

@@ -17,3 +17,12 @@ export const updateGroup = (groupId, name, about, visibility) => {
     return axios.patch(`http://localhost:3001/api/groups/${groupId}`, 
     {name, about, visibility});
 }
+
+export const acceptGroup = (groupId) => {
+    return axios.patch(`http://localhost:3001/api/groups/${groupId}/members`);
+}
+
+
+
+
+

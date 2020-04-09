@@ -31,6 +31,7 @@ import { signOut } from '../services/UserService';
 import { getFriends } from '../services/FriendService';
 import { getUser } from '../services/UserService';
 import { getEventItems } from '../services/ScheduleService';
+import { getGroups } from '../services/GroupService';
 const drawerWidth = 240;
 const useStyles = makeStyles(theme => ({
   yeet: {
@@ -109,8 +110,7 @@ export default function SideNav() {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [title, setTitle] = React.useState('');
   const [friendRequests, setFriendRequests] = React.useState([]);
-  const [groupRequests] = React.useState([]);
-  //const [groupRequests, setGroupRequests] = React.useState([]);
+  const [groupRequests, setGroupRequests] = React.useState([]);
   const [eventRequests, setEventRequests] = React.useState([]);
   const context = useContext(AuthContext);
   const toggleDrawer = () => {
@@ -128,6 +128,7 @@ export default function SideNav() {
   }
   useEffect(() => {
     fetchFriendRequests();
+    fetchGroupRequests();
     fetchEventRequests();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -157,7 +158,25 @@ export default function SideNav() {
                 });
         }
     )
+  }
 
+  const fetchGroupRequests = () => {
+    setGroupRequests([]);
+    getGroups(context.authenticatedUser._id).then(
+      (response) => {
+        console.log(response.data);
+        const groupRequests = response.data.userrequestgroups || [];
+        groupRequests.forEach((groupRequest) => {
+          getUser(groupRequest.createdby).then(
+            (response) => {
+              const user = response.data;
+              groupRequest.createdbyUser = user;
+              setGroupRequests(groupRequests => groupRequests.concat(groupRequest));
+            }
+          )
+        })
+      }
+    )
   }
 
   const fetchEventRequests = () => {
@@ -257,7 +276,7 @@ export default function SideNav() {
             <Route exact path="/home/profile" component={Profile}/>
               <Route path="/home/profile/:id" component={Profile}/>
               <Route path="/home/friends" component={Friends} />
-              <Route path="/home/requests" render={(props) => <Requests friendRequests={friendRequests} onFriendRequestChange={fetchFriendRequests} groupRequests={groupRequests} eventRequests={eventRequests} onEventRequestChange={fetchEventRequests}/>} />
+              <Route path="/home/requests" render={(props) => <Requests friendRequests={friendRequests} onFriendRequestChange={fetchFriendRequests} groupRequests={groupRequests} onGroupRequestChange={fetchGroupRequests} eventRequests={eventRequests} onEventRequestChange={fetchEventRequests}/>} />
               <Route path="/home/compare" component={Compare} />
             </Container>
 

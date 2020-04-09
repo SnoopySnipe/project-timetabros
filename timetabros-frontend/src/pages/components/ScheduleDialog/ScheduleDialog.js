@@ -13,6 +13,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
@@ -24,7 +25,7 @@ import GroupDialog from '../GroupDialog/GroupDialog';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
 import moment from 'moment';
-import { addEventMember, removeEventMember, createEventItem, updateEventItem } from '../../../services/ScheduleService';
+import { addEventMember, removeEventMember, createEventItem, updateEventItem, updateEventStatus } from '../../../services/ScheduleService';
 const ScheduleDialog = (props) => {
     const context = useContext(AuthContext);
     const [tabIndex, setTabIndex] = React.useState(0);
@@ -36,9 +37,9 @@ const ScheduleDialog = (props) => {
     const [friendList, setFriendList] = React.useState([]);
     const [groupList, setGroupList] = React.useState([]);
     const [groupId, setGroupId] = React.useState('none');
-    // const [statusToEvent, setStatusToEvent] = React.useState('');
-    //const [eventMembers, setEventMembers] = React.useState([]);
-    const [creatorStatus, setCreatorStatus] = React.useState('');
+    const [statusToEvent, setStatusToEvent] = React.useState('');
+    const [eventMembers, setEventMembers] = React.useState([]);
+    // const [creatorStatus, setCreatorStatus] = React.useState('');
     // const handleEventMemberToggle = (value) => () => {
     //   const currentIndex = checked.indexOf(value);
     //   const newChecked = [...checked];
@@ -71,8 +72,8 @@ const ScheduleDialog = (props) => {
       }
     }
     const handleCreateEvent = () => {
-      let eventCreatorStatus = creatorStatus;
-      if(tabIndex === 1) eventCreatorStatus = eventCreatorStatus === '' ? 'invited' : eventCreatorStatus;
+      let eventCreatorStatus = '';
+      if(tabIndex === 1) eventCreatorStatus = 'going';
       createEventItem(eventName, props.createStartDate, props.createEndDate, JSON.stringify([{Userid: context.authenticatedUser._id, status: eventCreatorStatus}]), eventDescription, eventCreatorStatus).then(
         (response) => {
           const eventId = response.data._id;
@@ -98,16 +99,21 @@ const ScheduleDialog = (props) => {
         }
       )
     }
-    const handleCreatorStatusToEvent = (event, newStatus) => {
-      console.log(event);
-      console.log(newStatus);
-      setCreatorStatus(newStatus);
-    }
-    // const handleStatusToEvent = (event, newStatus) => {
-    //   setStatusToEvent(newStatus);
+    // const handleCreatorStatusToEvent = (event, newStatus) => {
+    //   console.log(event);
+    //   console.log(newStatus);
+    //   setCreatorStatus(newStatus);
     // }
+    const handleStatusToEvent = (event, newStatus) => {
+      setStatusToEvent(newStatus);
+      updateEventStatus(props.eventToUpdate.id, newStatus).then(
+        () => {
+          props.handleCreated();
+        }
+      );
+    }
     const handleUpdateEvent = () => {
-      updateEventItem(props.eventToUpdate.id, eventName, eventDescription, creatorStatus, props.createStartDate, props.createEndDate).then(
+      updateEventItem(props.eventToUpdate.id, eventName, eventDescription, props.createStartDate, props.createEndDate).then(
         () => {
           props.handleCreated();
           props.handleClose();
@@ -140,13 +146,18 @@ const ScheduleDialog = (props) => {
       if (!props.open) return;
       setEventName('');
       setEventDescription('');
-      setCreatorStatus('');
-      // setEventMembers([]);
+      setStatusToEvent('');
+      setFriendList([]);
+      setEventMembers([]);
       if(props.eventToUpdate) {
         setTabIndex(props.eventToUpdate.creatorstatus? 1 : 0);
         setEventName(props.eventToUpdate.name);
         setEventDescription(props.eventToUpdate.description);
-        setCreatorStatus(props.eventToUpdate.creatorstatus);
+        const eventmembers = props.eventToUpdate.eventmembers || [];
+        const foundEventMember = eventmembers.find(
+          (member) => member.userid === context.authenticatedUser._id
+        );
+        if(foundEventMember) setStatusToEvent(foundEventMember.status);
         // setEventMembers(props.eventToUpdate.eventmembers);
         // console.log(props.eventToUpdate.eventmembers);
       }
@@ -157,37 +168,50 @@ const ScheduleDialog = (props) => {
           setGroupList(ownedGroups.concat(memberGroups));
         }
       )
-      const fetchFriends = () => {
-        setFriendList([]);
-        // setChecked([]);
-        getFriends(context.authenticatedUser._id).then((response) => {
-          if(response.data.friends) response.data.friends.forEach(
-              (item) => {
-                  const friendId = item.Userid;
-                  getUser(friendId).then(
-                      (res) => {
-                          const user = res.data;
-                          const foundMember = props.eventToUpdate && (props.eventToUpdate.eventmembers || []).find(
-                            (member) => {
-                              return member.userid === friendId
-                          });
-                          const status = foundMember ? foundMember.status : '';
-                          console.log(foundMember);
-                          // if(foundMember) setChecked(checked => checked.concat(friendId));
-                          setFriendList(friendList => friendList.concat([{
-                            id: user._id,
-                            firstName: user.firstname,
-                            lastName: user.lastname,
-                            username: user.username,
-                            status: status
-                          }]));
-                       }
-                  )
+      if(props.eventToUpdate && props.eventToUpdate.createdby === context.authenticatedUser._id){
+          getFriends(context.authenticatedUser._id).then((response) => {
+            if(response.data.friends) response.data.friends.forEach(
+                (item) => {
+                    const friendId = item.Userid;
+                    getUser(friendId).then(
+                        (res) => {
+                            const user = res.data;
+                            const foundMember = props.eventToUpdate && (props.eventToUpdate.eventmembers || []).find(
+                              (member) => {
+                                return member.userid === friendId
+                            });
+                            const status = foundMember ? foundMember.status : '';
+                            console.log(foundMember);
+                            // if(foundMember) setChecked(checked => checked.concat(friendId));
+                            setFriendList(friendList => friendList.concat([{
+                              id: user._id,
+                              firstName: user.firstname,
+                              lastName: user.lastname,
+                              username: user.username,
+                              status: status
+                            }]));
+                         }
+                    )
+                }
+            );
+          });
+      } else if (props.eventToUpdate) {
+        const members = props.eventToUpdate.eventmembers || [];
+        members.forEach(
+          (member) => {
+            const userId = member.userid;
+            if(userId === context.authenticatedUser._id) return;
+            getUser(userId).then(
+              (res) => {
+                const user = res.data;
+                user.status = member.status;
+                setEventMembers(eventMembers => eventMembers.concat(user));
               }
-          );
-        });
+            )
+          }
+        )
       }
-      fetchFriends();
+
 
     }, [props.open, props.eventToUpdate, context.authenticatedUser]);
     const ownsEvent = !props.eventToUpdate || props.eventToUpdate.createdby === context.authenticatedUser._id;
@@ -297,7 +321,7 @@ const ScheduleDialog = (props) => {
           }
         </TextField>
         }
-        { tabIndex === 1 &&
+        {/* { tabIndex === 1 &&
         <div>
         <h4>Status</h4>
           <ToggleButtonGroup
@@ -323,7 +347,7 @@ const ScheduleDialog = (props) => {
             </ToggleButton>
           </ToggleButtonGroup>
         </div>
-        }
+        } */}
         <DialogActions>
           <Button onClick={props.handleClose} color="primary">
             Cancel
@@ -335,28 +359,67 @@ const ScheduleDialog = (props) => {
           }
         </DialogActions>
         {tabIndex === 1 && props.eventToUpdate &&
+        <div>
+        <h4>Status</h4>
+          <ToggleButtonGroup
+            value={statusToEvent}
+            exclusive
+            onChange={handleStatusToEvent}
+            style={{color:'black'}}
+          >
+            <ToggleButton value="going">
+              <Typography color='primary'>
+                      Going
+              </Typography>
+            </ToggleButton>
+            <ToggleButton value="interested">
+              <Typography color='primary'>
+                      Interested
+              </Typography>
+            </ToggleButton>
+            <ToggleButton value="not-going">
+              <Typography color='primary'>
+                      Not Going
+              </Typography>
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </div>
+        }
+        {tabIndex === 1 && props.eventToUpdate &&
         <List>
-          <h4>Manage Event Members</h4>
+          <h4>{props.eventToUpdate.createdby === context.authenticatedUser._id ? 'Manage Event Members' : 'Event Members'}</h4>
           {
-            
+            props.eventToUpdate.createdby === context.authenticatedUser._id ?
             friendList.slice().sort(compare).map((friend) => {
               return (
               <ListItem key={friend.id}>
-              {!friend.status && <ListItemIcon>
+              {props.eventToUpdate.createdby === context.authenticatedUser._id && !friend.status && <ListItemIcon>
                       <IconButton aria-label="accept"onClick={()=>handleAddMember(friend)}>
                                 <AddIcon  />
                       </IconButton>
               </ListItemIcon>}
-              {friend.status && <ListItemIcon>
+              {props.eventToUpdate.createdby === context.authenticatedUser._id && friend.status && <ListItemIcon>
                       <IconButton aria-label="accept" onClick={()=>handleRemoveMember(friend)}>
                                 <RemoveIcon  />
                       </IconButton>
               </ListItemIcon>}
-              <ListItemText primary={`${friend.firstName} ${friend.lastName} ${friend.status}`} secondary={friend.username}/>
+              <ListItemText primary={`${friend.firstName} ${friend.lastName}`} secondary={friend.username}/>
+              <ListItemSecondaryAction>
+                {friend.status}
+              </ListItemSecondaryAction>
               </ListItem>
               
               )
             })
+            : eventMembers.map(
+              (eventmember) => 
+              <ListItem key={eventmember._id}>
+              <ListItemText primary={`${eventmember.firstname} ${eventmember.lastname}`} secondary={eventmember.username} />
+              <ListItemSecondaryAction>
+                {eventmember.status}
+              </ListItemSecondaryAction>
+              </ListItem>
+              )
           }
         </List>}
         
