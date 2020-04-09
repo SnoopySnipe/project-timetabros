@@ -8,7 +8,8 @@ import (
     "time"
     "fmt"
     "strings"
-    "log"
+    "io/ioutil"
+    "bytes"
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
@@ -321,7 +322,13 @@ func GetProfilePicture(c *gin.Context) {
 		return
     }
     // send response
-    c.File(upload_destination + "/" + profilePicture.Picture.Filename)
+    var buf bytes.Buffer
+    _, err = bucket.DownloadToStreamByName(profilePicture.Picture.Filename, &buf)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+    }
+    c.Data(http.StatusOK, profilePicture.Picture.Header["Content-Type"][0], buf.Bytes())
 }
 
 // update user details api
@@ -358,7 +365,6 @@ func UpdateUserDetails(c *gin.Context) {
     	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-    log.Println(updatedUser)
     // verify inputs
     if errs := validate.Struct(updatedUser); errs != nil {
 	    c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
@@ -450,7 +456,25 @@ func UpdateUserDetails(c *gin.Context) {
         year, month, day := t.Date()
         hour, min, sec := t.Clock()
         picture.Filename = fmt.Sprintf("%d-%d-%d-%d-%d-%d_%s",year, month, day, hour, min, sec, picture.Filename)
-        err = c.SaveUploadedFile(picture, upload_destination + "/" + picture.Filename)
+        pic_file, err := picture.Open()
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	        return
+        }
+        pic_data, err := ioutil.ReadAll(pic_file)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	        return
+        }
+        uploadStream, err := bucket.OpenUploadStream(
+            picture.Filename,
+        )
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	        return
+        }
+        defer uploadStream.Close()
+        _, err = uploadStream.Write(pic_data)
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	        return
