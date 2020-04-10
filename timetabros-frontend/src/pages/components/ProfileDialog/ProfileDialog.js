@@ -45,7 +45,7 @@ const ProfileDialog = (props) => {
       setLastName('');
       setEmail('');
       if(props.userToUpdate) {
-        setProfilePicturePreview(`http://localhost:3001/api/users/${props.userToUpdate._id}/pfp`);
+        setProfilePicturePreview(`${process.env.REACT_APP_API_URL}/api/users/${props.userToUpdate._id}/pfp`);
         setUsername(props.userToUpdate.username);
         setFirstName(props.userToUpdate.firstname);
         setLastName(props.userToUpdate.lastname);

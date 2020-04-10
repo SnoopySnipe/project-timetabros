@@ -13,9 +13,6 @@ import moment from 'moment';
 
 class Requests extends React.Component {
     static contextType = AuthContext;
-    constructor(props) {
-        super(props);
-    }
 
     handleAcceptFriend = (requestId) => {
         acceptFriendRequest(requestId).then(
@@ -41,11 +38,6 @@ class Requests extends React.Component {
         )
     }
 
-
-    // componentWillMount(){
-    //     this.fetchFriendRequests();
-    // }
-    // this.context.authenticatedUser
     render() {
         const friendRequestList = this.props.friendRequests;
         const listItems = !friendRequestList ? [] : friendRequestList.map((request) => (

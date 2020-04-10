@@ -1,13 +1,12 @@
 import React from 'react';
 import '../styles/pages/Friends.css';
-import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import { Grid, List, ListItem, ListItemText, ListItemAvatar, Avatar, ListItemSecondaryAction, IconButton } from '@material-ui/core';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import GroupAddIcon from '@material-ui/icons/GroupAdd';
 import { getFriends, sendFriendRequest } from '../services/FriendService';
 import { getGroups } from '../services/GroupService';
-import { getUser } from '../services/UserService';
+import { getUser, searchUser} from '../services/UserService';
 import GroupDialog from './components/GroupDialog/GroupDialog';
 class Friends extends React.Component {
     static contextType = AuthContext;
@@ -75,10 +74,9 @@ class Friends extends React.Component {
 
     searchFriend = event => {
         event.preventDefault();
-        axios.get(`http://localhost:3001/api/users`, {params: {q: this.state.query}})
-            .then(res => {
-                this.setState({searchedUsers: res.data});
-            })
+        searchUser(this.state.query).then(res => {
+            this.setState({searchedUsers: res.data});
+        })
     }
 
     setQuery = event => {
@@ -96,12 +94,11 @@ class Friends extends React.Component {
     }
 
     render() {
-        let friendList = this.state.friendList;
         const searchedList = this.state.searchedUsers;
         const listItems = !searchedList ? [] : searchedList.map((user) => (
             <ListItem divider button onClick={()=>this.handleSelectFriend(user.ID)}>
                 <ListItemAvatar>
-                    <Avatar src={`http://localhost:3001/api/users/${user.ID}/pfp`}>{user.firstname.charAt(0).toUpperCase()}</Avatar>
+                    <Avatar src={`${process.env.REACT_APP_API_URL}/api/users/${user.ID}/pfp`}>{user.firstname.charAt(0).toUpperCase()}</Avatar>
                 </ListItemAvatar>
                 <ListItemText 
                     primary={`${user.firstname}  ${user.lastname}`}
@@ -132,7 +129,7 @@ class Friends extends React.Component {
         const friendItems = !friends ? [] : friends.map((user) => (
             <ListItem button divider onClick={()=>this.handleSelectFriend(user.id)}>
                 <ListItemAvatar>
-                    <Avatar src={`http://localhost:3001/api/users/${user.id}/pfp`}>{user.firstName.charAt(0).toUpperCase()}</Avatar>
+                    <Avatar src={`${process.env.REACT_APP_API_URL}/api/users/${user.id}/pfp`}>{user.firstName.charAt(0).toUpperCase()}</Avatar>
                 </ListItemAvatar>
                 <ListItemText 
                     primary={`${user.firstName}  ${user.lastName}`}

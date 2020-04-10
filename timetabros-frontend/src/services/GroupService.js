@@ -1,33 +1,36 @@
 import axios from 'axios';
 
+const apiUrl = process.env.REACT_APP_API_URL;
+
+
 export const createGroup = (name, about, visibility, groupmembers) => {
-    return axios.post('http://localhost:3001/api/groups', 
+    return axios.post(`${apiUrl}/api/groups`, 
     {name, about, visibility, groupmembers});
 }
 
 export const getGroup = (groupId) => {
-    return axios.get(`http://localhost:3001/api/groups/${groupId}`);
+    return axios.get(`${apiUrl}/api/groups/${groupId}`);
 }
 
 export const getGroups = (userId) => {
-    return axios.get(`http://localhost:3001/api/users/${userId}/groups`);
+    return axios.get(`${apiUrl}/api/users/${userId}/groups`);
 }
 
 export const updateGroup = (groupId, name, about, visibility) => {
-    return axios.patch(`http://localhost:3001/api/groups/${groupId}`, 
+    return axios.patch(`${apiUrl}/api/groups/${groupId}`, 
     {name, about, visibility});
 }
 
 export const acceptGroup = (groupId) => {
-    return axios.patch(`http://localhost:3001/api/groups/${groupId}/members`);
+    return axios.patch(`${apiUrl}/api/groups/${groupId}/members`);
 }
 
 export const addGroupMember = (groupId, userid) => {
-    return axios.post(`http://localhost:3001/api/groups/${groupId}/members`,
+    return axios.post(`${apiUrl}/api/groups/${groupId}/members`,
     {userid});
 }
 
 export const removeGroupMember = (groupId, userid) => {
-    return axios.delete(`http://localhost:3001/api/groups/${groupId}/members`,
+    return axios.delete(`${apiUrl}/api/groups/${groupId}/members`,
     { data: {userid}});
 }
