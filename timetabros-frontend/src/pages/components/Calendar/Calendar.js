@@ -5,6 +5,7 @@ import { IconButton } from '@material-ui/core';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import Moment from 'react-moment';
+import moment from 'moment';
 import ScheduleDialog from '../ScheduleDialog/ScheduleDialog';
 import "./CalendarStyles.css";
 
@@ -32,6 +33,7 @@ class Calendar extends Component {
       events: [],
       users: [],
       viewType: "Week",
+      weekStarts: 0,
       durationBarVisible: false,
       timeRangeSelectedHandling: "Enabled",
       headerDateFormat: "dddd MMMM d",
@@ -131,19 +133,18 @@ class Calendar extends Component {
       let scheduleItems = response.data.scheduleitems ? response.data.scheduleitems.map((item) => {
         let start = new Date(this.state.startDate);
         let itemStartDate = new Date(item.startdate);
-        start.setDate(start.getDate() + (itemStartDate.getDay() - start.getDay()));
-        start.setHours(itemStartDate.getHours());
-        start.setMinutes(itemStartDate.getMinutes());
-        start.setSeconds(0);
-        start.setMilliseconds(0);
+        const itemStartMoment = moment(itemStartDate);
+        const scheduleStartMoment = moment(start).day(itemStartMoment.day());
+        const startDiff = scheduleStartMoment.isSame(itemStartMoment, 'week') ? 0 : Math.floor(scheduleStartMoment.diff(itemStartMoment, 'days') / 7);
+        itemStartMoment.add( startDiff, 'weeks');
+
         let end = new Date(this.state.startDate);
         let itemEndDate = new Date(item.enddate);
-        end.setDate(end.getDate() + (itemEndDate.getDay() - end.getDay()));
-        end.setHours(itemEndDate.getHours());
-        end.setMinutes(itemEndDate.getMinutes());
-        end.setSeconds(0);
-        end.setMilliseconds(0);
-        return {start: start.toISOString(), end: end.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers, createdby: item.createdby, creatorstatus: item.creatorstatus, colour: user.colour};
+        const itemEndMoment = moment(itemEndDate);
+        const scheduleEndMoment = moment(end).day(itemEndMoment.day());
+        const endDiff = scheduleEndMoment.isSame(itemEndMoment, 'week') ? 0: Math.floor(scheduleEndMoment.diff(itemEndMoment, 'days') / 7);
+        itemEndMoment.add( endDiff, 'weeks');
+        return {start: itemStartMoment.toISOString(), end: itemEndMoment.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers, createdby: item.createdby, creatorstatus: item.creatorstatus, colour: user.colour};
       }) : [];
       const eventOwnedItems = response.data.eventowneritems ? response.data.eventowneritems.map((item) => {
 
