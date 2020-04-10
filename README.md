@@ -23,3 +23,9 @@ A demonstration of the application's main use cases can be found [here](https://
   - Development source code can be found [here](/timetabros-frontend)
 
 Note that for deployment, we created an additional two separate private repositories with more or less identical source code to the development source code found in this repository but with additional configurations.
+
+## Features
+
+**Connect** with other users by using our friend recommendation system, once you have formed some connections you can start creating groups!
+**Customize** your schedule with personal recurring as well as temporary schedule items, or spice it up with events you can invite your friends to and even UofT courses!
+**Compare** your schedules side-by-side with multiple other easily to pick a time that works best for everyone!
