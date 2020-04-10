@@ -6,6 +6,7 @@ import (
     "encoding/gob"
     "net/http"
     "net/smtp"
+    "os"
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
@@ -53,21 +54,21 @@ func main() {
         log.Fatal(err)
     }
     // get mongodb collections
-    users = client.Database("timetabros").Collection("users")
+    users = client.Database(database_name).Collection("users")
     // index users for searching
     model := mongo.IndexModel{
         Keys: bson.M{"username": "text", "firstname": "text", "lastname": "text"},
         Options: nil,
     }
     users.Indexes().CreateOne(context.TODO(), model)
-    pendingUsers = client.Database("timetabros").Collection("pending_users")
-    eventItems = client.Database("timetabros").Collection("event_items")
-    friendConnections = client.Database("timetabros").Collection("friend_connections")
-    groups = client.Database("timetabros").Collection("groups")
-    profilePictures = client.Database("timetabros").Collection("profile_pictures")
+    pendingUsers = client.Database(database_name).Collection("pending_users")
+    eventItems = client.Database(database_name).Collection("event_items")
+    friendConnections = client.Database(database_name).Collection("friend_connections")
+    groups = client.Database(database_name).Collection("groups")
+    profilePictures = client.Database(database_name).Collection("profile_pictures")
     // create new mongodb gridfs bucket to store image uploads
     bucket, err = gridfs.NewBucket(
-        client.Database("timetabros"),
+        client.Database(database_name),
     )
     if err != nil {
         log.Fatal(err)
@@ -149,7 +150,11 @@ func main() {
     api.DELETE("/event_items/:id/members", DeleteEventMember)
 
 
-
-    router.Run(":3001")
+    var port string
+    port = os.Getenv("PORT")
+    if port == "" {
+		port = "3001"
+	}
+    router.Run(":" + port)
 }
 
