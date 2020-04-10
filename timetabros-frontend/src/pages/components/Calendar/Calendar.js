@@ -122,16 +122,13 @@ class Calendar extends Component {
     this.setState({
       events:[]
     });
-    console.log(this.state.users);
     for (let user of this.state.users) {
       this.fetchEventItems(user);
     }
   }
   fetchEventItems = (user) => {
     getEventItems(user.id).then((response) => {    
-      console.log(response);  
       let scheduleItems = response.data.scheduleitems ? response.data.scheduleitems.map((item) => {
-
         let start = new Date(this.state.startDate);
         let itemStartDate = new Date(item.startdate);
         start.setDate(start.getDate() + (itemStartDate.getDay() - start.getDay()));

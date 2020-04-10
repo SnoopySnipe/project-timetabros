@@ -24,11 +24,9 @@ class Friends extends React.Component {
             openGroupDialog: false,
             selectedGroup: null
         };
-        console.log(this.state);
     }
 
     fetchFriends() {
-        console.log('!!!!');
         this.setState({friendList: []});
         getFriends(this.context.authenticatedUser._id).then(
             (response) => {
@@ -41,7 +39,6 @@ class Friends extends React.Component {
                         getUser(friendId).then(
                             (res) => {
                                 const user = res.data;
-                                console.log(this.state);
                                 this.setState(
                                     {
                                         friendList : this.state.friendList.concat([{
@@ -78,12 +75,9 @@ class Friends extends React.Component {
 
     searchFriend = event => {
         event.preventDefault();
-        console.log(this.state);
-
         axios.get(`http://localhost:3001/api/users`, {params: {q: this.state.query}})
             .then(res => {
                 this.setState({searchedUsers: res.data});
-                console.log(res);
             })
     }
 
@@ -104,8 +98,6 @@ class Friends extends React.Component {
     render() {
         let friendList = this.state.friendList;
         const searchedList = this.state.searchedUsers;
-        console.log(friendList);
-        console.log(searchedList);
         const listItems = !searchedList ? [] : searchedList.map((user) => (
             <ListItem divider button onClick={()=>this.handleSelectFriend(user.ID)}>
                 <ListItemAvatar>

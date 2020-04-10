@@ -25,7 +25,6 @@ const ProfileDialog = (props) => {
     const handleFileSelect = (event) => {
       setProfilePicturePreview(URL.createObjectURL(event.target.files[0]));
       setProfilePicture(event.target.files[0]);
-      console.log(event);
     }
     const handleSubmit = () => {
       updateUser(username, firstName, lastName, email, profilePrivacy, schedulePrivacy, profilePicture).then(
@@ -36,10 +35,8 @@ const ProfileDialog = (props) => {
         },
 
       ).catch(error => {
-        console.log(error);
             setError(error.response.data.error);
       });
-      console.log(props.userToUpdate);
     }
     useEffect(() => {
       if (!props.open) return;

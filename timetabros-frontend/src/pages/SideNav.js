@@ -164,7 +164,6 @@ export default function SideNav() {
     setGroupRequests([]);
     getGroups(context.authenticatedUser._id).then(
       (response) => {
-        console.log(response.data);
         const groupRequests = response.data.userrequestgroups || [];
         groupRequests.forEach((groupRequest) => {
           getUser(groupRequest.createdby).then(

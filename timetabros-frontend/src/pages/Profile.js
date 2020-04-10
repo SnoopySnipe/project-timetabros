@@ -24,7 +24,6 @@ class Profile extends React.Component {
             id = this.context.authenticatedUser._id;
             this.setState({canEdit: true});
         }
-        console.log(id);
         if(id) {
             getUser(id).then(
                 (response) => {

@@ -66,7 +66,6 @@ const GroupDialog = (props) => {
     const handleMemberUpdate = () => {
       getGroup(props.groupToUpdate.ID).then(
         (res) => {
-          console.log(res);
           fetchGroupMembers(res.data.groupmembers || []);
         }
       )
@@ -124,8 +123,6 @@ const GroupDialog = (props) => {
                     for (const res of responses) {
                       newUninvitedFriends = newUninvitedFriends.concat(res.data);
                     }
-                    console.log(newGroupMembers);
-                    console.log(newUninvitedFriends);
                     setGroupMembers(newGroupMembers);
                     setUninvitedFriendList(newUninvitedFriends);
                   }
@@ -152,7 +149,6 @@ const GroupDialog = (props) => {
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.open, props.groupToUpdate, context.authenticatedUser]);
     function compare(a, b) {
-      console.log(a);
       if (a._id > b._id) return 1;
       if (b._id > a._id) return -1;
   

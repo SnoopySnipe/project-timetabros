@@ -33,7 +33,6 @@ export const updateEventItemTitle = (eventItemId, title) => {
 }
 
 export const addEventMember = (eventId, userid) => {
-    console.log('yeet');
     return axios.post(`http://localhost:3001/api/event_items/${eventId}/members`, 
     {userid});
 }
@@ -44,7 +43,6 @@ export const removeEventMember = (eventId, userid) => {
 }
 
 export const updateEventStatus = (eventId, status) => {
-    console.log(status);
     return axios.patch(`http://localhost:3001/api/event_items/${eventId}/members`, 
     {status});
 }

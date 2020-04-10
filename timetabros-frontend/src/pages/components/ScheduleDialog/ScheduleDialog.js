@@ -120,7 +120,6 @@ const ScheduleDialog = (props) => {
   const handleMemberUpdate = () => {
     getEventItem(props.eventToUpdate.id).then(
       (res) => {
-        console.log(res);
         fetchMembers(res.data.eventmembers || []);
       }
     )
@@ -153,18 +152,14 @@ const ScheduleDialog = (props) => {
               const promises = [];
               let newUninvitedFriends = [];
               for (const item of friendList) {
-                console.log(item);
                 const friendId = item.Userid;
                 if (!members.some((member) => member.userid === friendId)) promises.push(getUser(friendId));
               }
               Promise.all(promises).then(
                 (responses) => {
-                  console.log(responses);
                   for (const res of responses) {
                     newUninvitedFriends = newUninvitedFriends.concat(res.data);
                   }
-                  console.log(newEventMembers);
-                  console.log(newUninvitedFriends);
                   setEventMembers(newEventMembers);
                   setUninvitedFriendList(newUninvitedFriends);
                 }
@@ -206,7 +201,6 @@ const ScheduleDialog = (props) => {
   }, [props.open, props.eventToUpdate, context.authenticatedUser, props.eventToUpdate ? props.eventToUpdate.eventmembers : null]);
   const ownsEvent = !props.eventToUpdate || props.eventToUpdate.createdby === context.authenticatedUser._id;
   function compare(a, b) {
-    console.log(a);
     if (a._id > b._id) return 1;
     if (b._id > a._id) return -1;
 

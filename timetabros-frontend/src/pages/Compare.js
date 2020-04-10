@@ -20,7 +20,6 @@ class Compare extends React.Component {
     }
 
     fetchFriends() {
-        console.log('!!!!');
         this.setState({friendList: []});
         getFriends(this.context.authenticatedUser._id).then(
             (response) => {
@@ -50,7 +49,6 @@ class Compare extends React.Component {
     }
 
     componentWillMount(){
-        console.log('compare will mount');
         this.fetchFriends();
         this.setState({selectedFriends: [{id:this.context.authenticatedUser._id, colour: null}]})
     }
@@ -58,7 +56,6 @@ class Compare extends React.Component {
     toggleSelectFriend = user => {
         if(this.state.selectedFriends.includes(user)){
             const index = this.state.selectedFriends.indexOf(user);
-            console.log(this.state.selectedFriends);
             let temp = this.state.selectedFriends.slice(0, index).concat(this.state.selectedFriends.slice(index+1));
             this.setState({selectedFriends: temp});
         } else {

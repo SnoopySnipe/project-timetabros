@@ -17,7 +17,6 @@ class SignIn extends React.Component {
 
     handleLogin = (e) => {
         const { history } = this.props;
-        console.log(this.context);
         e.preventDefault();
         signIn(this.state.username, this.state.password).then(response => {
             this.setState({errored: false});
