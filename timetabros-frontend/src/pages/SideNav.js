@@ -25,6 +25,7 @@ import Profile from './Profile';
 import Friends from './Friends';
 import Requests from './components/Requests/Requests';
 import Compare from './Compare';
+import Settings from './Settings';
 import { Container, Badge } from '@material-ui/core';
 import AuthContext from '../context/AuthContext';
 import { signOut } from '../services/UserService';
@@ -277,6 +278,7 @@ export default function SideNav() {
               <Route path="/home/friends" component={Friends} />
               <Route path="/home/requests" render={(props) => <Requests friendRequests={friendRequests} onFriendRequestChange={fetchFriendRequests} groupRequests={groupRequests} onGroupRequestChange={fetchGroupRequests} eventRequests={eventRequests} onEventRequestChange={fetchEventRequests}/>} />
               <Route path="/home/compare" component={Compare} />
+              <Route path="/home/settings" component={Settings} />
             </Container>
 
 

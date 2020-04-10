@@ -14,11 +14,6 @@ const ProfileDialog = (props) => {
     const [firstName, setFirstName] = React.useState('');
     const [lastName, setLastName] = React.useState('');
     const [email, setEmail] = React.useState('');
-    //const [password, setPassword] = React.useState('');
-    const [profilePrivacy] = React.useState('public');
-    const [schedulePrivacy] = React.useState('public');
-    // const [profilePrivacy, setProfilePrivacy] = React.useState('public');
-    // const [schedulePrivacy, setSchedulePrivacy] = React.useState('public');
     const [profilePicture, setProfilePicture] = React.useState(null);
     const [profilePicturePreview, setProfilePicturePreview] = React.useState(null);
     const [error, setError] = React.useState('');
@@ -27,7 +22,7 @@ const ProfileDialog = (props) => {
       setProfilePicture(event.target.files[0]);
     }
     const handleSubmit = () => {
-      updateUser(username, firstName, lastName, email, profilePrivacy, schedulePrivacy, profilePicture).then(
+      updateUser(username, firstName, lastName, email, profilePicture).then(
         () => {
           setError('');
           props.onUpdate();

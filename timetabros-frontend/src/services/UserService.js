@@ -16,6 +16,14 @@ export const signOut = () => {
     return axios.get(`${apiUrl}/signout`);
 }
 
+export const requestResetPassword = (email) => {
+    return axios.post(`${apiUrl}/reset`,{email});
+}
+
+export const resetPassword = (token, password) => {
+    return axios.patch(`${apiUrl}/reset/${token}`,{password});
+}
+
 export const getUser = (userid) => {
     return axios.get(`${apiUrl}/api/users/${userid}`);
 }
@@ -33,6 +41,19 @@ export const updateUser = (username, firstname, lastname, email, profileprivacy,
     bodyFormData.append('lastname', lastname);
     bodyFormData.append('email', email);
     if(profilepicture) bodyFormData.append("profilepicture", profilepicture);
+    const privacyJson = {profile: profileprivacy, schedule: scheduleprivacy};
+    bodyFormData.append('privacysettings', JSON.stringify(privacyJson));
+    return axios.patch(`${apiUrl}/api/users`,
+    bodyFormData, 
+    {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        }
+    });
+}
+
+export const updateUserPrivacy = (profileprivacy, scheduleprivacy) => {
+    var bodyFormData = new FormData();
     const privacyJson = {profile: profileprivacy, schedule: scheduleprivacy};
     bodyFormData.append('privacysettings', JSON.stringify(privacyJson));
     return axios.patch(`${apiUrl}/api/users`,

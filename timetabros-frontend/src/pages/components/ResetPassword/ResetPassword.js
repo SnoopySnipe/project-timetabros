@@ -3,27 +3,26 @@ import { Button, Container, TextField, Paper, Grid } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
-import styles from './SignInStyles';
+import styles from './ResetPasswordStyles';
 import AuthContext from '../../../context/AuthContext';
 import { withRouter, NavLink } from 'react-router-dom';
-import {signIn} from '../../../services/UserService';
-class SignIn extends React.Component {
+import {resetPassword} from '../../../services/UserService';
+class ResetPassword extends React.Component {
     static contextType = AuthContext;
 
     state = {
-        username: '',
         password: '',
     };
 
-    handleLogin = (e) => {
+    handleReset = (e) => {
         const { history } = this.props;
         e.preventDefault();
-        signIn(this.state.username, this.state.password).then(response => {
-            this.setState({errored: false});
-            this.context.setAuthenticatedUser(response.data);
-            localStorage.setItem('authenticatedUser', JSON.stringify(response.data));    
-            history.push('/home');
-        }).catch(error => {
+        resetPassword(this.props.match.params.token, this.state.password).then(
+            (response) => {
+                history.push('/landing/signin');
+            }
+        )
+        .catch(error => {
             this.setState({errored:true});
             this.setState({error: error.response.data.error});
         });
@@ -34,11 +33,10 @@ class SignIn extends React.Component {
             <Container maxWidth="xs" className={classes.cardContainer}>
             <Paper className={classes.card} elevation={6}>
                 <Typography variant="h5">
-                    Sign in
+                    Password Reset
                 </Typography>
-                <form onSubmit={this.handleLogin} className={classes.form}>
-                    <TextField value={this.state.username} onChange={(e) => {this.setState({username: e.target.value})}} label="Username" variant="outlined" margin="normal" required fullWidth/>
-                    <TextField value={this.state.password} onChange={(e) => {this.setState({password: e.target.value})}} label="Password" variant="outlined" margin="normal" type="password" required fullWidth/>
+                <form onSubmit={this.handleReset} className={classes.form}>
+                    <TextField value={this.state.password} onChange={(e) => {this.setState({password: e.target.value})}} label="Password" variant="outlined" margin="normal" required type="password" fullWidth/>
                     {
                     this.state.errored && 
                     <Alert className={classes.alert} variant="outlined" severity="error">
@@ -46,21 +44,14 @@ class SignIn extends React.Component {
                     </Alert>
                     }
                     <Button className={classes.submit} type="submit" variant="outlined" fullWidth>
-                        Sign In
+                        Confirm
                     </Button>
                     <Grid container spacing={2}>
                         <Grid item>
-                            <NavLink to='/landing/signup'>
-                                Sign up for an account here!
+                            <NavLink to='/landing/signin'>
+                                Have an account? Sign in here!
                             </NavLink>
                         </Grid>
-                        <Grid item>
-                            <NavLink to='/landing/reset'>
-                                Forgot password?
-                            </NavLink> 
-                        </Grid>
-
-
                     </Grid>
                     {/* <Link> */}
 
@@ -72,4 +63,4 @@ class SignIn extends React.Component {
     }
 }
 
-export default withStyles(styles)(withRouter(SignIn));
+export default withStyles(styles)(withRouter(ResetPassword));

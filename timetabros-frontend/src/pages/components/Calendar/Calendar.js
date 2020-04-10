@@ -9,19 +9,6 @@ import moment from 'moment';
 import ScheduleDialog from '../ScheduleDialog/ScheduleDialog';
 import "./CalendarStyles.css";
 
-// const styles = {
-//   left: {
-//     float: "left",
-//     width: "220px"
-//   },
-//   main: {
-//     marginLeft: "220px"
-//   },
-//   events: {
-//     fontWeight: "bold"
-//   }
-// };
-
 class Calendar extends Component {
   constructor(props) {
     super(props);
@@ -34,6 +21,7 @@ class Calendar extends Component {
       users: [],
       viewType: "Week",
       weekStarts: 0,
+      dayBeginsHour: 6,
       durationBarVisible: false,
       timeRangeSelectedHandling: "Enabled",
       headerDateFormat: "dddd MMMM d",
@@ -122,28 +110,47 @@ class Calendar extends Component {
   }
   fetchUsersEventItems = () => {
     this.setState({
-      events:[]
+      events:[],
+      profileHidden: false,
     });
     for (let user of this.state.users) {
       this.fetchEventItems(user);
     }
   }
   fetchEventItems = (user) => {
+
     getEventItems(user.id).then((response) => {    
       let scheduleItems = response.data.scheduleitems ? response.data.scheduleitems.map((item) => {
         let start = new Date(this.state.startDate);
         let itemStartDate = new Date(item.startdate);
         const itemStartMoment = moment(itemStartDate);
         const scheduleStartMoment = moment(start).day(itemStartMoment.day());
-        const startDiff = scheduleStartMoment.isSame(itemStartMoment, 'week') ? 0 : Math.floor(scheduleStartMoment.diff(itemStartMoment, 'days') / 7);
-        itemStartMoment.add( startDiff, 'weeks');
-
+        let startDiff = scheduleStartMoment.week() - itemStartMoment.week();
+        itemStartMoment.add(startDiff, 'weeks');
+        // itemStartMoment.add(1, 'days');
+        // scheduleStartMoment.set({minute:0,second:0,millisecond:0});
+        // console.log(itemStartMoment.toString());
+        // const startDiff = Math.floor(scheduleStartMoment.diff(itemStartMoment, 'minutes') / (60*24*7));
+        // console.log(startDiff);
+        // itemStartMoment.add(startDiff, 'weeks');
+        // console.log(itemStartMoment.toString());
+        // const startDiff = scheduleStartMoment.isSame(itemStartMoment.utcOffset(0), 'week') ? 0 : Math.round(scheduleStartMoment.diff(itemStartMoment, 'days') / 7);
+        // itemStartMoment.add( startDiff, 'weeks');
+        // console.log(startDiff);
         let end = new Date(this.state.startDate);
         let itemEndDate = new Date(item.enddate);
         const itemEndMoment = moment(itemEndDate);
         const scheduleEndMoment = moment(end).day(itemEndMoment.day());
-        const endDiff = scheduleEndMoment.isSame(itemEndMoment, 'week') ? 0: Math.floor(scheduleEndMoment.diff(itemEndMoment, 'days') / 7);
-        itemEndMoment.add( endDiff, 'weeks');
+        let endDiff = scheduleEndMoment.week() - itemEndMoment.week();
+        itemEndMoment.add(endDiff, 'weeks');
+
+        // itemEndMoment.add(1, 'days');
+        // scheduleEndMoment.set({minute:0,second:0,millisecond:0});
+        // const endDiff = Math.floor(scheduleEndMoment.diff(itemEndMoment, 'minutes') / (60*24*7));
+        // itemEndMoment.add(endDiff, 'weeks');
+        // const endDiff = scheduleEndMoment.isSame(itemEndMoment.utcOffset(0), 'week') ? 0: Math.round(scheduleEndMoment.diff(itemEndMoment, 'days') / 7);
+        // itemEndMoment.add( endDiff, 'weeks');
+
         return {start: itemStartMoment.toISOString(), end: itemEndMoment.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers, createdby: item.createdby, creatorstatus: item.creatorstatus, colour: user.colour};
       }) : [];
       const eventOwnedItems = response.data.eventowneritems ? response.data.eventowneritems.map((item) => {
@@ -164,7 +171,7 @@ class Calendar extends Component {
     })
     // Not sure if we need this
     .catch(error => {
-      console.error("userId "+user.id+" does not exist", error);
+      if(error.response.status === 403 && this.state.users.length === 1) this.setState({profileHidden: true});
     });
   }
 
@@ -208,34 +215,40 @@ class Calendar extends Component {
     var {...config} = this.state;
     return (
       <div>
-        <ScheduleDialog open={this.state.openCreateDialog} handleClose={this.handleCloseCreateDialog} handleCreated={this.fetchUsersEventItems} createStartDate={this.state.createStartDate} createEndDate={this.state.createEndDate} eventToUpdate={this.state.selectedEvent}></ScheduleDialog>
-        <IconButton onClick={()=>{
-          const date = new Date(this.state.startDate);
-          date.setDate(date.getDate() - 7);
-          this.setState({startDate: date.toISOString()});
-          this.fetchUsersEventItems();
-          }}>
-          <ArrowBackIosIcon />
-        </IconButton>
-        {"Week of "}
-        <Moment format="MMM Do">
-          {this.state.startDate}
-        </Moment>
-        <IconButton onClick={()=>{
-          const date = new Date(this.state.startDate);
-          date.setDate(date.getDate() + 7);
-          this.setState({startDate: date.toISOString()});
-          this.fetchUsersEventItems();
-          }}>
-          <ArrowForwardIosIcon />
-        </IconButton>
-        
-        <DayPilotCalendar
-          {...config}
-          ref={component => {
-            this.calendar = component && component.control;
-          }}
-        />
+        {
+          this.state.profileHidden ?
+          <h3 style={{textAlign:'center'}}>Schedule Hidden</h3> :
+          <div>
+          <ScheduleDialog open={this.state.openCreateDialog} handleClose={this.handleCloseCreateDialog} handleCreated={this.fetchUsersEventItems} createStartDate={this.state.createStartDate} createEndDate={this.state.createEndDate} eventToUpdate={this.state.selectedEvent}></ScheduleDialog>
+          <IconButton onClick={()=>{
+            const date = new Date(this.state.startDate);
+            date.setDate(date.getDate() - 7);
+            this.setState({startDate: date.toISOString()});
+            this.fetchUsersEventItems();
+            }}>
+            <ArrowBackIosIcon />
+          </IconButton>
+          {"Week of "}
+          <Moment format="MMM Do">
+            {this.state.startDate}
+          </Moment>
+          <IconButton onClick={()=>{
+            const date = new Date(this.state.startDate);
+            date.setDate(date.getDate() + 7);
+            this.setState({startDate: date.toISOString()});
+            this.fetchUsersEventItems();
+            }}>
+            <ArrowForwardIosIcon />
+          </IconButton>
+          
+          <DayPilotCalendar
+            {...config}
+            ref={component => {
+              this.calendar = component && component.control;
+            }}
+          />
+        </div>
+        }
       </div>
     );
   }

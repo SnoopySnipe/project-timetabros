@@ -6,7 +6,8 @@ import SignIn from '../components/SignIn/SignIn';
 import { Route} from 'react-router-dom';
 import SignUp from '../components/SignUp/SignUp';
 import Intro from '../components/Intro/Intro';
-
+import Reset from '../components/Reset/Reset';
+import ResetPassword from '../components/ResetPassword/ResetPassword';
 class Landing extends React.Component {
     static contextType = AuthContext;
 
@@ -17,6 +18,8 @@ class Landing extends React.Component {
                 <Route exact path='/landing' component={Intro}/>
                 <Route path='/landing/signin' component={SignIn}/>
                 <Route path='/landing/signup' component={SignUp}/>
+                <Route path='/landing/reset' component={Reset}/>
+                <Route path='/landing/resetpassword/:token' component={ResetPassword}/>
             </div>
     
         )

@@ -311,7 +311,7 @@ const ScheduleDialog = (props) => {
             <DialogActions>
               <Button onClick={props.handleClose} color="primary">
                 Close
-          </Button>
+              </Button>
               <Button onClick={handleSubmit} color="primary">
                 {props.eventToUpdate ? 'Update' : 'Create'}
               </Button>
