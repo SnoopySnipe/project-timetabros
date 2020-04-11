@@ -4,8 +4,9 @@ import AuthContext from '../context/AuthContext';
 import { Grid, List, ListItem, ListItemText, ListItemAvatar, Avatar, ListItemSecondaryAction, IconButton } from '@material-ui/core';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import GroupAddIcon from '@material-ui/icons/GroupAdd';
-import { getFriends, sendFriendRequest } from '../services/FriendService';
-import { getGroups } from '../services/GroupService';
+import RemoveIcon from '@material-ui/icons/Remove';
+import { getFriends, sendFriendRequest, removeFriend } from '../services/FriendService';
+import { getGroups, removeGroup } from '../services/GroupService';
 import { getUser, searchUser} from '../services/UserService';
 import GroupDialog from './components/GroupDialog/GroupDialog';
 class Friends extends React.Component {
@@ -89,6 +90,22 @@ class Friends extends React.Component {
         });
     }
 
+    handleRemoveFriend = userid => {
+        removeFriend(userid).then(
+            () => {
+                this.fetchFriends();
+            }
+        )
+    }
+
+    handleRemoveGroup = groupId => {
+        removeGroup(groupId).then(
+            () => {
+                this.fetchGroups();
+            }
+        )
+    }
+
     handleSelectFriend = userId => {
         this.props.history.push(`/home/profile/${userId}`);
     }
@@ -96,7 +113,7 @@ class Friends extends React.Component {
     render() {
         const searchedList = this.state.searchedUsers;
         const listItems = !searchedList ? [] : searchedList.map((user) => (
-            <ListItem divider button onClick={()=>this.handleSelectFriend(user.ID)}>
+            <ListItem id={user.ID} divider button onClick={()=>this.handleSelectFriend(user.ID)}>
                 <ListItemAvatar>
                     <Avatar src={`${process.env.REACT_APP_API_URL}/api/users/${user.ID}/pfp`}>{user.firstname.charAt(0).toUpperCase()}</Avatar>
                 </ListItemAvatar>
@@ -127,7 +144,7 @@ class Friends extends React.Component {
         ))
         const friends = this.state.friendList;
         const friendItems = !friends ? [] : friends.map((user) => (
-            <ListItem button divider onClick={()=>this.handleSelectFriend(user.id)}>
+            <ListItem id={user.id} button divider onClick={()=>this.handleSelectFriend(user.id)}>
                 <ListItemAvatar>
                     <Avatar src={`${process.env.REACT_APP_API_URL}/api/users/${user.id}/pfp`}>{user.firstName.charAt(0).toUpperCase()}</Avatar>
                 </ListItemAvatar>
@@ -135,13 +152,17 @@ class Friends extends React.Component {
                     primary={`${user.firstName}  ${user.lastName}`}
                     secondary={user.username}
                 >
-            
                 </ListItemText>
+                <ListItemSecondaryAction>
+                    <IconButton aria-label="accept" onClick={()=>this.handleRemoveFriend(user.id)}>
+                        <RemoveIcon  />
+                    </IconButton>
+                </ListItemSecondaryAction>
             </ListItem>
         ))
         const groups = this.state.groups;
         const groupItems = !groups ? [] : groups.map((group) => (
-            <ListItem button divider onClick={()=>{this.setState({openGroupDialog: true, selectedGroup: group})}}>
+            <ListItem id={group.ID} button divider onClick={()=>{this.setState({openGroupDialog: true, selectedGroup: group})}}>
                 {/* <ListItemAvatar>
                     <Avatar>{user.firstName.charAt(0).toUpperCase()}</Avatar>
                 </ListItemAvatar> */}
@@ -149,8 +170,15 @@ class Friends extends React.Component {
                     primary={`${group.name}`}
                     secondary={`${group.createdby === this.context.authenticatedUser._id ? 'Admin' : 'Member'}`}
                 >
-            
                 </ListItemText>
+                {group.createdby === this.context.authenticatedUser._id &&
+                <ListItemSecondaryAction>
+                    <IconButton aria-label="accept" onClick={()=>this.handleRemoveGroup(group.ID)}>
+                        <RemoveIcon  />
+                    </IconButton>
+                </ListItemSecondaryAction>
+                }
+
             </ListItem>
         ))
         return(

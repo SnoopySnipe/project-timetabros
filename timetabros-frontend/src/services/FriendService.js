@@ -7,6 +7,11 @@ export const sendFriendRequest = (userid) => {
     { userid });
 }
 
+export const removeFriend = (userid) => {
+    return axios.delete(`${apiUrl}/api/friends`, 
+    {data:{ userid }});
+}
+
 export const acceptFriendRequest = (requestId) => {
     return axios.patch(`${apiUrl}/api/friends/${requestId}`);
 }

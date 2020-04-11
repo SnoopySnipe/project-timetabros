@@ -8,6 +8,10 @@ export const createGroup = (name, about, visibility, groupmembers) => {
     {name, about, visibility, groupmembers});
 }
 
+export const removeGroup = (groupId) => {
+    return axios.delete(`${apiUrl}/api/groups/${groupId}`);
+}
+
 export const getGroup = (groupId) => {
     return axios.get(`${apiUrl}/api/groups/${groupId}`);
 }

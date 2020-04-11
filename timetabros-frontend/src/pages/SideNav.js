@@ -1,6 +1,6 @@
 import React, {useContext, useEffect} from 'react';
 import clsx from 'clsx';
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Route, Link, withRouter } from "react-router-dom";
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { makeStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
@@ -106,7 +106,7 @@ const useStyles = makeStyles(theme => ({
   },
   appBarSpacer: theme.mixins.toolbar,
 }));
-export default function SideNav() {
+const SideNav = (props) => {
   const classes = useStyles();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [title, setTitle] = React.useState('');
@@ -125,6 +125,7 @@ export default function SideNav() {
     signOut().then(() => {
       context.setAuthenticatedUser(null);
       localStorage.removeItem('authenticatedUser');
+      //sample redirect props.history.push('/login')
     });
   }
   useEffect(() => {
@@ -289,3 +290,5 @@ export default function SideNav() {
 
   );
 }
+
+export default withRouter(SideNav);
