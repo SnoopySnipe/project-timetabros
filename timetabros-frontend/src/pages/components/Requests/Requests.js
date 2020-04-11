@@ -6,8 +6,8 @@ import CloseIcon from '@material-ui/icons/Close';
 import AuthContext from '../../../context/AuthContext';
 import styles from './RequestsStyles';
 import { acceptFriendRequest,removeFriend } from '../../../services/FriendService';
-import { updateEventStatus } from '../../../services/ScheduleService';
-import { acceptGroup } from '../../../services/GroupService';
+import { updateEventStatus, removeEventMember } from '../../../services/ScheduleService';
+import { acceptGroup, removeGroupMember } from '../../../services/GroupService';
 import { withRouter } from 'react-router-dom';
 import moment from 'moment';
 
@@ -38,8 +38,24 @@ class Requests extends React.Component {
         )
     }
 
+    handleRemoveEvent = (eventId) => {
+        removeEventMember(eventId, this.context.authenticatedUser._id).then(
+            () => {
+                this.props.onEventRequestChange();
+            }
+        )
+    }
+
     handleAcceptGroup = (groupId) => {
         acceptGroup(groupId).then(
+            () => {
+                this.props.onGroupRequestChange();
+            }
+        )
+    }
+
+    handleRemoveGroupMember = (groupId) => {
+        removeGroupMember(groupId, this.context.authenticatedUser._id).then(
             () => {
                 this.props.onGroupRequestChange();
             }
@@ -49,7 +65,7 @@ class Requests extends React.Component {
     render() {
         const friendRequestList = this.props.friendRequests;
         const listItems = !friendRequestList ? [] : friendRequestList.map((request) => (
-            <ListItem divider>
+            <ListItem key={request.id} divider>
                 <ListItemAvatar>
                     <Avatar>{request.firstName.charAt(0).toUpperCase()}</Avatar>
                 </ListItemAvatar>
@@ -71,7 +87,7 @@ class Requests extends React.Component {
         ))
         const groupRequestList = this.props.groupRequests;
         const groupItems = !groupRequestList ? [] : groupRequestList.map((group) => (
-            <ListItem divider>
+            <ListItem key={group.ID} divider>
                 <ListItemText 
                     primary={`${group.name}`}
                     secondary={`Invited by ${group.createdbyUser.firstname} ${group.createdbyUser.lastname} (${group.createdbyUser.username})`}
@@ -82,7 +98,7 @@ class Requests extends React.Component {
                     <IconButton size="small" aria-label="accept" onClick={()=>{this.handleAcceptGroup(group.ID)}}>
                       <CheckIcon fontSize="small" />
                     </IconButton>
-                    <IconButton size="small" aria-label="decline">
+                    <IconButton size="small" aria-label="decline" onClick={()=>{this.handleRemoveGroupMember(group.ID)}}>
                       <CloseIcon fontSize="small" />
                     </IconButton>
                 </ListItemSecondaryAction>
@@ -90,7 +106,7 @@ class Requests extends React.Component {
         ))
         const eventRequestList = this.props.eventRequests;
         const eventItems = !eventRequestList ? [] : eventRequestList.map((event) => (
-            <ListItem divider>
+            <ListItem key={event.ID} divider>
                 <ListItemText 
                 style={{paddingRight:'24px'}}
                     primary={`${event.title} - ${event.description}`}
@@ -102,7 +118,7 @@ class Requests extends React.Component {
                     <IconButton size="small" aria-label="accept" onClick={()=>{this.handleAcceptEvent(event.ID)}}>
                       <CheckIcon fontSize="small" />
                     </IconButton>
-                    <IconButton size="small" aria-label="decline">
+                    <IconButton size="small" aria-label="decline" onClick={()=>this.handleRemoveEvent(event.ID)}>
                       <CloseIcon fontSize="small" />
                     </IconButton>
                 </ListItemSecondaryAction>

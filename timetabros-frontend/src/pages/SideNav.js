@@ -218,7 +218,7 @@ const SideNav = (props) => {
                 TimetaBros
               </Typography>
               <IconButton component={Link} to={{pathname: "/home/requests"}} onClick={onListItemClick('')}>
-                <Badge badgeContent={friendRequests.length+eventRequests.length} color="secondary">
+                <Badge badgeContent={friendRequests.length+eventRequests.length+groupRequests.length} color="secondary">
                   <NotificationsIcon/>
                 </Badge>
               </IconButton>

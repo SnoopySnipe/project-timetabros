@@ -77,65 +77,30 @@ class Compare extends React.Component {
         const friends = this.state.friendList;
         const selectedFriends = this.state.selectedFriends;
         const friendItems = !friends ? [] : friends.map((user) => (
-            <div>
-                { this.state.selectedFriends.some((request)=> request.id === user.id) 
-                    ? <ListItem button divider onClick={()=>this.toggleSelectFriend(user)} style={{backgroundColor: user.colour}}>
-                            <ListItemAvatar>
-                                <Avatar>{user.firstName.charAt(0).toUpperCase()}</Avatar>
-                            </ListItemAvatar>
-                            <ListItemText 
-                                primary={`${user.firstName}  ${user.lastName}`}
-                                secondary={user.username}
-                            >
-                        
-                            </ListItemText>
-                            <ListItemSecondaryAction>
-                                <IconButton size="small" aria-label="de-select" onClick={()=>this.toggleSelectFriend(user)}>
-                                    <CheckBoxIcon fontSize="small" />
-                                </IconButton>
-                            </ListItemSecondaryAction>
-                        </ListItem>
-                    : <ListItem button divider onClick={()=>this.toggleSelectFriend(user)}>
-                            <ListItemAvatar>
-                                <Avatar>{user.firstName.charAt(0).toUpperCase()}</Avatar>
-                            </ListItemAvatar>
-                            <ListItemText 
-                                primary={`${user.firstName}  ${user.lastName}`}
-                                secondary={user.username}
-                            >
-                        
-                            </ListItemText>
-                            <ListItemSecondaryAction>
-                                <IconButton size="small" aria-label="select" onClick={()=>this.toggleSelectFriend(user)}>
-                                    <CheckBoxOutlineBlankIcon fontSize="small" />
-                                </IconButton>
-            
-                            </ListItemSecondaryAction>
-                        </ListItem>
-                }
-            </div>
-            // <ListItem button divider onClick={()=>this.toggleSelectFriend(user)}>
-            //     <ListItemAvatar>
-            //         <Avatar>{user.firstName.charAt(0).toUpperCase()}</Avatar>
-            //     </ListItemAvatar>
-            //     <ListItemText 
-            //         primary={`${user.firstName}  ${user.lastName}`}
-            //         secondary={user.username}
-            //     >
-            
-            //     </ListItemText>
-            //     <ListItemSecondaryAction>
-            //         { this.state.selectedFriends.some((request)=> request.id == user.id) 
-            //         ? <IconButton size="small" aria-label="de-select" onClick={()=>this.toggleSelectFriend(user)}>
-            //         <CheckBoxIcon fontSize="small" />
-            //         </IconButton>
-            //         : <IconButton size="small" aria-label="select" onClick={()=>this.toggleSelectFriend(user)}>
-            //         <CheckBoxOutlineBlankIcon fontSize="small" />
-            //         </IconButton>
-            //         }
+            <ListItem key={user.id} button divider onClick={()=>this.toggleSelectFriend(user)} style={{backgroundColor: user.colour}}>
+                    <ListItemAvatar>
+                        <Avatar src={`${process.env.REACT_APP_API_URL}/api/users/${user.id}/pfp`}>{user.firstName.charAt(0).toUpperCase()}</Avatar>
+                    </ListItemAvatar>
+                    <ListItemText 
+                        primary={`${user.firstName}  ${user.lastName}`}
+                        secondary={user.username}
+                    >
+                
+                    </ListItemText>
+                    {this.state.selectedFriends.some((request)=> request.id === user.id) ?
+                        <ListItemSecondaryAction>
+                            <IconButton size="small" aria-label="de-select" onClick={()=>this.toggleSelectFriend(user)}>
+                                <CheckBoxIcon fontSize="small" />
+                            </IconButton>
+                        </ListItemSecondaryAction> :
+                        <ListItemSecondaryAction>
+                            <IconButton size="small" aria-label="select" onClick={()=>this.toggleSelectFriend(user)}>
+                                <CheckBoxOutlineBlankIcon fontSize="small" />
+                            </IconButton>
+                        </ListItemSecondaryAction>
+                    }
+            </ListItem>
 
-            //     </ListItemSecondaryAction>
-            // </ListItem>
         ))
         return(
             <div>
