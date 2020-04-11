@@ -21,11 +21,13 @@ import People from '@material-ui/icons/People';
 import ListItem from '@material-ui/core/ListItem';
 import CompareIcon from '@material-ui/icons/Compare';
 import SettingsIcon from '@material-ui/icons/Settings';
+import PanToolIcon from '@material-ui/icons/PanTool';
 import Profile from './Profile';
 import Friends from './Friends';
 import Requests from './components/Requests/Requests';
 import Compare from './Compare';
 import Settings from './Settings';
+import Credits from './Credits';
 import { Container, Badge } from '@material-ui/core';
 import AuthContext from '../context/AuthContext';
 import { signOut } from '../services/UserService';
@@ -260,6 +262,15 @@ const SideNav = (props) => {
             </div></List>
             <Divider />
             <List>
+              <ListItem button selected={title==="Credits"} component={Link} to="/home/credits" onClick={onListItemClick('Credits')}>
+                  <ListItemIcon>
+                    <PanToolIcon/>
+                  </ListItemIcon>
+                  <ListItemText primary="Credits"></ListItemText>
+                </ListItem>
+            </List>
+            <Divider />
+            <List>
               <ListItem button selected={title==="Settings"} component={Link} to="/home/settings" onClick={onListItemClick('Settings')}>
                   <ListItemIcon>
                     <SettingsIcon/>
@@ -287,6 +298,7 @@ const SideNav = (props) => {
               <Route path="/home/requests" render={() => <Requests friendRequests={friendRequests} onFriendRequestChange={fetchFriendRequests} groupRequests={groupRequests} onGroupRequestChange={fetchGroupRequests} eventRequests={eventRequests} onEventRequestChange={fetchEventRequests}/>} />
               <Route path="/home/compare" component={Compare} />
               <Route path="/home/settings" component={Settings} />
+              <Route path="/home/credits" component={Credits} />
             </Container>
 
 

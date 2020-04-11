@@ -25,7 +25,7 @@ class SignIn extends React.Component {
             this.setState({errored: false, emailChanged: false});
             this.context.setAuthenticatedUser(response.data);
             localStorage.setItem('authenticatedUser', JSON.stringify(response.data));    
-            history.push('/home');
+            history.push('/home/profile');
         }).catch(error => {
             this.setState({emailChanged: false, errored:true});
             this.setState({error: error.response.data.error});
