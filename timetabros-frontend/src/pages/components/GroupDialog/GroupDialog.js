@@ -5,7 +5,6 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import MenuItem from '@material-ui/core/MenuItem';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -23,24 +22,10 @@ const GroupDialog = (props) => {
     const context = useContext(AuthContext);
     const [groupName, setGroupName] = React.useState('');
     const [groupAbout, setGroupAbout] = React.useState('');
-    const [visibility, setVisibility] = React.useState('private');
-    //const [isGroupEvent, setIsGroupEvent] = React.useState(false);
-    // const [checked, setChecked] = React.useState([]);
+    const [visibility, ] = React.useState('public');
     const [uninvitedFriends, setUninvitedFriendList] = React.useState([]);
     const [groupMembers, setGroupMembers] = React.useState([]);
 
-    // const handleGroupMemberToggle = (value) => () => {
-    //   const currentIndex = checked.indexOf(value);
-    //   const newChecked = [...checked];
-  
-    //   if (currentIndex === -1) {
-    //     newChecked.push(value);
-    //   } else {
-    //     newChecked.splice(currentIndex, 1);
-    //   }
-  
-    //   setChecked(newChecked);
-    // };
     const handleSubmit = () => {
       if(props.groupToUpdate) {
         handleUpdateEvent();
@@ -177,23 +162,6 @@ const GroupDialog = (props) => {
             value={groupAbout}
             onChange={(event)=>{setGroupAbout(event.target.value)}}
           />
-
-          <TextField
-            margin="dense"
-            id="item-type"
-            select
-            label="Visibility"
-            value={visibility}
-            onChange={(event)=>{setVisibility(event.target.value)}}
-          >
-
-            <MenuItem value={'public'}>
-              Public
-            </MenuItem>
-            <MenuItem value={'private'}>
-              Private
-            </MenuItem>
-        </TextField>
         {props.groupToUpdate &&
         <List>
           {groupMembers.slice().sort(compare).map(

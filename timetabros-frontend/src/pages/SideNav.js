@@ -201,6 +201,10 @@ const SideNav = (props) => {
     });
   }
 
+  const navigate = (pathname, search) => {
+    props.history.push({pathname, search});
+  }
+
   return (
     <Router>
       <div className={classes.root}>
@@ -292,8 +296,8 @@ const SideNav = (props) => {
         <main className={classes.content}>
           <div className={classes.appBarSpacer}/>
             <Container className={classes.container}>
-          <Route exact path="/home/profile" render={()=> <Profile signOut={appSignOut}></Profile>}/>
-              <Route path="/home/profile/:id" component={Profile}/>
+          <Route exact path="/home/profile" render={()=> <Profile navigate={navigate} signOut={appSignOut}></Profile>}/>
+              <Route path="/home/profile/:id" render={()=> <Profile navigate={navigate} signOut={appSignOut}></Profile>}/>
               <Route path="/home/friends" component={Friends} />
               <Route path="/home/requests" render={() => <Requests friendRequests={friendRequests} onFriendRequestChange={fetchFriendRequests} groupRequests={groupRequests} onGroupRequestChange={fetchGroupRequests} eventRequests={eventRequests} onEventRequestChange={fetchEventRequests}/>} />
               <Route path="/home/compare" component={Compare} />

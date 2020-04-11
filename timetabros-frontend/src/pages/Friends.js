@@ -11,6 +11,8 @@ import { getFriends, sendFriendRequest, removeFriend, getMutualFriends, getSched
 import { getGroups, removeGroup } from '../services/GroupService';
 import { getUser, searchUser} from '../services/UserService';
 import GroupDialog from './components/GroupDialog/GroupDialog';
+import { withRouter } from "react-router-dom";
+
 class Friends extends React.Component {
     static contextType = AuthContext;
     suggestMethods = {mutualFriend: 'Suggest by mutual friends', mutualCourse: 'Suggest by mutual courses'};
@@ -342,4 +344,4 @@ class Friends extends React.Component {
 }
 
 
-export default Friends;
+export default withRouter(Friends);
