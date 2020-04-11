@@ -52,7 +52,7 @@ const Settings = () => {
                     label="Profile Privacy"
                     value={profilePrivacy}
                     onChange={handleSelectProfilePrivacy}
-                    helperText="Choose who can see your profile"
+                    helperText="Choose who can see your friends and groups"
                     >
 
                     <MenuItem value={'public'}>
