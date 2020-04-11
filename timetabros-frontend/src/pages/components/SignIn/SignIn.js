@@ -13,21 +13,34 @@ class SignIn extends React.Component {
     state = {
         username: '',
         password: '',
+        errored: false,
+        error: '',
+        emailChanged: false
     };
 
     handleLogin = (e) => {
         const { history } = this.props;
         e.preventDefault();
         signIn(this.state.username, this.state.password).then(response => {
-            this.setState({errored: false});
+            this.setState({errored: false, emailChanged: false});
             this.context.setAuthenticatedUser(response.data);
             localStorage.setItem('authenticatedUser', JSON.stringify(response.data));    
             history.push('/home');
         }).catch(error => {
-            this.setState({errored:true});
+            this.setState({emailChanged: false, errored:true});
             this.setState({error: error.response.data.error});
         });
     }
+
+    componentDidMount() {
+        const search = this.props.location.search;
+        const params = new URLSearchParams(search);
+        const cb = params.get('cb');
+        if(cb) {
+            if(cb === 'email-change') this.setState({emailChanged: true});
+        }
+    }
+
     render() {
         const { classes } = this.props;
         return (
@@ -43,6 +56,12 @@ class SignIn extends React.Component {
                     this.state.errored && 
                     <Alert className={classes.alert} variant="outlined" severity="error">
                         {this.state.error}
+                    </Alert>
+                    }
+                    {
+                    this.state.emailChanged && 
+                    <Alert className={classes.alert} variant="outlined" severity="success">
+                        Please check your email to verify your account due to your change in email
                     </Alert>
                     }
                     <Button className={classes.submit} type="submit" variant="outlined" fullWidth>

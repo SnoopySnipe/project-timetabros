@@ -15,7 +15,6 @@ class Profile extends React.Component {
             openProfileEdit: false,
             profilePicture: '',
             profilePictureHash: ''
-            // profilePictureAlt: '',
         }
     }
     fetchUser() {
@@ -43,7 +42,7 @@ class Profile extends React.Component {
         return(
             
             <div>
-                <ProfileDialog userToUpdate={this.state.user} open={this.state.openProfileEdit} handleClose={()=>{this.setState({openProfileEdit: false})}} onUpdate={()=>{this.fetchUser()}}></ProfileDialog>
+                <ProfileDialog signOut={this.props.signOut} userToUpdate={this.state.user} open={this.state.openProfileEdit} handleClose={()=>{this.setState({openProfileEdit: false})}} onUpdate={()=>{this.fetchUser()}}></ProfileDialog>
                 <Grid direction='column' container alignItems="center">
                     <Grid item xs={12}>
                         <Avatar style={{height:'100px', width: '100px'}} src={`${this.state.profilePicture}?${this.state.profilePictureHash}`}>{this.state.user.firstname.charAt(0).toUpperCase()}</Avatar>
@@ -70,10 +69,3 @@ class Profile extends React.Component {
 }
 
 export default withRouter(Profile);
-/*
-export default function Profile() {
-    return(
-        <h1>SCHEDULE</h1>
-    )
-}
-*/

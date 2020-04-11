@@ -191,6 +191,13 @@ const SideNav = (props) => {
     )
   }
 
+  const appSignOut = (pathname, search) => {
+    signOut().then(() => {
+      context.setAuthenticatedUser(null);
+      localStorage.removeItem('authenticatedUser');
+      props.history.push({pathname, search});    
+    });
+  }
 
   return (
     <Router>
@@ -274,10 +281,10 @@ const SideNav = (props) => {
         <main className={classes.content}>
           <div className={classes.appBarSpacer}/>
             <Container className={classes.container}>
-            <Route exact path="/home/profile" component={Profile}/>
+          <Route exact path="/home/profile" render={()=> <Profile signOut={appSignOut}></Profile>}/>
               <Route path="/home/profile/:id" component={Profile}/>
               <Route path="/home/friends" component={Friends} />
-              <Route path="/home/requests" render={(props) => <Requests friendRequests={friendRequests} onFriendRequestChange={fetchFriendRequests} groupRequests={groupRequests} onGroupRequestChange={fetchGroupRequests} eventRequests={eventRequests} onEventRequestChange={fetchEventRequests}/>} />
+              <Route path="/home/requests" render={() => <Requests friendRequests={friendRequests} onFriendRequestChange={fetchFriendRequests} groupRequests={groupRequests} onGroupRequestChange={fetchGroupRequests} eventRequests={eventRequests} onEventRequestChange={fetchEventRequests}/>} />
               <Route path="/home/compare" component={Compare} />
               <Route path="/home/settings" component={Settings} />
             </Container>

@@ -9,11 +9,15 @@ import Avatar from '@material-ui/core/Avatar';
 import Grid from '@material-ui/core/Grid';
 import { Alert } from '@material-ui/lab';
 import { updateUser } from '../../../services/UserService';
+import {  withRouter } from "react-router-dom";
+
 const ProfileDialog = (props) => {
     const [username, setUsername] = React.useState('');
+    const [password, setPassword] = React.useState('');
     const [firstName, setFirstName] = React.useState('');
     const [lastName, setLastName] = React.useState('');
     const [email, setEmail] = React.useState('');
+    const [prevEmail, setPrevEmail] = React.useState('');
     const [profilePicture, setProfilePicture] = React.useState(null);
     const [profilePicturePreview, setProfilePicturePreview] = React.useState(null);
     const [error, setError] = React.useState('');
@@ -22,11 +26,14 @@ const ProfileDialog = (props) => {
       setProfilePicture(event.target.files[0]);
     }
     const handleSubmit = () => {
-      updateUser(username, firstName, lastName, email, profilePicture).then(
-        () => {
+      updateUser(username, password, firstName, lastName, email, profilePicture).then(
+        (response) => {
           setError('');
-          props.onUpdate();
-          props.handleClose();
+          if(response.data.email !== prevEmail) props.signOut('/landing/signin', 'cb=email-change');
+          else {
+            props.onUpdate();
+            props.handleClose();
+          }
         },
 
       ).catch(error => {
@@ -36,15 +43,18 @@ const ProfileDialog = (props) => {
     useEffect(() => {
       if (!props.open) return;
       setUsername('');
+      setPassword('');
       setFirstName('');
       setLastName('');
       setEmail('');
+      setPrevEmail('');
       if(props.userToUpdate) {
         setProfilePicturePreview(`${process.env.REACT_APP_API_URL}/api/users/${props.userToUpdate._id}/pfp`);
         setUsername(props.userToUpdate.username);
         setFirstName(props.userToUpdate.firstname);
         setLastName(props.userToUpdate.lastname);
         setEmail(props.userToUpdate.email);
+        setPrevEmail(props.userToUpdate.email);
       }
 
     }, [props.open, props.userToUpdate]);
@@ -110,6 +120,16 @@ const ProfileDialog = (props) => {
                       />
                       <TextField
                         margin="dense"
+                        id="password"
+                        label="Password"
+                        type="password"
+                        fullWidth
+                        value={password}
+                        helperText="Leave blank if password does not need to be updated"
+                        onChange={(event)=>{setPassword(event.target.value)}}
+                      />
+                      <TextField
+                        margin="dense"
                         id="email"
                         label="Email"
                         fullWidth
@@ -143,4 +163,4 @@ const ProfileDialog = (props) => {
 
 }
 
-export default ProfileDialog;
+export default withRouter(ProfileDialog);

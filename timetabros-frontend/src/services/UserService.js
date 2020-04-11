@@ -34,15 +34,14 @@ export const getProfilePicture = (userid) => {
     );
 }
 
-export const updateUser = (username, firstname, lastname, email, profileprivacy, scheduleprivacy, profilepicture) => {
+export const updateUser = (username, password, firstname, lastname, email, profilepicture) => {
     var bodyFormData = new FormData();
     bodyFormData.append('username', username);
     bodyFormData.append('firstname', firstname);
     bodyFormData.append('lastname', lastname);
     bodyFormData.append('email', email);
+    if(password) bodyFormData.append('password', password);
     if(profilepicture) bodyFormData.append("profilepicture", profilepicture);
-    const privacyJson = {profile: profileprivacy, schedule: scheduleprivacy};
-    bodyFormData.append('privacysettings', JSON.stringify(privacyJson));
     return axios.patch(`${apiUrl}/api/users`,
     bodyFormData, 
     {
