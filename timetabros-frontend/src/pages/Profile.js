@@ -30,7 +30,7 @@ class Profile extends React.Component {
                     this.setState({user: response.data, profilePictureAlt: response.data.firstname.charAt(0)});
                 }
             )
-            this.setState({profilePicture: `http://localhost:3001/api/users/${id}/pfp`, profilePictureHash: Date.now()});
+            this.setState({profilePicture: `${process.env.REACT_APP_API_URL}/api/users/${id}/pfp`, profilePictureHash: Date.now()});
         }
     }
     componentWillMount() {
