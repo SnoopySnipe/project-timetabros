@@ -11,7 +11,7 @@ class Landing extends React.Component {
     render() {
         const { classes } = this.props;
         return (
-                <Grid className={classes.container} container spacing={4} alignItems="center" justify="center">
+                <Grid className={classes.container} container alignItems="center" justify="center">
                     <Grid item>
                         <h1>TimetaBros</h1>
                         <h3>A social scheduler for students, by students.</h3>
@@ -27,13 +27,7 @@ class Landing extends React.Component {
                                 </Button>
                             </Grid>
                         </Grid>
-
-
                     </Grid>
-                    {/* <Grid item>
-                        <h1>TimetaBros</h1>
-                        <h3>A social scheduler for students, by students.</h3>
-                    </Grid> */}
                 </Grid>
     
         )
