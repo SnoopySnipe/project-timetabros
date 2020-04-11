@@ -19,3 +19,7 @@ export const acceptFriendRequest = (requestId) => {
 export const getFriends = (userid) => {
     return axios.get(`${apiUrl}/api/users/${userid}/friends`);
 }
+
+export const getMutualFriends = () => {
+    return axios.get(`${apiUrl}/api/mutual_friend_recommendations`);
+}

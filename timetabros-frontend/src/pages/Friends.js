@@ -5,7 +5,7 @@ import { Grid, List, ListItem, ListItemText, ListItemAvatar, Avatar, ListItemSec
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import GroupAddIcon from '@material-ui/icons/GroupAdd';
 import RemoveIcon from '@material-ui/icons/Remove';
-import { getFriends, sendFriendRequest, removeFriend } from '../services/FriendService';
+import { getFriends, sendFriendRequest, removeFriend, getMutualFriends } from '../services/FriendService';
 import { getGroups, removeGroup } from '../services/GroupService';
 import { getUser, searchUser} from '../services/UserService';
 import GroupDialog from './components/GroupDialog/GroupDialog';
@@ -19,6 +19,7 @@ class Friends extends React.Component {
             friendList: [],
             sentFriendRequests: [],
             receivedFriendRequests: [],
+            mutualFriends: [],
             groups: [],
             query: "",
             openGroupDialog: false,
@@ -48,7 +49,7 @@ class Friends extends React.Component {
                                             username: user.username
                                           }])
                                     }
-                                )
+                                );
                              }
                         )
                     }
@@ -68,9 +69,39 @@ class Friends extends React.Component {
           )
     }
 
+    fetchMutualFriends() {
+        this.setState({mutualFriends: []});
+        getMutualFriends().then(
+            (res) => {
+                const mutualFriends = res.data.mutualfriends || [];
+                const promises = [];
+                const mutualCount = [];
+                mutualFriends.forEach(
+                    (item) => {
+                        promises.push(getUser(item.userid));
+                        mutualCount.push(item.count);
+                    }
+                );
+                Promise.all(promises).then(
+                    (responses) => {
+                        let newMutualFriends = [];
+                        for(let i = 0; i < promises.length; i++) {
+                            const user = responses[i].data;
+                            user.mutualCount = mutualCount[i];
+                            newMutualFriends = newMutualFriends.concat(user);
+                        }
+                        this.setState({mutualFriends: newMutualFriends});
+                    }
+                )
+
+            }
+        )
+    }
+
     componentDidMount(){
         this.fetchFriends();
         this.fetchGroups();
+        this.fetchMutualFriends();
     }
 
     searchFriend = event => {
@@ -87,6 +118,7 @@ class Friends extends React.Component {
     handleAddUser = userid => {
         sendFriendRequest(userid).then((res)=>{
             this.fetchFriends();
+            this.fetchMutualFriends();
         });
     }
 
@@ -94,6 +126,7 @@ class Friends extends React.Component {
         removeFriend(userid).then(
             () => {
                 this.fetchFriends();
+                this.fetchMutualFriends();
             }
         )
     }
@@ -113,7 +146,7 @@ class Friends extends React.Component {
     render() {
         const searchedList = this.state.searchedUsers;
         const listItems = !searchedList ? [] : searchedList.map((user) => (
-            <ListItem id={user.ID} divider button onClick={()=>this.handleSelectFriend(user.ID)}>
+            <ListItem key={user.ID} divider button onClick={()=>this.handleSelectFriend(user.ID)}>
                 <ListItemAvatar>
                     <Avatar src={`${process.env.REACT_APP_API_URL}/api/users/${user.ID}/pfp`}>{user.firstname.charAt(0).toUpperCase()}</Avatar>
                 </ListItemAvatar>
@@ -142,9 +175,27 @@ class Friends extends React.Component {
                 </ListItemSecondaryAction>
             </ListItem>
         ))
+        const mutualFriends = this.state.mutualFriends;
+        const mutualFriendItems = !mutualFriends ? [] : mutualFriends.map((user) => (
+            <ListItem key={user._id} button divider onClick={()=>this.handleSelectFriend(user._id)}>
+                <ListItemAvatar>
+                    <Avatar src={`${process.env.REACT_APP_API_URL}/api/users/${user._id}/pfp`}>{user.firstname.charAt(0).toUpperCase()}</Avatar>
+                </ListItemAvatar>
+                <ListItemText 
+                    primary={`${user.firstname}  ${user.lastname} (${user.mutualCount} mutual friends)`}
+                    secondary={user.username}
+                >
+                </ListItemText>
+                <ListItemSecondaryAction>
+                    <IconButton aria-label="accept" onClick={()=>this.handleAddUser(user._id)}>
+                        <PersonAddIcon  />
+                    </IconButton>
+                </ListItemSecondaryAction>
+            </ListItem>
+        ))
         const friends = this.state.friendList;
         const friendItems = !friends ? [] : friends.map((user) => (
-            <ListItem id={user.id} button divider onClick={()=>this.handleSelectFriend(user.id)}>
+            <ListItem key={user.id} button divider onClick={()=>this.handleSelectFriend(user.id)}>
                 <ListItemAvatar>
                     <Avatar src={`${process.env.REACT_APP_API_URL}/api/users/${user.id}/pfp`}>{user.firstName.charAt(0).toUpperCase()}</Avatar>
                 </ListItemAvatar>
@@ -154,7 +205,7 @@ class Friends extends React.Component {
                 >
                 </ListItemText>
                 <ListItemSecondaryAction>
-                    <IconButton aria-label="accept" onClick={()=>this.handleRemoveFriend(user.id)}>
+                    <IconButton aria-label="remove" onClick={()=>this.handleRemoveFriend(user.id)}>
                         <RemoveIcon  />
                     </IconButton>
                 </ListItemSecondaryAction>
@@ -162,10 +213,7 @@ class Friends extends React.Component {
         ))
         const groups = this.state.groups;
         const groupItems = !groups ? [] : groups.map((group) => (
-            <ListItem id={group.ID} button divider onClick={()=>{this.setState({openGroupDialog: true, selectedGroup: group})}}>
-                {/* <ListItemAvatar>
-                    <Avatar>{user.firstName.charAt(0).toUpperCase()}</Avatar>
-                </ListItemAvatar> */}
+            <ListItem key={group.ID} button divider onClick={()=>{this.setState({openGroupDialog: true, selectedGroup: group})}}>
                 <ListItemText 
                     primary={`${group.name}`}
                     secondary={`${group.createdby === this.context.authenticatedUser._id ? 'Admin' : 'Member'}`}
@@ -173,7 +221,7 @@ class Friends extends React.Component {
                 </ListItemText>
                 {group.createdby === this.context.authenticatedUser._id &&
                 <ListItemSecondaryAction>
-                    <IconButton aria-label="accept" onClick={()=>this.handleRemoveGroup(group.ID)}>
+                    <IconButton aria-label="remove" onClick={()=>this.handleRemoveGroup(group.ID)}>
                         <RemoveIcon  />
                     </IconButton>
                 </ListItemSecondaryAction>
@@ -185,7 +233,7 @@ class Friends extends React.Component {
             <div>
                 <GroupDialog open={this.state.openGroupDialog} handleClose={()=>{this.setState({openGroupDialog: false, selectedGroup: null})}} handleGroupUpdate={()=>{this.fetchGroups()}} groupToUpdate={this.state.selectedGroup}></GroupDialog>
                 <Grid container spacing={4} >
-                    <Grid item xs={12}>
+                    <Grid item xs={12} md={6}>
                         <h1>Find friends</h1>
                         <form onSubmit={this.searchFriend}>
                             <input type="text" name="searchQuery" onChange={this.setQuery}/>
@@ -196,12 +244,12 @@ class Friends extends React.Component {
                         </List>
                     </Grid>
                     <Grid item xs={12} md={6}>
-                        <h1>Friend list</h1>
+                        <h1>Suggested Friends</h1>
                         <List>
-                            {friendItems}
+                            {mutualFriendItems.length > 0 ? mutualFriendItems : "You have no mutual friends at the moment"}
                         </List>
-
                     </Grid>
+
                     <Grid item xs={12} md={6}>
                         <h1>Group list                     
                             <IconButton aria-label="accept" onClick={()=>{this.setState({openGroupDialog: true})}}>
@@ -210,33 +258,19 @@ class Friends extends React.Component {
                         </h1>
 
                         <List>
-                            {groupItems}
+                            {groupItems.length > 0 ? groupItems : "You are not a part of any groups at the moment"}
                         </List>
                     </Grid>
+                    <Grid item xs={12} md={6}>
+                        <h1>Friend list</h1>
+                        <List>
+                            {friendItems.length > 0 ? friendItems : "You have no friends at the moment"}
+                        </List>
 
+                    </Grid>
 
                 </Grid>
             </div>
-
-            // <div>
-            //     <List>
-            //         {listItems}
-            //     </List>
-            //     <form onSubmit={this.searchFriend}>
-            //         <input type="text" name="searchQuery" onChange={this.setQuery}/>
-            //         <button type="submit">Search</button>
-            //     </form>
-            //     <div id="friends">
-            //         {friendList.map(friend =>
-            //             <div>
-            //                 <UserProfile key={friend.username} user={friend} />
-            //                 <button onClick={() => this.addFriend(friend._id)}>
-            //                     Add
-            //                 </button>
-            //             </div>
-            //         )}
-            //     </div>
-            // </div>
             
         )
 
