@@ -250,6 +250,7 @@ const ScheduleDialog = (props) => {
               <FormControlLabel
               control={
               <Switch
+                disabled = {props.eventToUpdate}
                 checked={isCourse}
                 onChange={(e,checked)=>setIsCourse(checked)}
                 color="primary"
