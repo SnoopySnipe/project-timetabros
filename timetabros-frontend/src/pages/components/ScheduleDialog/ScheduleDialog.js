@@ -14,8 +14,10 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import Switch from '@material-ui/core/Switch';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Typography from '@material-ui/core/Typography';
 import { getFriends } from '../../../services/FriendService';
 import { getUser } from '../../../services/UserService';
@@ -24,6 +26,8 @@ import AuthContext from '../../../context/AuthContext';
 import GroupDialog from '../GroupDialog/GroupDialog';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
+import Popover from '@material-ui/core/Popover';
 import moment from 'moment';
 import { addEventMember, removeEventMember, createEventItem, updateEventItem, updateEventStatus, getEventItem } from '../../../services/ScheduleService';
 const ScheduleDialog = (props) => {
@@ -36,7 +40,8 @@ const ScheduleDialog = (props) => {
   const [groupId, setGroupId] = React.useState('none');
   const [statusToEvent, setStatusToEvent] = React.useState('');
   const [eventMembers, setEventMembers] = React.useState([]);
-
+  const [isCourse, setIsCourse] = React.useState(false);
+  const [anchorEl, setAnchorEl] = React.useState(null);
   function a11yProps(index) {
     return {
       id: `simple-tab-${index}`,
@@ -61,7 +66,7 @@ const ScheduleDialog = (props) => {
       eventCreatorStatus = 'going';
       eventmembers= JSON.stringify([{ Userid: context.authenticatedUser._id, status: eventCreatorStatus }]);
     }
-    createEventItem(eventName, props.createStartDate, props.createEndDate, eventmembers, eventDescription, eventCreatorStatus).then(
+    createEventItem(eventName, props.createStartDate, props.createEndDate, eventmembers, eventDescription, eventCreatorStatus, tabIndex === 0 && isCourse ? 1 : 0).then(
       (response) => {
         const eventId = response.data._id;
         if (tabIndex === 1 && groupId !== 'none') {
@@ -179,10 +184,12 @@ const ScheduleDialog = (props) => {
     setStatusToEvent('');
     setUninvitedFriendList([]);
     setEventMembers([]);
+    setIsCourse(false);
     if (props.eventToUpdate) {
       setTabIndex(props.eventToUpdate.creatorstatus ? 1 : 0);
       setEventName(props.eventToUpdate.name);
       setEventDescription(props.eventToUpdate.description);
+      setIsCourse(props.eventToUpdate.iscobalt === 1? true : false)
       const eventmembers = props.eventToUpdate.eventmembers || [];
       const foundEventMember = eventmembers.find(
         (member) => member.userid === context.authenticatedUser._id
@@ -208,12 +215,11 @@ const ScheduleDialog = (props) => {
   }
   const isRecurTab = props.eventToUpdate && props.eventToUpdate.creatorstatus;
   const isEventTab = props.eventToUpdate && !props.eventToUpdate.creatorstatus;
+  const open = Boolean(anchorEl);
+  const id = open ? 'simple-popover' : undefined;
   return (
     props.open &&
     <div>
-      {/* <Button variant="outlined" color="primary" onClick={handleClickOpen}>
-        Open form dialog
-      </Button> */}
 
       <Dialog disableBackdropClick open={props.open} onClose={props.handleClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">{props.eventToUpdate ? 'Event Update' : 'Event Creation'}</DialogTitle>
@@ -224,7 +230,7 @@ const ScheduleDialog = (props) => {
           textColor="primary"
           variant="fullWidth"
         >
-          <Tab disabled={isRecurTab} label="Recurring Schedule Item" {...a11yProps(0)} />
+          <Tab disabled={isRecurTab} label="Recurring Weekly Item" {...a11yProps(0)} />
           <Tab disabled={isEventTab} label="Personal/Group Event Item"{...a11yProps(1)} />
         </Tabs>
 
@@ -233,11 +239,47 @@ const ScheduleDialog = (props) => {
             autoFocus
             margin="dense"
             id="name"
-            label="Name"
+            label={isCourse && tabIndex === 0 ? "Course Code" : "Name"}
             value={eventName}
             onChange={(event) => setEventName(event.target.value)}
             fullWidth
           />
+          {
+            tabIndex === 0 &&
+            <div>
+              <FormControlLabel
+              control={
+              <Switch
+                checked={isCourse}
+                onChange={(e,checked)=>setIsCourse(checked)}
+                color="primary"
+              />
+              }
+              label="is course"
+              />
+              <IconButton  size="small" onClick={(e)=>setAnchorEl(e.currentTarget)}>
+                <HelpOutlineIcon />
+              </IconButton>
+    
+              <Popover
+                id={id}
+                open={open}
+                anchorEl={anchorEl}
+                onClose={()=>setAnchorEl(null)}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'center',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'center',
+                }}
+              >
+                <Typography style={{padding:10}}> Enable this field if you wish to treat this item as a course in our friend recommendation service, for higher accuracy, please enter the course code exactly</Typography>
+              </Popover>
+            </div>
+          }
+
           <TextField
             margin="dense"
             id="description"
@@ -266,22 +308,6 @@ const ScheduleDialog = (props) => {
               readOnly: true,
             }}
           />
-          {/* <TextField
-            margin="dense"
-            id="item-type"
-            select
-            label="Event frequency"
-            value={isRecurring}
-            onChange={handleSelectEventType}
-          >
-
-            <MenuItem value={false}>
-              One time
-            </MenuItem>
-            <MenuItem value={true}>
-              Recurring Weekly
-            </MenuItem>
-        </TextField> */}
           {tabIndex === 1 && !props.eventToUpdate &&
             <TextField
               margin="dense"
@@ -384,28 +410,6 @@ const ScheduleDialog = (props) => {
               }
 
             </List>}
-
-          {/* <InputLabel> Group event <Switch size="small" checked={isGroupEvent} onChange={toggleGroupChecked} /></InputLabel>
-        {isGroupEvent &&
-        <List>
-          {
-            groupList.map((group) => {
-              return (
-              <ListItem key={group.ID}>
-              <ListItemIcon>
-                  <Checkbox
-                      edge="start"
-                      checked={checked.indexOf(group.ID) != -1}
-                      disableRipple
-                  />
-              </ListItemIcon>
-              <ListItemText primary={`${group.name}`}/>
-              </ListItem>
-              
-              )
-            })
-          }
-        </List>} */}
         </DialogContent>
         {!ownsEvent &&
           <DialogActions>

@@ -2,9 +2,9 @@ import axios from 'axios';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-export const createEventItem = (title, startdate, enddate, eventmembers, description, creatorstatus) => {
+export const createEventItem = (title, startdate, enddate, eventmembers, description, creatorstatus, iscobalt=0) => {
     return axios.post(`${apiUrl}/api/event_items`, 
-    {title, startdate, enddate, description, creatorstatus, eventmembers});
+    {title, startdate, enddate, description, creatorstatus, eventmembers, iscobalt});
 }
 
 export const getEventItems = (userId) => {

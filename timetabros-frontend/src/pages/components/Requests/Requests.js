@@ -5,7 +5,7 @@ import CheckIcon from '@material-ui/icons/Check';
 import CloseIcon from '@material-ui/icons/Close';
 import AuthContext from '../../../context/AuthContext';
 import styles from './RequestsStyles';
-import { acceptFriendRequest } from '../../../services/FriendService';
+import { acceptFriendRequest,removeFriend } from '../../../services/FriendService';
 import { updateEventStatus } from '../../../services/ScheduleService';
 import { acceptGroup } from '../../../services/GroupService';
 import { withRouter } from 'react-router-dom';
@@ -16,6 +16,14 @@ class Requests extends React.Component {
 
     handleAcceptFriend = (requestId) => {
         acceptFriendRequest(requestId).then(
+            () => {
+                this.props.onFriendRequestChange();
+            }
+        )
+    }
+
+    handleRemoveFriend = (friendId) => {
+        removeFriend(friendId).then(
             () => {
                 this.props.onFriendRequestChange();
             }
@@ -55,7 +63,7 @@ class Requests extends React.Component {
                     <IconButton size="small" aria-label="accept" onClick={()=>this.handleAcceptFriend(request.id)}>
                       <CheckIcon fontSize="small" />
                     </IconButton>
-                    <IconButton size="small" aria-label="decline">
+                    <IconButton size="small" aria-label="decline" onClick={()=>this.handleRemoveFriend(request.userId)}>
                       <CloseIcon fontSize="small" />
                     </IconButton>
                 </ListItemSecondaryAction>

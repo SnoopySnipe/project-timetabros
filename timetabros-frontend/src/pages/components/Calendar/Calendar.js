@@ -127,16 +127,7 @@ class Calendar extends Component {
         const scheduleStartMoment = moment(start).day(itemStartMoment.day());
         let startDiff = scheduleStartMoment.week() - itemStartMoment.week();
         itemStartMoment.add(startDiff, 'weeks');
-        // itemStartMoment.add(1, 'days');
-        // scheduleStartMoment.set({minute:0,second:0,millisecond:0});
-        // console.log(itemStartMoment.toString());
-        // const startDiff = Math.floor(scheduleStartMoment.diff(itemStartMoment, 'minutes') / (60*24*7));
-        // console.log(startDiff);
-        // itemStartMoment.add(startDiff, 'weeks');
-        // console.log(itemStartMoment.toString());
-        // const startDiff = scheduleStartMoment.isSame(itemStartMoment.utcOffset(0), 'week') ? 0 : Math.round(scheduleStartMoment.diff(itemStartMoment, 'days') / 7);
-        // itemStartMoment.add( startDiff, 'weeks');
-        // console.log(startDiff);
+
         let end = new Date(this.state.startDate);
         let itemEndDate = new Date(item.enddate);
         const itemEndMoment = moment(itemEndDate);
@@ -144,29 +135,37 @@ class Calendar extends Component {
         let endDiff = scheduleEndMoment.week() - itemEndMoment.week();
         itemEndMoment.add(endDiff, 'weeks');
 
-        // itemEndMoment.add(1, 'days');
-        // scheduleEndMoment.set({minute:0,second:0,millisecond:0});
-        // const endDiff = Math.floor(scheduleEndMoment.diff(itemEndMoment, 'minutes') / (60*24*7));
-        // itemEndMoment.add(endDiff, 'weeks');
-        // const endDiff = scheduleEndMoment.isSame(itemEndMoment.utcOffset(0), 'week') ? 0: Math.round(scheduleEndMoment.diff(itemEndMoment, 'days') / 7);
-        // itemEndMoment.add( endDiff, 'weeks');
-
-        return {start: itemStartMoment.toISOString(), end: itemEndMoment.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers, createdby: item.createdby, creatorstatus: item.creatorstatus, colour: user.colour};
+        return {start: itemStartMoment.toISOString(), end: itemEndMoment.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers, createdby: item.createdby, creatorstatus: item.creatorstatus, iscobalt: item.iscobalt, colour: user.colour};
       }) : [];
       const eventOwnedItems = response.data.eventowneritems ? response.data.eventowneritems.map((item) => {
 
         let itemStartDate = new Date(item.startdate);
         let itemEndDate = new Date(item.enddate);
-        return {start: itemStartDate.toISOString(), end: itemEndDate.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers,  createdby: item.createdby, creatorstatus: item.creatorstatus, eventmembers: item.eventmembers, colour: user.colour};
+        return {start: itemStartDate.toISOString(), end: itemEndDate.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers,  createdby: item.createdby, creatorstatus: item.creatorstatus, iscobalt: item.iscobalt,eventmembers: item.eventmembers, colour: user.colour};
       }) : [];
       const eventMemberItems = response.data.eventmemberitems ? response.data.eventmemberitems.map((item) => {
 
         let itemStartDate = new Date(item.startdate);
         let itemEndDate = new Date(item.enddate);
-        return {start: itemStartDate.toISOString(), end: itemEndDate.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers,  createdby: item.createdby, creatorstatus: item.creatorstatus, eventmembers: item.eventmembers, colour: user.colour};
+        return {start: itemStartDate.toISOString(), end: itemEndDate.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers,  createdby: item.createdby, creatorstatus: item.creatorstatus, iscobalt: item.iscobalt,eventmembers: item.eventmembers, colour: user.colour};
+      }) : [];
+      const courseItems = response.data.courses ? response.data.courses.map((item) => {
+        let start = new Date(this.state.startDate);
+        let itemStartDate = new Date(item.startdate);
+        const itemStartMoment = moment(itemStartDate);
+        const scheduleStartMoment = moment(start).day(itemStartMoment.day());
+        let startDiff = scheduleStartMoment.week() - itemStartMoment.week();
+        itemStartMoment.add(startDiff, 'weeks');
+        let end = new Date(this.state.startDate);
+        let itemEndDate = new Date(item.enddate);
+        const itemEndMoment = moment(itemEndDate);
+        const scheduleEndMoment = moment(end).day(itemEndMoment.day());
+        let endDiff = scheduleEndMoment.week() - itemEndMoment.week();
+        itemEndMoment.add(endDiff, 'weeks');
+        return {start: itemStartDate.toISOString(), end: itemEndDate.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers,  createdby: item.createdby, creatorstatus: item.creatorstatus, iscobalt: item.iscobalt,eventmembers: item.eventmembers, colour: user.colour};
       }) : [];
       this.setState({
-        events: this.state.events.concat(scheduleItems).concat(eventOwnedItems).concat(eventMemberItems)
+        events: this.state.events.concat(scheduleItems).concat(eventOwnedItems).concat(eventMemberItems).concat(courseItems)
       });
     })
     // Not sure if we need this

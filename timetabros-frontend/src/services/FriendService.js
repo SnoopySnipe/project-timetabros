@@ -23,3 +23,7 @@ export const getFriends = (userid) => {
 export const getMutualFriends = () => {
     return axios.get(`${apiUrl}/api/mutual_friend_recommendations`);
 }
+
+export const getScheduleFriends = () => {
+    return axios.get(`${apiUrl}/api//schedule_friend_recommendations`);
+}

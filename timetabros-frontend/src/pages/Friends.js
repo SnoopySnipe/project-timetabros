@@ -5,13 +5,15 @@ import { Grid, List, ListItem, ListItemText, ListItemAvatar, Avatar, ListItemSec
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import GroupAddIcon from '@material-ui/icons/GroupAdd';
 import RemoveIcon from '@material-ui/icons/Remove';
-import { getFriends, sendFriendRequest, removeFriend, getMutualFriends } from '../services/FriendService';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+import { getFriends, sendFriendRequest, removeFriend, getMutualFriends, getScheduleFriends } from '../services/FriendService';
 import { getGroups, removeGroup } from '../services/GroupService';
 import { getUser, searchUser} from '../services/UserService';
 import GroupDialog from './components/GroupDialog/GroupDialog';
 class Friends extends React.Component {
     static contextType = AuthContext;
-
+    suggestMethods = {mutualFriend: 'Suggest by mutual friends', mutualCourse: 'Suggest by mutual courses'};
     constructor(props) {
         super(props);
         this.state = {
@@ -20,6 +22,8 @@ class Friends extends React.Component {
             sentFriendRequests: [],
             receivedFriendRequests: [],
             mutualFriends: [],
+            scheduleFriends: [],
+            suggestMethod: this.suggestMethods.mutualFriend,
             groups: [],
             query: "",
             openGroupDialog: false,
@@ -70,7 +74,6 @@ class Friends extends React.Component {
     }
 
     fetchMutualFriends() {
-        this.setState({mutualFriends: []});
         getMutualFriends().then(
             (res) => {
                 const mutualFriends = res.data.mutualfriends || [];
@@ -98,10 +101,39 @@ class Friends extends React.Component {
         )
     }
 
+    fetchScheduleFriends() {
+        getScheduleFriends().then(
+            (res) => {
+                const scheduleFriends = res.data.schedulefriends || [];
+                const promises = [];
+                const mutualCourses = [];
+                scheduleFriends.forEach(
+                    (item) => {
+                        promises.push(getUser(item.userid));
+                        mutualCourses.push(item.courses);
+                    }
+                )
+
+                Promise.all(promises).then(
+                    (responses) => {
+                        let newScheduleFriends = [];
+                        for(let i = 0; i < responses.length; i++) {
+                            const user = responses[i].data;
+                            user.mutualCourses = mutualCourses[i];
+                            newScheduleFriends = newScheduleFriends.concat(user);
+                        }
+                        this.setState({scheduleFriends: newScheduleFriends});
+                    }
+                )
+            }
+        )
+    }
+
     componentDidMount(){
         this.fetchFriends();
         this.fetchGroups();
         this.fetchMutualFriends();
+        this.fetchScheduleFriends();
     }
 
     searchFriend = event => {
@@ -119,6 +151,7 @@ class Friends extends React.Component {
         sendFriendRequest(userid).then((res)=>{
             this.fetchFriends();
             this.fetchMutualFriends();
+            this.fetchScheduleFriends();
         });
     }
 
@@ -127,6 +160,7 @@ class Friends extends React.Component {
             () => {
                 this.fetchFriends();
                 this.fetchMutualFriends();
+                this.fetchScheduleFriends();
             }
         )
     }
@@ -193,6 +227,24 @@ class Friends extends React.Component {
                 </ListItemSecondaryAction>
             </ListItem>
         ))
+        const scheduleFriends = this.state.scheduleFriends;
+        const scheduleFriendItems = !scheduleFriends ? [] : scheduleFriends.map((user) => (
+            <ListItem key={user._id} button divider onClick={()=>this.handleSelectFriend(user._id)}>
+                <ListItemAvatar>
+                    <Avatar src={`${process.env.REACT_APP_API_URL}/api/users/${user._id}/pfp`}>{user.firstname.charAt(0).toUpperCase()}</Avatar>
+                </ListItemAvatar>
+                <ListItemText 
+                    primary={`${user.firstname}  ${user.lastname} (Mutual courses: ${user.mutualCourses.toString()})`}
+                    secondary={user.username}
+                >
+                </ListItemText>
+                <ListItemSecondaryAction>
+                    <IconButton aria-label="accept" onClick={()=>this.handleAddUser(user._id)}>
+                        <PersonAddIcon  />
+                    </IconButton>
+                </ListItemSecondaryAction>
+            </ListItem>
+        ))
         const friends = this.state.friendList;
         const friendItems = !friends ? [] : friends.map((user) => (
             <ListItem key={user.id} button divider onClick={()=>this.handleSelectFriend(user.id)}>
@@ -245,8 +297,20 @@ class Friends extends React.Component {
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <h1>Suggested Friends</h1>
+                        <Select
+                        value={this.state.suggestMethod}
+                        onChange={(e)=>this.setState({suggestMethod: e.target.value})}
+                        >
+                        <MenuItem value={this.suggestMethods.mutualFriend}>Suggest by mutual friends</MenuItem>
+                        <MenuItem value={this.suggestMethods.mutualCourse}>Suggest by mutual courses</MenuItem>
+                        </Select>
                         <List>
-                            {mutualFriendItems.length > 0 ? mutualFriendItems : "You have no mutual friends at the moment"}
+                            {
+                                this.state.suggestMethod === this.suggestMethods.mutualFriend ?
+                                (mutualFriendItems.length > 0 ? mutualFriendItems : "You have no suggested friends at the moment") :
+                                (scheduleFriendItems.length > 0 ? scheduleFriendItems : "You have no suggested friends at the moment")
+                            }
+                            
                         </List>
                     </Grid>
 
