@@ -1,6 +1,7 @@
 ## Dependencies
 
-- go 1.14
+- Go 1.14
+- MongoDB database
 
 ## Configuration
 
