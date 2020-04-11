@@ -26,8 +26,8 @@ Note that for deployment, we created an additional two separate private reposito
 
 ## Features
 
-**Connect** with other users by using our friend recommendation system, once you have formed some connections you can start creating groups!
+**Connect** with other users by using our friend recommendation service, once you have formed some connections you can start creating groups!
 
-**Customize** your schedule with personal recurring as well as temporary schedule items, or spice it up with events you can invite your friends to and even UofT courses!
+**Customize** your schedule with personal recurring as well as temporary schedule items, or spice it up with events you can invite your friends to and even courses you are currently enrolled in!
 
-**Compare** your schedules side-by-side with multiple other easily to pick a time that works best for everyone!
+**Compare** your schedules side-by-side with multiple other users easily to pick a time that works best for everyone!
