@@ -113,19 +113,19 @@ class Requests extends React.Component {
                     <Grid item xs={12} lg={4}>
                         <h1>Friend requests</h1>
                         <List>
-                            {listItems}
+                            {listItems.length > 0 ? listItems : "You have no friend requests at the moment"}
                         </List>
                     </Grid>
                     <Grid item xs={12} lg={4}>
                         <h1>Group requests</h1>
                         <List>
-                            {groupItems}
+                            {groupItems.length > 0 ? groupItems : "You have no group requests at the moment"}
                         </List>
                     </Grid>
                     <Grid item xs={12} lg={4}>
                         <h1>Event requests</h1>
                         <List>
-                            {eventItems}
+                            {eventItems.length > 0 ? eventItems : "You have no event requests at the moment"}
                         </List>
                     </Grid>
                 </Grid>
