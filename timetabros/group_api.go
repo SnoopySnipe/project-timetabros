@@ -27,14 +27,14 @@ func CreateGroup(c *gin.Context) {
     // get group details
     var group Group
     if err := c.ShouldBindJSON(&group); err != nil {
-    	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    	c.JSON(http.StatusBadRequest, gin.H{"error": "One or more required fields is missing"})
 		return
 	}
     group.Createdby = session.Values["_id"].(*primitive.ObjectID)
     group.Creatorrole = "admin"
     // verify inputs
     if errs := validate.Struct(group); errs != nil {
-	    c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+	    c.JSON(http.StatusBadRequest, gin.H{"error": "One or more fields is formatted incorrectly"})
 		return
     }
     // insert group into db
@@ -124,20 +124,20 @@ func UpdateGroupDetails(c *gin.Context) {
 		return
     }
     // verify that updater is owner of group
-    if session.Values["_id"].(*primitive.ObjectID).String() != group.Createdby.String() {
+    if session.Values["_id"].(*primitive.ObjectID).Hex() != group.Createdby.Hex() {
         c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
     }
     // get update credentials
     var updatedGroup GroupUpdate
     if err := c.ShouldBindJSON(&updatedGroup); err != nil {
-    	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    	c.JSON(http.StatusBadRequest, gin.H{"error": "One or more required fields is missing"})
 		return
 	}
 
     // verify inputs
     if errs := validate.Struct(updatedGroup); errs != nil {
-	    c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+	    c.JSON(http.StatusBadRequest, gin.H{"error": "One or more fields is formatted incorrectly"})
 		return
     }
 
@@ -197,7 +197,7 @@ func DeleteGroup(c *gin.Context) {
 		return
     }
     // verify that deleter is owner of group
-    if session.Values["_id"].(*primitive.ObjectID).String() != group.Createdby.String() {
+    if session.Values["_id"].(*primitive.ObjectID).Hex() != group.Createdby.Hex() {
         c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
     }
@@ -303,7 +303,7 @@ func SendGroupRequest(c *gin.Context) {
     // get user and group to send group request to
     var groupMember UserIDStruct
     if err = c.ShouldBindJSON(&groupMember); err != nil {
-    	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    	c.JSON(http.StatusBadRequest, gin.H{"error": "Missing arguments"})
 		return
 	}
     id_param := c.Param("id")
@@ -319,7 +319,7 @@ func SendGroupRequest(c *gin.Context) {
 		return
     }
     // verify that user is sending group request to another user
-    if session.Values["_id"].(*primitive.ObjectID).String() == user_id.String() {
+    if session.Values["_id"].(*primitive.ObjectID).Hex() == user_id.Hex() {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot send group request to self"})
 		return
     }
@@ -344,7 +344,7 @@ func SendGroupRequest(c *gin.Context) {
     var groupCheck1 Group
     err = groups.FindOne(context.TODO(), bson.M{"_id": group_id, "createdby": bson.M{"$ne": session.Values["_id"]}, "groupmembers": bson.M{"$not": bson.M{"$elemMatch": bson.M{"userid": session.Values["_id"]}}}}).Decode(&groupCheck1)
     if err == nil {
-        c.JSON(http.StatusForbidden, gin.H{"error": "User " + session.Values["_id"].(*primitive.ObjectID).String() + " is not in the group " + id_param})
+        c.JSON(http.StatusForbidden, gin.H{"error": "User " + session.Values["_id"].(*primitive.ObjectID).Hex() + " is not in the group " + id_param})
 	    return
     } 
     var groupCheck2 Group
@@ -399,7 +399,7 @@ func AcceptGroupRequest(c *gin.Context) {
     var groupCheck1 Group
     err = groups.FindOne(context.TODO(), bson.M{"_id": group_id, "groupmembers": bson.M{"$elemMatch": bson.M{"userid": session.Values["_id"], "role": "invited"}}}).Decode(&groupCheck1)
     if err != nil {
-        c.JSON(http.StatusForbidden, gin.H{"error": "User " + session.Values["_id"].(*primitive.ObjectID).String() + " is not invited to group " + id_param})
+        c.JSON(http.StatusForbidden, gin.H{"error": "User " + session.Values["_id"].(*primitive.ObjectID).Hex() + " is not invited to group " + id_param})
 	    return
     }
     // update group member
@@ -438,7 +438,7 @@ func DeleteGroupMember(c *gin.Context) {
     // get user and group to delete group member from
     var groupMember UserIDStruct
     if err = c.ShouldBindJSON(&groupMember); err != nil {
-    	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    	c.JSON(http.StatusBadRequest, gin.H{"error": "Missing arguments"})
 		return
 	}
     id_param := c.Param("id")
@@ -475,7 +475,7 @@ func DeleteGroupMember(c *gin.Context) {
         }
     } else {
         if session.Values["_id"].(*primitive.ObjectID).Hex() != user_id.Hex() {
-            c.JSON(http.StatusBadRequest, gin.H{"error": "Members can only delete self from group"})
+            c.JSON(http.StatusForbidden, gin.H{"error": "Members can only delete self from group"})
 		    return
         }
     }
@@ -483,7 +483,7 @@ func DeleteGroupMember(c *gin.Context) {
     var groupCheck1 Group
     err = groups.FindOne(context.TODO(), bson.M{"_id": group_id, "groupmembers": bson.M{"$elemMatch": bson.M{"userid": user_id}}}).Decode(&groupCheck1)
     if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "User " + user_id.String() + " is not in group " + id_param})
+        c.JSON(http.StatusBadRequest, gin.H{"error": "User " + user_id.Hex() + " is not in group " + id_param})
 	    return
     }
     // remove group member

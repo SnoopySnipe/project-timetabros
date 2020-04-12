@@ -12,7 +12,7 @@ const Credits = () => {
                 Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
             </li>
             <li>
-                Daniel Zhao as face of Timetabros
+                Daniel Zhao as face of TimetaBros
             </li>
             <h2>Scheduler</h2>
             <li>

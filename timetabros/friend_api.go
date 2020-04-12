@@ -28,7 +28,7 @@ func SendFriendRequest (c *gin.Context) {
     // get user to send friend request to
     var friendConnection UserIDStruct
     if err = c.ShouldBindJSON(&friendConnection); err != nil {
-    	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    	c.JSON(http.StatusBadRequest, gin.H{"error": "Missing arguments"})
 		return
 	}
     // check if id is valid
@@ -38,7 +38,7 @@ func SendFriendRequest (c *gin.Context) {
 		return
     }
     // verify that user is sending friend request to another user
-    if session.Values["_id"].(*primitive.ObjectID).String() == id.String() {
+    if session.Values["_id"].(*primitive.ObjectID).Hex() == id.Hex() {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot send friend request to self"})
 		return
     }
@@ -99,11 +99,11 @@ func AcceptFriendRequest (c *gin.Context) {
     var friendConnectionDB FriendConnectionDB
     err = friendConnections.FindOne(context.TODO(), bson.M{"_id": id, "status": "pending",}).Decode(&friendConnectionDB)
     if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "Friend request " + id_param + " not found"})
+        c.JSON(http.StatusNotFound, gin.H{"error": "Token " + id_param + " not found"})
 		return
     }
     // verify that accepter is the requested user
-    if session.Values["_id"].(*primitive.ObjectID).String() != friendConnectionDB.User2.String() {
+    if session.Values["_id"].(*primitive.ObjectID).Hex() != friendConnectionDB.User2.Hex() {
         c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
     }
@@ -354,7 +354,7 @@ func DeleteFriendConnection (c *gin.Context) {
     // get user to being deleted
     var friendConnection UserIDStruct
     if err = c.ShouldBindJSON(&friendConnection); err != nil {
-    	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    	c.JSON(http.StatusBadRequest, gin.H{"error": "Missing arguments"})
 		return
 	}
     // check if id is valid
@@ -364,7 +364,7 @@ func DeleteFriendConnection (c *gin.Context) {
 		return
     }
     // verify that user is deleting another user
-    if session.Values["_id"].(*primitive.ObjectID).String() == id.String() {
+    if session.Values["_id"].(*primitive.ObjectID).Hex() == id.Hex() {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot delete self from friends"})
 		return
     }

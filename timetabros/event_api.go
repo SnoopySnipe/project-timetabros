@@ -28,14 +28,14 @@ func CreateEventItem(c *gin.Context) {
 	// get event details
 	var event EventItem
 	if err := c.ShouldBindJSON(&event); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "One or more required fields is missing"})
 		return
 	}
 	event.Createdby = session.Values["_id"].(*primitive.ObjectID)
 
 	// verify inputs
 	if errs := validate.Struct(event); errs != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "One or more fields is formatted incorrectly"})
 		return
 	}
 
@@ -142,20 +142,20 @@ func UpdateEventItemDetails(c *gin.Context) {
 		return
 	}
 	// verify that updater is owner of event
-	if session.Values["_id"].(*primitive.ObjectID).String() != eventDB.Createdby.String() {
+	if session.Values["_id"].(*primitive.ObjectID).Hex() != eventDB.Createdby.Hex() {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
 	}
 	// get update credentials
 	var event EventItemUpdate
 	if err := c.ShouldBindJSON(&event); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "One or more required fields is missing"})
 		return
 	}
 
 	// verify inputs
 	if errs := validate.Struct(event); errs != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "One or more fields is formatted incorrectly"})
 		return
 	}
 
@@ -244,7 +244,7 @@ func DeleteEventItem(c *gin.Context) {
 		return
 	}
 	// verify that deleter is owner of event
-	if session.Values["_id"].(*primitive.ObjectID).String() != eventDB.Createdby.String() {
+	if session.Values["_id"].(*primitive.ObjectID).Hex() != eventDB.Createdby.Hex() {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
 	}
@@ -371,7 +371,7 @@ func SendEventRequest(c *gin.Context) {
 	// get user and group to send group request to
 	var eventMember UserIDStruct
 	if err = c.ShouldBindJSON(&eventMember); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing arguments"})
 		return
 	}
 	id_param := c.Param("id")
@@ -387,7 +387,7 @@ func SendEventRequest(c *gin.Context) {
 		return
 	}
 	// verify that user is sending event request to another user
-	if session.Values["_id"].(*primitive.ObjectID).String() == user_id.String() {
+	if session.Values["_id"].(*primitive.ObjectID).Hex() == user_id.Hex() {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot send event request to self"})
 		return
 	}
@@ -412,7 +412,7 @@ func SendEventRequest(c *gin.Context) {
 	var eventCheck1 EventItemDB
 	err = eventItems.FindOne(context.TODO(), bson.M{"_id": event_id, "createdby": bson.M{"$ne": session.Values["_id"]}, "eventmembers": bson.M{"$not": bson.M{"$elemMatch": bson.M{"userid": session.Values["_id"]}}}}).Decode(&eventCheck1)
 	if err == nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": "User " + session.Values["_id"].(*primitive.ObjectID).String() + " is not in the event " + id_param})
+		c.JSON(http.StatusForbidden, gin.H{"error": "User " + session.Values["_id"].(*primitive.ObjectID).Hex() + " is not in the event " + id_param})
 		return
 	}
 	var eventCheck2 EventItemDB
@@ -453,12 +453,12 @@ func UpdateEventStatus(c *gin.Context) {
 	// get status
 	var status UpdateEventStatusCredentials
 	if err = c.ShouldBindJSON(&status); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing arguments"})
 		return
 	}
 	// verify inputs
 	if errs := validate.Struct(status); errs != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Incorrect format"})
 		return
 	}
 	// check if id is valid
@@ -478,7 +478,7 @@ func UpdateEventStatus(c *gin.Context) {
 	var eventCheck1 Group
 	err = eventItems.FindOne(context.TODO(), bson.M{"_id": event_id, "eventmembers": bson.M{"$elemMatch": bson.M{"userid": session.Values["_id"]}}}).Decode(&eventCheck1)
 	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": "User " + session.Values["_id"].(*primitive.ObjectID).String() + " is not invited to event " + id_param})
+		c.JSON(http.StatusForbidden, gin.H{"error": "User " + session.Values["_id"].(*primitive.ObjectID).Hex() + " is not invited to event " + id_param})
 		return
 	}
 	// update event member
@@ -517,7 +517,7 @@ func DeleteEventMember(c *gin.Context) {
 	// get user and group to delete group member from
 	var eventMember UserIDStruct
 	if err = c.ShouldBindJSON(&eventMember); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing arguments"})
 		return
 	}
 	id_param := c.Param("id")
@@ -554,7 +554,7 @@ func DeleteEventMember(c *gin.Context) {
 		}
 	} else {
 		if session.Values["_id"].(*primitive.ObjectID).Hex() != user_id.Hex() {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Members can only delete self from event"})
+			c.JSON(http.StatusForbidden, gin.H{"error": "Members can only delete self from event"})
 			return
 		}
 	}
@@ -562,7 +562,7 @@ func DeleteEventMember(c *gin.Context) {
 	var eventCheck1 EventItemDB
 	err = eventItems.FindOne(context.TODO(), bson.M{"_id": event_id, "eventmembers": bson.M{"$elemMatch": bson.M{"userid": user_id}}}).Decode(&eventCheck1)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User " + user_id.String() + " is not in event " + id_param})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User " + user_id.Hex() + " is not in event " + id_param})
 		return
 	}
 	// remove event member

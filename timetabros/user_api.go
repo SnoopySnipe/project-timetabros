@@ -28,12 +28,12 @@ func SignUp(c *gin.Context) {
 	// get data from request body and store into user type
 	var user User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "One or more required fields is missing"})
 		return
 	}
 	// verify inputs
 	if errs := validate.Struct(user); errs != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "One or more fields is formatted incorrectly"})
 		return
 	}
 	// check if user already exists
@@ -112,7 +112,7 @@ func Verify(c *gin.Context) {
 	var user User
 	err = users.FindOne(context.TODO(), bson.M{"_id": pendingUser.Userid}).Decode(&user)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User " + pendingUser.Userid.String() + " not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "User " + pendingUser.Userid.Hex() + " not found"})
 		return
 	}
 	// remove the pending user record
@@ -155,7 +155,7 @@ func SignIn(c *gin.Context) {
 	}
 	// verify inputs
 	if errs := validate.Struct(data); errs != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": errs.Error()})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
 		return
 	}
 	// find user in db
@@ -357,12 +357,12 @@ func UpdateUserDetails(c *gin.Context) {
 	// get update credentials
 	var updatedUser UserUpdate
 	if err = c.ShouldBindWith(&updatedUser, binding.FormMultipart); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "One or more required fields is missing"})
 		return
 	}
 	// verify inputs
 	if errs := validate.Struct(updatedUser); errs != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "One or more fields is formatted incorrectly"})
 		return
 	}
 	// create salted hash and store it instead of password in clear
@@ -519,7 +519,7 @@ func SearchUsers(c *gin.Context) {
     data.Query = strings.ReplaceAll(query, " ", "")
 	// verify inputs
 	if errs := validate.Struct(data); errs != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Incorrect format"})
 		return
 	}
 	// search users
@@ -538,12 +538,12 @@ func RequestPasswordReset(c *gin.Context) {
 	// get email
 	var userEmail ResetCredentials
 	if err := c.ShouldBindJSON(&userEmail); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing arguments"})
 		return
 	}
 	// verify inputs
 	if errs := validate.Struct(userEmail); errs != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Incorrect format"})
 		return
 	}
 	// check if user exists
@@ -612,12 +612,12 @@ func ResetPassword(c *gin.Context) {
 	// get update credentials
 	var passwordReset PasswordReset
 	if err = c.ShouldBindJSON(&passwordReset); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing arguments"})
 		return
 	}
 	// verify inputs
 	if errs := validate.Struct(passwordReset); errs != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Incorrect format"})
 		return
 	}
 	// create salted hash and store it instead of password in clear
