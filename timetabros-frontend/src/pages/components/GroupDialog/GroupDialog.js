@@ -167,7 +167,7 @@ const GroupDialog = (props) => {
           {groupMembers.slice().sort(compare).map(
               (groupMember) =>
                 <ListItem key={groupMember._id}>
-                  {<ListItemIcon>
+                  {props.groupToUpdate.createdby === context.authenticatedUser._id && <ListItemIcon>
                       <IconButton aria-label="accept" onClick={()=>handleRemoveGroupMember(groupMember)}>
                                 <RemoveIcon  />
                       </IconButton>
@@ -203,11 +203,15 @@ const GroupDialog = (props) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={props.handleClose} color="primary">
-            Cancel
+            Close
           </Button>
-          <Button onClick={handleSubmit} color="primary">
-            {props.groupToUpdate ? 'Update' : 'Create'}
-          </Button>
+          {
+            props.groupToUpdate.createdby === context.authenticatedUser._id &&
+            <Button onClick={handleSubmit} color="primary">
+              {props.groupToUpdate ? 'Update' : 'Create'}
+            </Button>
+          }
+
         </DialogActions>
       </Dialog>
     </div>
