@@ -162,7 +162,7 @@ class Calendar extends Component {
         const scheduleEndMoment = moment(end).day(itemEndMoment.day());
         let endDiff = scheduleEndMoment.week() - itemEndMoment.week();
         itemEndMoment.add(endDiff, 'weeks');
-        return {start: itemStartDate.toISOString(), end: itemEndDate.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers,  createdby: item.createdby, creatorstatus: item.creatorstatus, iscobalt: item.iscobalt,eventmembers: item.eventmembers, colour: user.colour};
+        return {start: itemStartMoment.toISOString(), end: itemEndMoment.toISOString(), text: item.title, id: item.ID, description: item.description, eventMembers: item.eventmembers,  createdby: item.createdby, creatorstatus: item.creatorstatus, iscobalt: item.iscobalt,eventmembers: item.eventmembers, colour: user.colour};
       }) : [];
       this.setState({
         events: this.state.events.concat(scheduleItems).concat(eventOwnedItems).concat(eventMemberItems).concat(courseItems)
