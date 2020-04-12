@@ -81,8 +81,10 @@ const GroupDialog = (props) => {
       const roles = [];
       members.forEach(
         (member) => {
-          promises.push(getUser(member.userid));
-          roles.push(member.role);
+          if(member.userid !== context.authenticatedUser._id) {
+            promises.push(getUser(member.userid));
+            roles.push(member.role);
+          }
         }
       );
       let newGroupMembers = [];
@@ -206,7 +208,7 @@ const GroupDialog = (props) => {
             Close
           </Button>
           {
-            props.groupToUpdate.createdby === context.authenticatedUser._id &&
+            (!props.groupToUpdate || props.groupToUpdate.createdby === context.authenticatedUser._id) &&
             <Button onClick={handleSubmit} color="primary">
               {props.groupToUpdate ? 'Update' : 'Create'}
             </Button>
