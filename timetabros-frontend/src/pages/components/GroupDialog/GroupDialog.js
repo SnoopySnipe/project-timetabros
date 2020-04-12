@@ -59,7 +59,7 @@ const GroupDialog = (props) => {
 
     const handleCreateGroup = () => {
       // const groupMembers = checked.map((userId)=>{return {userid: userId, role: 'invited'}})
-      createGroup(groupName, groupAbout, visibility, []).then(
+      createGroup(groupName, groupAbout, visibility, [{userid: context.authenticatedUser._id, role: 'admin'}]).then(
         () => {
           props.handleGroupUpdate();
           props.handleClose();
