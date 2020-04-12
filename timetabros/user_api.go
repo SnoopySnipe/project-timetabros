@@ -510,14 +510,15 @@ func SearchUsers(c *gin.Context) {
 	}
 	// get search query
 	data := &SearchUserCredentials{}
-	data.Query = strings.ReplaceAll(c.Query("q"), "+", " ")
+	data.Query = strings.ReplaceAll(c.Query("q"), "+", "")
+	query := strings.ReplaceAll(c.Query("q"), "+", " ")
 	// verify inputs
 	if errs := validate.Struct(data); errs != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
 		return
 	}
 	// search users
-	searchResults, err := userFind(bson.M{"$text": bson.M{"$search": data.Query}})
+	searchResults, err := userFind(bson.M{"$text": bson.M{"$search": query}})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
