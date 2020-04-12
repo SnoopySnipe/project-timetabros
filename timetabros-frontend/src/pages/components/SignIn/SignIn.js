@@ -50,7 +50,7 @@ class SignIn extends React.Component {
                     Sign in
                 </Typography>
                 <form onSubmit={this.handleLogin} className={classes.form}>
-                    <TextField value={this.state.username} onChange={(e) => {this.setState({username: e.target.value})}} label="Username" variant="outlined" margin="normal" required fullWidth/>
+                    <TextField value={this.state.username} onChange={(e) => {this.setState({username: e.target.value})}} label="Username or E-mail" variant="outlined" margin="normal" required fullWidth/>
                     <TextField value={this.state.password} onChange={(e) => {this.setState({password: e.target.value})}} label="Password" variant="outlined" margin="normal" type="password" required fullWidth/>
                     {
                     this.state.errored && 

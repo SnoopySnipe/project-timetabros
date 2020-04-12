@@ -2,9 +2,11 @@ import axios from 'axios';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-export const signIn = (username, password) => {
+export const signIn = (identifier, password) => {
+    let credentials = {username:identifier, password};
+    if(identifier.match(/.+@.+/)) credentials = {email:identifier, password};
     return axios.post(`${apiUrl}/signin`, 
-    { username, password });
+    credentials);
 }
 
 export const signUp = (firstname, lastname, email, username, password) => {

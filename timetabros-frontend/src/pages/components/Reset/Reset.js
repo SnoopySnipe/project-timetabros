@@ -21,7 +21,7 @@ class Reset extends React.Component {
         e.preventDefault();
         requestResetPassword(this.state.email).then(
             () => {
-                this.setState({errored: false, requested:true});
+                this.setState({email: '', errored: false, requested:true});
             }
         )
         .catch(error => {
