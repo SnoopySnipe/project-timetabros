@@ -10,6 +10,7 @@ import (
 	"net/smtp"
 	"strings"
 	"time"
+    "net/url"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -510,8 +511,12 @@ func SearchUsers(c *gin.Context) {
 	}
 	// get search query
 	data := &SearchUserCredentials{}
-	data.Query = strings.ReplaceAll(c.Query("q"), "+", "")
-	query := strings.ReplaceAll(c.Query("q"), "+", " ")
+	query, err := url.QueryUnescape(c.Query("q"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+    data.Query = strings.ReplaceAll(query, " ", "")
 	// verify inputs
 	if errs := validate.Struct(data); errs != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": errs.Error()})
