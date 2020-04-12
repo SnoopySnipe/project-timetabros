@@ -4,9 +4,15 @@ const Credits = () => {
 
     return (
         <div>
-            <h2>Images</h2>
+            <h2>Assets</h2>
             <li>
                 <a href="https://www.pexels.com/photo/blur-book-stack-books-bookshelves-590493/">https://www.pexels.com/photo/blur-book-stack-books-bookshelves-590493/</a>
+            </li>
+            <li>
+                Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
+            </li>
+            <li>
+                Daniel Zhao as face of Timetabros
             </li>
             <h2>Scheduler</h2>
             <li>
