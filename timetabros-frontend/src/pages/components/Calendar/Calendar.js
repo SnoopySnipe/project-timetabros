@@ -183,8 +183,10 @@ class Calendar extends Component {
   }
 
   componentDidMount() {
+    const startDate = moment();
+    if(startDate.hours() >= 20) startDate.subtract(startDate.hours()-20+1, 'hours');
     this.setState({
-      startDate: (new Date()).toISOString()
+      startDate: startDate.toISOString()
     });
     this.authorizeCalendar();
     if (this.props.users){
