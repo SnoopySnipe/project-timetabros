@@ -9,7 +9,7 @@ The goal of TimetaBros is to form new connections as well as strengthen existing
 
 TimetaBros can be found [here](https://timetabros.azurewebsites.net)
 
-A demonstration of the application's main use cases can be found [here](https://youtube.com)
+A demonstration of the application's main use cases can be found [here](https://youtu.be/BVITZkVpDFc)
 
 ## Technologies
 
